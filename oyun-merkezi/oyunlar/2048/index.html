@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2048 — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style>
+#tahta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#334155;padding:8px;border-radius:12px;width:min(100%,380px);aspect-ratio:1;touch-action:none}
+.h{background:#1e293b;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:clamp(1.2rem,6vw,2rem);color:#f1f5f9}
+.h[data-d="2"]{background:#eee4da;color:#776e65}.h[data-d="4"]{background:#ede0c8;color:#776e65}
+.h[data-d="8"]{background:#f2b179;color:#fff}.h[data-d="16"]{background:#f59563;color:#fff}
+.h[data-d="32"]{background:#f67c5f;color:#fff}.h[data-d="64"]{background:#f65e3b;color:#fff}
+.h[data-d="128"],.h[data-d="256"],.h[data-d="512"]{background:#edcf72;color:#fff;font-size:clamp(1rem,5vw,1.6rem)}
+.h[data-d="1024"],.h[data-d="2048"]{background:#edc22e;color:#fff;font-size:clamp(.9rem,4.4vw,1.4rem)}
+.h.b{background:#3c3a32;color:#fff;font-size:clamp(.8rem,4vw,1.2rem)}
+</style>
+</head>
+<body data-oyun="2048">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🔢 2048</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <div id="tahta" aria-label="2048 tahtası"></div>
+  <p class="ipucu">Ok tuşları / WASD, ya da tahtada kaydır</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// 2048: puan = birleştirmelerle kazanılan toplam
+(function () {
+  var T = document.getElementById("tahta"), g, puan, bitti;
+  function yeni() {
+    g = []; for (var i = 0; i < 16; i++) g.push(0);
+    puan = 0; bitti = false; document.getElementById("bitti").hidden = true;
+    ekle(); ekle(); ciz();
+  }
+  function ekle() {
+    var bos = []; g.forEach(function (v, i) { if (!v) bos.push(i); });
+    if (bos.length) g[bos[Math.floor(Math.random() * bos.length)]] = Math.random() < .9 ? 2 : 4;
+  }
+  function ciz() {
+    T.textContent = "";
+    g.forEach(function (v) {
+      var h = document.createElement("div"); h.className = "h" + (v > 2048 ? " b" : "");
+      if (v) { h.textContent = v; h.setAttribute("data-d", v); } T.appendChild(h);
+    });
+    document.getElementById("puan").textContent = puan;
+  }
+  // Bir satırı sola kaydırıp birleştirir
+  function satir(s) {
+    var a = s.filter(Boolean), k = 0;
+    for (var i = 0; i < a.length - 1; i++) if (a[i] === a[i + 1]) { a[i] *= 2; k += a[i]; a.splice(i + 1, 1); }
+    while (a.length < 4) a.push(0);
+    return { s: a, k: k };
+  }
+  function hamle(yon, dene) { // yon: 0 sol, 1 yukarı, 2 sağ, 3 aşağı
+    var degisti = false, kazanc = 0, yeniG = g.slice();
+    for (var r = 0; r < 4; r++) {
+      var idx = [0, 1, 2, 3].map(function (c) {
+        return yon === 0 ? r * 4 + c : yon === 2 ? r * 4 + 3 - c : yon === 1 ? c * 4 + r : (3 - c) * 4 + r;
+      });
+      var o = satir(idx.map(function (i) { return g[i]; }));
+      idx.forEach(function (i, n) { if (yeniG[i] !== o.s[n]) degisti = true; yeniG[i] = o.s[n]; });
+      kazanc += o.k;
+    }
+    if (dene) return degisti;
+    if (!degisti) return false;
+    g = yeniG; puan += kazanc; ekle(); ciz();
+    if (![0, 1, 2, 3].some(function (y) { return hamle(y, true); })) { bitti = true; Skor.oyunBitti("2048", puan); }
+    return true;
+  }
+  document.addEventListener("keydown", function (e) {
+    var y = { ArrowLeft: 0, a: 0, ArrowUp: 1, w: 1, ArrowRight: 2, d: 2, ArrowDown: 3, s: 3 }[e.key];
+    if (y !== undefined && !bitti) { e.preventDefault(); hamle(y); }
+  });
+  var bx, by;
+  T.addEventListener("pointerdown", function (e) { bx = e.clientX; by = e.clientY; });
+  T.addEventListener("pointerup", function (e) {
+    var dx = e.clientX - bx, dy = e.clientY - by;
+    if (bitti || Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+    hamle(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 2 : 0) : (dy > 0 ? 3 : 1));
+  });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

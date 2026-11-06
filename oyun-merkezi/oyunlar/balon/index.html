@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Balon — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style></style>
+</head>
+<body data-oyun="balon">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🎈 Balon</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Süre <b id="sure">60</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" width="400" height="500" style="width:min(100%,400px)"></canvas>
+  <p class="ipucu">Balonlara dokun / tıkla. Küçük balonlar daha çok puan verir. 60 saniyen var!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Balon: 60 saniyede patlatılan balonların puanı
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d");
+  var bal, puan, kalan, son, spawn, calis, renkler = ["#ef4444", "#3b82f6", "#22c55e", "#a855f7", "#f97316", "#ec4899"];
+  function yeni() {
+    bal = []; puan = 0; kalan = 60; son = performance.now(); spawn = 0; calis = true;
+    document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
+    requestAnimationFrame(dongu);
+  }
+  function dongu(t) {
+    if (!calis) return;
+    var dt = Math.min(0.05, (t - son) / 1000); son = t;
+    kalan -= dt; spawn -= dt;
+    if (spawn <= 0) {
+      var kucuk = Math.random() < 0.3, r = kucuk ? 18 : 30;
+      bal.push({ x: r + Math.random() * (400 - 2 * r), y: 520, r: r, v: (kucuk ? 150 : 90) + Math.random() * 40 + (60 - kalan) * 1.2, p: kucuk ? 20 : 10, c: renkler[Math.floor(Math.random() * renkler.length)] });
+      spawn = Math.max(0.4, 0.8 - (60 - kalan) * 0.007);
+    }
+    bal.forEach(function (b) { b.y -= b.v * dt; });
+    bal = bal.filter(function (b) { return b.y > -50; });
+    ciz();
+    document.getElementById("sure").textContent = Math.max(0, Math.ceil(kalan));
+    if (kalan <= 0) { calis = false; Skor.oyunBitti("balon", puan); return; }
+    requestAnimationFrame(dongu);
+  }
+  function ciz() {
+    x.fillStyle = "#0b1220"; x.fillRect(0, 0, 400, 500);
+    bal.forEach(function (b) {
+      x.fillStyle = b.c; x.beginPath(); x.ellipse(b.x, b.y, b.r, b.r * 1.2, 0, 0, 7); x.fill();
+      x.strokeStyle = "#94a3b8"; x.beginPath(); x.moveTo(b.x, b.y + b.r * 1.2); x.lineTo(b.x, b.y + b.r * 1.2 + 14); x.stroke();
+    });
+  }
+  C.addEventListener("pointerdown", function (e) {
+    if (!calis) return;
+    var k = C.getBoundingClientRect(), px = (e.clientX - k.left) * 400 / k.width, py = (e.clientY - k.top) * 500 / k.height;
+    for (var i = bal.length - 1; i >= 0; i--) { // en üstteki balonu patlat
+      var b = bal[i], dx = (px - b.x) / b.r, dy = (py - b.y) / (b.r * 1.2);
+      if (dx * dx + dy * dy <= 1.3) { puan += b.p; bal.splice(i, 1); document.getElementById("puan").textContent = puan; break; }
+    }
+  });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

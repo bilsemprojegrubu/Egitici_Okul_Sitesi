@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Basket — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style></style>
+</head>
+<body data-oyun="basket">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🏀 Basket</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Süre <b id="sure">30</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" width="400" height="500" style="width:min(100%,400px)"></canvas>
+  <p class="ipucu">Ekrana dokun: top o yerden fırlar. Ok tuşlarıyla yan git, boşlukla at. Pota hareket ediyor, tam ortadan geçirirsen 3 sayı!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Basket: 30 saniyede atılan sayılar (normal 2, tam ortadan 3)
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d");
+  var puan, kalan, pota, top, px, son, calis, mesaj, mesajSure, tus = {};
+  function yeni() {
+    puan = 0; kalan = 30; pota = { x: 200, v: 110 }; top = null; px = 200; son = performance.now(); calis = true; mesaj = ""; mesajSure = 0;
+    document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
+    requestAnimationFrame(dongu);
+  }
+  function at(ax) {
+    if (!calis || top) return;
+    top = { x: Math.max(20, Math.min(380, ax)), y: 450 };
+  }
+  function dongu(t) {
+    if (!calis) return;
+    var dt = Math.min(0.05, (t - son) / 1000); son = t;
+    kalan -= dt;
+    pota.x += pota.v * dt;
+    if (pota.x < 50 || pota.x > 350) { pota.v = -pota.v; pota.x = Math.max(50, Math.min(350, pota.x)); }
+    pota.v += Math.sign(pota.v) * 6 * dt; // zamanla hızlanır
+    if (tus.ArrowLeft) px = Math.max(20, px - 260 * dt);
+    if (tus.ArrowRight) px = Math.min(380, px + 260 * dt);
+    if (top) {
+      var eski = top.y; top.y -= 720 * dt;
+      if (eski > 90 && top.y <= 90) { // pota seviyesinden geçti
+        var fark = Math.abs(top.x - pota.x);
+        if (fark < 34) { var p = fark < 12 ? 3 : 2; puan += p; mesaj = p === 3 ? "🔥 +3 Tam isabet!" : "+2"; mesajSure = 0.8; document.getElementById("puan").textContent = puan; top.sayi = true; }
+        else { mesaj = "Iska"; mesajSure = 0.5; }
+      }
+      if (top.y < 40) top = null;
+    }
+    mesajSure -= dt;
+    ciz();
+    document.getElementById("sure").textContent = Math.max(0, Math.ceil(kalan));
+    if (kalan <= 0) { calis = false; Skor.oyunBitti("basket", puan); return; }
+    requestAnimationFrame(dongu);
+  }
+  function ciz() {
+    x.fillStyle = "#0b1220"; x.fillRect(0, 0, 400, 500);
+    x.fillStyle = "#f1f5f9"; x.fillRect(pota.x - 40, 60, 80, 6);  // tahta
+    x.strokeStyle = "#f97316"; x.lineWidth = 5; x.beginPath(); x.moveTo(pota.x - 34, 90); x.lineTo(pota.x + 34, 90); x.stroke();
+    x.font = "30px sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+    x.fillText("🏀", top ? top.x : px, top ? top.y : 450);
+    x.fillStyle = "#334155"; x.fillRect(0, 480, 400, 20);
+    if (mesajSure > 0) { x.fillStyle = "#fbbf24"; x.font = "bold 24px sans-serif"; x.fillText(mesaj, 200, 250); }
+  }
+  C.addEventListener("pointerdown", function (e) { var k = C.getBoundingClientRect(); at((e.clientX - k.left) * 400 / k.width); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") { tus[e.key] = true; e.preventDefault(); }
+    if (e.code === "Space") { e.preventDefault(); at(px); }
+  });
+  document.addEventListener("keyup", function (e) { tus[e.key] = false; });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

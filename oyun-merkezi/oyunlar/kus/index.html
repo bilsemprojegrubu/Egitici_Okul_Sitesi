@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kuş — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style></style>
+</head>
+<body data-oyun="kus">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🐦 Kuş</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" width="320" height="480" style="width:min(100%,320px)"></canvas>
+  <p class="ipucu">Boşluk / dokun = kanat çırp. Borulara çarpma!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Kuş: puan = geçilen boru sayısı
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d");
+  var kus, borular, puan, calis, basladi, son, sayac;
+  function yeni() {
+    kus = { y: 220, v: 0 }; borular = []; puan = 0; calis = true; basladi = false; sayac = 0; son = performance.now();
+    document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
+    requestAnimationFrame(dongu);
+  }
+  function kanat() {
+    if (!calis) return;
+    basladi = true; kus.v = -330;
+  }
+  function dongu(t) {
+    if (!calis) return;
+    var dt = Math.min(0.04, (t - son) / 1000); son = t;
+    if (basladi) {
+      kus.v += 1000 * dt; kus.y += kus.v * dt; sayac -= dt;
+      if (sayac <= 0) { borular.push({ x: 340, bos: 120 + Math.random() * 220, gecti: false }); sayac = 1.5; }
+      borular.forEach(function (b) { b.x -= 120 * dt; });
+      borular = borular.filter(function (b) { return b.x > -60; });
+      borular.forEach(function (b) {
+        if (!b.gecti && b.x + 50 < 80) { b.gecti = true; puan++; document.getElementById("puan").textContent = puan; }
+        // Çarpışma: kuş yarıçapı 12, boru genişliği 50, boşluk 140
+        if (80 + 12 > b.x && 80 - 12 < b.x + 50 && (kus.y - 12 < b.bos - 70 || kus.y + 12 > b.bos + 70)) calis = false;
+      });
+      if (kus.y > 480 - 12 || kus.y < 12) calis = false;
+    }
+    ciz();
+    if (!calis) { Skor.oyunBitti("kus", puan); return; }
+    requestAnimationFrame(dongu);
+  }
+  function ciz() {
+    x.fillStyle = "#38bdf8"; x.fillRect(0, 0, 320, 480);
+    x.fillStyle = "#16a34a";
+    borular.forEach(function (b) { x.fillRect(b.x, 0, 50, b.bos - 70); x.fillRect(b.x, b.bos + 70, 50, 480); });
+    x.font = "28px sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = "#000";
+    x.fillText("🐦", 80, kus.y);
+    if (!basladi) { x.fillStyle = "#fff"; x.font = "18px sans-serif"; x.fillText("Başlamak için dokun", 160, 120); }
+  }
+  document.addEventListener("keydown", function (e) { if (e.code === "Space") { e.preventDefault(); kanat(); } });
+  C.addEventListener("pointerdown", kanat);
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

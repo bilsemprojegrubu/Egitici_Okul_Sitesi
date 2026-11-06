@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Futbol — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style>#kale{position:relative;width:min(100%,380px);height:200px;background:linear-gradient(#16a34a,#15803d);border-radius:12px;border:3px solid #f1f5f9;overflow:hidden}
+#kale .dir{position:absolute;top:30px;bottom:30px;width:33.3%;border:0;background:transparent;cursor:pointer;font-size:1.4rem;color:#fff8}
+#kale .dir:hover{background:#ffffff22}
+#kaleci{position:absolute;top:60px;left:50%;font-size:3rem;transform:translateX(-50%);transition:left .35s}
+#top{position:absolute;bottom:6px;left:50%;font-size:2rem;transform:translateX(-50%);transition:left .35s,bottom .35s}
+#durum{font-size:1.05rem;min-height:2.6em;text-align:center;font-weight:700}
+#tablo{font-size:1.1rem}</style>
+</head>
+<body data-oyun="futbol">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>⚽ Futbol</h1>
+<div class="puanlar">Kazanılan maç <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <div id="tablo">Sen <b id="s1">0</b> - <b id="s2">0</b> Rakip · <span id="tur"></span></div>
+  <div id="kale" aria-label="Kale"><span id="kaleci">🧤</span><span id="top">⚽</span></div>
+  <div class="kontrol" id="secim">
+    <button class="btn" data-z="0">⬅ Sol</button><button class="btn" data-z="1">⬆ Orta</button><button class="btn" data-z="2">Sağ ➡</button>
+  </div>
+  <div id="durum">Şut için bir yön seç!</div>
+  <p class="ipucu">Penaltı maçı: 5'er atış. Maçı kazanırsan sonraki maça geçersin, kaybedersen ya da berabere kalırsan oyun biter.</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Futbol: penaltı maçları. puan = üst üste kazanılan maç sayısı
+(function () {
+  var s1, s2, atis, sirasi, mac, kilit, gecmis, biter;
+  var LEFT = ["16%", "50%", "84%"];
+  var kaleci = document.getElementById("kaleci"), top = document.getElementById("top"), D = document.getElementById("durum");
+  function yeni() {
+    mac = 0; document.getElementById("puan").textContent = 0;
+    document.getElementById("bitti").hidden = true; maciBaslat();
+  }
+  function maciBaslat() {
+    s1 = 0; s2 = 0; atis = 0; sirasi = "ben"; kilit = false; gecmis = [0, 0, 0]; biter = false;
+    yaz(); D.textContent = "Maç " + (mac + 1) + " başladı! Şut için bir yön seç.";
+    sifirla();
+  }
+  function yaz() {
+    document.getElementById("s1").textContent = s1; document.getElementById("s2").textContent = s2;
+    document.getElementById("tur").textContent = "Atış " + (Math.min(5, Math.floor(atis / 2) + 1)) + "/5" + (atis >= 10 ? " (uzatma)" : "");
+  }
+  function sifirla() { kaleci.style.left = "50%"; top.style.left = "50%"; top.style.bottom = "6px"; top.style.opacity = 1; }
+  // Rakip kaleci: maç ilerledikçe oyuncunun sık attığı köşeye daha çok gider
+  function kaleciSec() {
+    var enCok = gecmis.indexOf(Math.max.apply(null, gecmis));
+    var olas = Math.min(0.6, mac * 0.08);
+    return Math.random() < olas ? enCok : Math.floor(Math.random() * 3);
+  }
+  function tikla(z) {
+    if (kilit || biter) return;
+    kilit = true;
+    var atan = sirasi, kal = kaleciSec(), sut = z, gol;
+    if (atan === "ben") { gecmis[z]++; sut = z; gol = kal !== z; }
+    else { sut = Math.floor(Math.random() * 3); kal = z; gol = sut !== z; } // rakip şut çeker, ben kaleciyim
+    kaleci.style.left = LEFT[atan === "ben" ? kal : z];
+    top.style.left = LEFT[sut]; top.style.bottom = "110px";
+    setTimeout(function () {
+      if (gol) { if (atan === "ben") s1++; else s2++; }
+      D.textContent = atan === "ben" ? (gol ? "⚽ GOL!" : "🧤 Kaleci kurtardı!") : (gol ? "😬 Rakip gol attı" : "🧤 Kurtardın!");
+      atis++; yaz(); if (!bitiyorMu()) {
+        sirasi = sirasi === "ben" ? "rakip" : "ben";
+        setTimeout(function () {
+          sifirla(); kilit = false;
+          D.textContent = sirasi === "ben" ? "Sıra sende: şut yönünü seç" : "Rakip şut çekiyor: kurtarış yönünü seç";
+        }, 900);
+      }
+    }, 450);
+  }
+  // 5'er atıştan sonra ya da fark kapanamayacak hale gelince biter; beraberlikte ani ölüm
+  function bitiyorMu() {
+    var benKalan = Math.max(0, 5 - Math.ceil(atis / 2)), rakipKalan = Math.max(0, 5 - Math.floor(atis / 2));
+    var bitti = false;
+    if (atis < 10) { if (s1 > s2 + rakipKalan || s2 > s1 + benKalan) bitti = true; }
+    else if (atis % 2 === 0 && s1 !== s2) bitti = true;
+    if (!bitti) return false;
+    biter = true;
+    setTimeout(function () {
+      if (s1 > s2) {
+        mac++; document.getElementById("puan").textContent = mac;
+        D.textContent = "🎉 Maçı kazandın! (" + s1 + "-" + s2 + ")";
+        setTimeout(maciBaslat, 1500);
+      } else { D.textContent = "Maçı kaybettin (" + s1 + "-" + s2 + ")"; setTimeout(function () { Skor.oyunBitti("futbol", mac); }, 900); }
+    }, 900);
+    return true;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-z]"), function (b) {
+    b.addEventListener("click", function () { tikla(+b.getAttribute("data-z")); });
+  });
+  document.addEventListener("keydown", function (e) {
+    var z = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2 }[e.key];
+    if (z !== undefined) { e.preventDefault(); tikla(z); }
+  });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

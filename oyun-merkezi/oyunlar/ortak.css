@@ -1,0 +1,34 @@
+/* Oyunların ortak stili */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0f172a;--kart:#1e293b;--yazi:#f1f5f9;--vurgu:#fbbf24;--ana:#38bdf8;--cizgi:#334155}
+body{background:var(--bg);color:var(--yazi);font-family:system-ui,"Segoe UI",Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.ust{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;flex-wrap:wrap}
+.geri{color:var(--ana);text-decoration:none;font-weight:600}
+.ust h1{font-size:1.15rem}
+.puanlar{font-size:.95rem}
+.puanlar b{color:var(--vurgu)}
+.sahne{position:relative;width:100%;max-width:720px;padding:0 12px 16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+canvas{background:#0b1220;border:2px solid var(--cizgi);border-radius:10px;max-width:100%;height:auto;touch-action:none;display:block}
+.ipucu{font-size:.85rem;color:#94a3b8;text-align:center}
+.btn{background:var(--ana);color:#0f172a;border:0;border-radius:10px;padding:10px 18px;font-size:1rem;font-weight:700;cursor:pointer}
+.btn:active{transform:scale(.96)}
+.btn.ikinci{background:var(--cizgi);color:var(--yazi)}
+.kontrol{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.kontrol .btn{min-width:56px;min-height:48px;font-size:1.2rem;user-select:none;touch-action:manipulation}
+/* Oyun bitti kaplaması */
+.kaplama{position:absolute;top:0;left:12px;right:12px;bottom:16px;min-height:440px;background:rgba(15,23,42,.95);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px;padding:16px;text-align:center;z-index:5}
+.kaplama[hidden]{display:none}
+.kaplama h2{font-size:1.5rem}
+#sonuc{font-size:1.1rem;color:var(--vurgu);font-weight:700}
+/* Sıralama paneli (skor.js çizer) */
+.siralama{width:100%;max-width:300px;text-align:left;background:var(--kart);border-radius:12px;padding:10px 14px}
+.siralama[hidden]{display:none}
+.siralama h3{font-size:1rem;margin-bottom:6px;text-align:center}
+.siralama ol{padding-left:26px;font-size:.95rem}
+.siralama li{padding:2px 0}
+.siralama li span,.siralama li b{display:inline-block}
+.siralama li{display:list-item}
+.siralama .sira-ad{max-width:150px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom;white-space:nowrap}
+.siralama li b{float:right;color:var(--vurgu)}
+.siralama li.ben{color:var(--ana);font-weight:700}
+.siralama .sira-durum{font-size:.9rem;color:#94a3b8;text-align:center}
