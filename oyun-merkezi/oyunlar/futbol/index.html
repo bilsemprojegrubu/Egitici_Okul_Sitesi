@@ -70,8 +70,8 @@
     pl.forEach(function (p, i) { p.x = yer[i][0]; p.y = yer[i][1]; p.vx = p.vy = 0; p.cd = 0; });
   }
   var KEY = {
-    0: { u: ["KeyW"], d: ["KeyS"], l: ["KeyA"], r: ["KeyD"], sut: ["KeyE"], pas: ["KeyQ"], ku: ["KeyT"], kd: ["KeyG"], sk: ["KeyZ"], sh: ["KeyX"], st: ["KeyR"], sb: ["KeyC"] },
-    1: { u: ["KeyO"], d: ["KeyK"], l: ["Semicolon"], r: ["KeyL"], sut: ["KeyP"], pas: ["KeyI"], ku: ["KeyU"], kd: ["KeyJ"], sk: ["KeyM"], sh: ["Comma"], st: ["BracketLeft"], sb: ["Period"] }
+    0: { u: ["KeyW"], d: ["KeyS"], l: ["KeyA"], r: ["KeyD"], sut: ["KeyE"], pas: ["KeyQ"], ku: ["KeyT"], kd: ["KeyG"], sk: ["KeyZ"], sh: ["KeyX"], st: ["KeyR"], sb: ["KeyC"], sr: ["KeyV"] },
+    1: { u: ["KeyO"], d: ["KeyK"], l: ["Semicolon"], r: ["KeyL"], sut: ["KeyP"], pas: ["KeyI"], ku: ["KeyU"], kd: ["KeyJ"], sk: ["KeyM"], sh: ["Comma"], st: ["BracketLeft"], sb: ["Period"], sr: ["Slash"] }
   };
   function bas(t, ad) { var a = KEY[t][ad].slice(); if (mod === 1 && t === 0) { if (ad === "u") a.push("ArrowUp"); if (ad === "d") a.push("ArrowDown"); if (ad === "l") a.push("ArrowLeft"); if (ad === "r") a.push("ArrowRight"); } return a.some(function (k) { return Px.k[k]; }); }
   function bas1(t, ad) { var a = KEY[t][ad].slice(); return a.some(function (k) { return Px.p[k]; }); }
@@ -121,6 +121,19 @@
     insanlar.forEach(function (h) { if (h.t === t) h.c = tk; h.sarj = 0; });
     mesaj = tur === "tac" ? "TAÇ!" : tur === "korner" ? "KORNER!" : "KALE VURUŞU"; msayac = 60; Px.ses("puan");
   }
+  function kaleciTut(p) { // kaleci topu tutar: oyuncu (veya bot) ne zaman/nasıl atacağını seçer
+    var f = oyunculari(p.t), d = p.t === 0 ? 1 : -1, rc = f[0], i;
+    for (i = 0; i < 2; i++) if (Math.abs(f[i].x - (p.x + d * 50)) < Math.abs(rc.x - (p.x + d * 50))) rc = f[i];
+    top.x = p.x + d * 4; top.y = p.y; top.vx = top.vy = 0; top.z = top.vz = 0; top.sahip = null; top.gol = 0; top.kafa = false; top.rv = false;
+    sp = { tur: "kt", t: p.t, tk: p, rc: rc, bek: 0 };
+    mesaj = "KALECİ TUTTU!"; msayac = 60; Px.ses("tik");
+  }
+  function rovesata(p) { // havadaki topa röveşata
+    var gx = hedefKale(p.t), hy = Px.sinir(CY + Px.rastgele(-14, 14), GT + 4, GB - 4), ax = gx - top.x, ay = hy - top.y, n = Math.sqrt(ax * ax + ay * ay) || 1;
+    top.vx = ax / n * 5; top.vy = ay / n * 5; top.vz = .2; top.z = Math.min(top.z, 3); top.son = p.t; top.kafa = false; top.rv = true; top.sahip = null; p.cd = 30; sars = 9; Px.ses("sut");
+    mesaj = "RÖVEŞATA!"; msayac = 45;
+    for (var i = 0; i < 10; i++) parc.push({ x: top.x, y: top.y - top.z, vx: Px.rastgele(-1.8, 1.8), vy: Px.rastgele(-1.8, 1.8), o: 16, c: "#ffcd75" });
+  }
   function spAt(hava) {
     var tk = sp.tk, rc = sp.rc, dx = rc.x - top.x, dy = rc.y - top.y, n = Math.sqrt(dx * dx + dy * dy) || 1, v;
     if (hava) { v = n / (2 * 2.2 / .12) / .95; top.vz = 2.2; top.z = .01; Px.ses("sut"); } else { v = Math.min(5, n * .056 + .5); top.vz = 0; top.z = 0; Px.ses("tik"); }
@@ -131,8 +144,9 @@
   function spGuncelle() {
     sp.bek++; var t = sp.t, h = insanlar.filter(function (q) { return q.t === t; })[0], s = null;
     if (sp.bek < 35) return;
-    if (h) { if (pres(t, "sk") || bas1(t, "pas") || (sp.tur === "tac" && pres(t, "st"))) s = 0; else if (pres(t, "sh")) s = 1; }
-    else if (sp.bek > 110) s = Math.random() < .4 ? 1 : 0;
+    if (h && sp.tur === "kt" && sp.bek > 300) s = 0;
+    else if (h) { if (pres(t, "sk") || bas1(t, "pas") || (sp.tur === "tac" && pres(t, "st"))) s = 0; else if (pres(t, "sh")) s = 1; }
+    else if (sp.bek > (sp.tur === "kt" ? 70 : 110)) s = Math.random() < .4 ? 1 : 0;
     if (s !== null) spAt(s);
   }
   function endOut(def) {
@@ -175,6 +189,7 @@
     p.vx = 0; p.y = Px.sinir(p.y + p.vy, GT - 8, GB + 8); p.yx = p.t === 0 ? 1 : -1;
     var d = mesafe(p, top);
     if (d < 8 && p.cd === 0 && !insanMi && Math.random() > .38 + .12 * zor) p.cd = 8; // bot kaleci bazen yetişemez
+    else if (d < 8 && p.cd === 0 && top.z < 6 && !sp && Math.random() < .6) kaleciTut(p);
     else if (d < 8 && p.cd === 0) { top.vx = (p.t === 0 ? 1 : -1) * (2 + Math.random() * 1.2); top.vy = (top.y - p.y) * .25 + Px.rastgele(-1, 1); p.cd = 10; Px.ses("vur"); top.gol = 0; top.son = p.t; for (var i = 0; i < 4; i++) parc.push({ x: top.x, y: top.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 1), o: 10, c: "#a7f070" }); }
   }
   function insanGuncelle(h) {
@@ -194,6 +209,7 @@
     if ((pas_ && !h.oncePas || bas1(t, "pas") || pres(t, "sk")) && mesafe(c, top) < 14 && c.cd === 0) pas(c, 0);
     else if (pres(t, "sh") && mesafe(c, top) < 14 && c.cd === 0 && top.z < 3) pas(c, 1);
     if (pres(t, "sb") && top.z >= 3 && top.z <= 15 && mesafe(c, top) < 9 && c.cd === 0) kafa(c, uy);
+    else if (pres(t, "sr") && top.z >= 4 && top.z <= 16 && mesafe(c, top) < 11 && c.cd === 0) rovesata(c);
     h.oncePas = pas_;
   }
   // ---- penaltı atışları (önden görünüm): SOL / ORTA / SAĞ seç, ŞUT'u basılı tut-bırak; kaleci de bir yöne uçar ----
@@ -295,7 +311,7 @@
     if (pen.faz === "hazir" && dh) Px.yazi(x, (st === 0 ? "MAVİ" : "KIRMIZI") + " KALECİ: SOL/SAĞ TUŞLARI", W - 4, h ? 118 : 152, 6, "#b0d8ff", h ? "right" : "right");
   }
   function gol(t) {
-    skor[t]++; yazBaslik(); mesaj = "GOL! " + (t === 0 ? "KIRMIZI" : "MAVİ") + (top.kafa ? " (KAFA)" : ""); msayac = 130; sars = 14; Px.ses("gol");
+    skor[t]++; yazBaslik(); mesaj = "GOL! " + (t === 0 ? "KIRMIZI" : "MAVİ") + (top.kafa ? " (KAFA)" : top.rv ? " (RÖVEŞATA)" : ""); msayac = 130; sars = 14; Px.ses("gol");
     top.gol = 1; top.sahip = null; top.vx = top.vy = 0; top.z = top.vz = 0; top.x = Px.sinir(top.x, PL - 4, PR + 4);
     for (var i = 0; i < 40; i++) parc.push({ x: t === 0 ? PR + 4 : PL - 4, y: CY, vx: Px.rastgele(-2.5, 2.5), vy: Px.rastgele(-3, 1), o: 50, c: ["#ffcd75", "#fff", "#e0344f", "#41a6f6", "#a7f070"][i % 5] });
     pl.forEach(function (p) { p.vx = p.vy = 0; });
@@ -353,7 +369,7 @@
       else if (!sh) {
         var eb = null, ed = 7.5;
         pl.forEach(function (p) { if (p.rol === "k" || p.cd > 0) return; var d = mesafe(p, top); if (d < ed) { ed = d; eb = p; } });
-        if (eb) { sh = top.sahip = eb; top.kafa = false; }
+        if (eb) { sh = top.sahip = eb; top.kafa = false; top.rv = false; }
       } else {
         pl.forEach(function (p) {
           if (p.rol === "k" || p.t === sh.t || p.cd > 0 || top.sahip !== sh) return;
@@ -451,7 +467,7 @@
       d.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1 1 300px;min-width:0";
       var yon = document.createElement("div"), ak = document.createElement("div"); d.appendChild(yon); d.appendChild(ak);
       Px.pad(yon, [{ t: "◀", k: l, a: "Sol" }, { t: "▲", k: u, a: "Yukarı" }, { t: "▼", k: dd, a: "Aşağı" }, { t: "▶", k: r, a: "Sağ" }]);
-      Px.pad(ak, [{ t: "ŞUT", k: sut, a: "Şut" }, { t: "PAS", k: pas_, a: "Pas" }, { t: "HAVA", k: K.sh[0], a: "Havadan pas" }, { t: "KAFA", k: K.sb[0], a: "Kafa vuruşu" }, { t: "TAÇ", k: K.st[0], a: "Taç at" }], "fut-ak");
+      Px.pad(ak, [{ t: "ŞUT", k: sut, a: "Şut" }, { t: "PAS", k: pas_, a: "Pas" }, { t: "HAVA", k: K.sh[0], a: "Havadan pas" }, { t: "KAFA", k: K.sb[0], a: "Kafa vuruşu" }, { t: "RÖVEŞATA", k: K.sr[0], a: "Röveşata" }, { t: "TAÇ", k: K.st[0], a: "Taç at" }], "fut-ak");
     }
     ekle(0); if (mod === 2) ekle(1);
     document.getElementById("kb1").style.display = elle ? "flex" : "none"; document.getElementById("kb2").style.display = elle && mod === 2 ? "flex" : "none";
@@ -459,8 +475,8 @@
   function basla(m, z) {
     mod = m; zor = z;
     document.getElementById("ipucu").textContent = m === 1
-      ? "★ Hareket: WASD / ok tuşları (top ayağına yapışır; rakip topu çalabilir, sen de çalabilirsin) · E: ŞUT (basılı tut = güçlü) · Q: PAS · X: HAVADAN pas · C: havadan gelen topa KAFA (tam üstündeyken) · R: taç · Z: korner/taçta yerden atış (korner ve taçta Z, X, R). Ekrandaki düğmeler de çalışır." + (elle ? " Kaleci: T/G ya da çubuk." : "")
-      : "★ Kırmızı: WASD yürü, E ŞUT (basılı tut = güçlü), Q PAS, Z yerden korner, X HAVADAN, C KAFA, R TAÇ" + (elle ? ", T/G kaleci" : "") + " · Mavi: O ileri, K geri, L sağ, Ş sol, P ŞUT, I PAS, M yerden korner, Ö HAVADAN, Ç KAFA, Ğ TAÇ" + (elle ? ", U/J kaleci" : "") + ". (Sıralamaya yazılmaz)";
+      ? "★ Hareket: WASD / ok tuşları (top ayağına yapışır; rakip topu çalabilir, sen de çalabilirsin) · E: ŞUT (basılı tut = güçlü) · Q: PAS · X: HAVADAN pas · C: havadan gelen topa KAFA, V: RÖVEŞATA (tam üstündeyken) · kaleci topu tutunca Z/Q yerden, X havadan at · R: taç · Z: korner/taçta yerden atış (korner ve taçta Z, X, R). Ekrandaki düğmeler de çalışır." + (elle ? " Kaleci: T/G ya da çubuk." : "")
+      : "★ Kırmızı: WASD yürü, E ŞUT (basılı tut = güçlü), Q PAS, Z yerden korner, X HAVADAN, C KAFA, V RÖVEŞATA, R TAÇ" + (elle ? ", T/G kaleci" : "") + " · Mavi: O ileri, K geri, L sağ, Ş sol, P ŞUT, I PAS, M yerden korner, Ö HAVADAN, Ç KAFA, / RÖVEŞATA, Ğ TAÇ" + (elle ? ", U/J kaleci" : "") + ". (Sıralamaya yazılmaz)";
     kurPad(); yeni();
   }
   var son = { m: 1, z: 1 };
