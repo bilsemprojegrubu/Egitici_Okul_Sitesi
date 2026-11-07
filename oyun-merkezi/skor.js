@@ -325,8 +325,7 @@
       if (oyun && r) r.textContent = String(rekor(oyun));
       var atlandi = false;
       try { atlandi = global.sessionStorage.getItem("oyunMerkezi_adAtla") === "1"; } catch (e) { }
-      // Oyun sayfasında takma ad yoksa bir kez sor
-      if (oyun !== null && gov.hasAttribute("data-oyun") && !takmaAd() && !atlandi) adSor();
+      // Takma ad yalnızca ilk skor gönderilirken sorulur (menü ve 2 kişilik maçlar kesilmesin)
       kuyrukBosalt();
     } catch (e) { }
   }

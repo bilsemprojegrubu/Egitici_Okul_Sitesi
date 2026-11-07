@@ -7,12 +7,12 @@
 <link rel="stylesheet" href="../ortak.css">
 </head>
 <body data-oyun="yilan">
-<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🐍 Yılan</h1>
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>PİKSEL YILAN</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
-  <canvas id="c" width="400" height="400" style="width:min(100%,400px)"></canvas>
-  <p class="ipucu">Ok tuşları / WASD, ya da ekranda kaydır</p>
-  <div class="kontrol">
+  <canvas id="c" class="cv" width="400" height="400" style="--mw:440px"></canvas>
+  <p class="ipucu">Ok tuşları / WASD ya da ekranda kaydır</p>
+  <div class="kontrol" id="yonler">
     <button class="btn" data-y="0,-1" aria-label="Yukarı">▲</button>
     <button class="btn" data-y="-1,0" aria-label="Sola">◀</button>
     <button class="btn" data-y="0,1" aria-label="Aşağı">▼</button>
@@ -26,68 +26,132 @@
 </main>
 <script src="../../config.js"></script>
 <script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
 <script>
-// Yılan: puan = yenen elma sayısı
+// Yılan: puan = yenen elma sayısı. Kareler arası akıcı hareket (ara değerleme).
 (function () {
-  var C = document.getElementById("c"), x = C.getContext("2d"), N = 20, H = 20;
-  var yilan, yon, bekleyen, elma, puan, hayatta, zaman;
+  var C = document.getElementById("c"), x = C.getContext("2d"), N = 20, S = 20;
+  var P = { r: "#b13e53", R: "#ef7d57", w: "#fff", g: "#38b764", b: "#5d275d" };
+  var ELMA = Px.sprite(["......gg..", ".....gg...", "..rr.b.rr.", ".rRRrbrRRr", "rRwRRrRRRr", "rRwRRRRRRr", "rRRRRRRRRr", ".rRRRRRRr.", "..rrrrrr..", ".........."], P, 2);
+  var yil, onc, yon, bek, elma, puan, hayatta, ilerle, adimMs, parc, sars, ms, bitisT;
   function yeni() {
-    yilan = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
-    yon = null; bekleyen = null; puan = 0; hayatta = true;
+    yil = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }, { x: 7, y: 10 }];
+    onc = yil.map(function (p) { return { x: p.x, y: p.y }; });
+    yon = null; bek = null; puan = 0; hayatta = true; ilerle = 0; adimMs = 150; parc = []; sars = 0; ms = 0;
     document.getElementById("puan").textContent = 0;
     document.getElementById("bitti").hidden = true;
-    elmaKoy(); ciz();
+    elmaKoy();
   }
   function elmaKoy() {
-    do { elma = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) }; }
-    while (yilan.some(function (p) { return p.x === elma.x && p.y === elma.y; }));
+    do { elma = { x: Px.tamsayi(0, N - 1), y: Px.tamsayi(0, N - 1) }; }
+    while (yil.some(function (p) { return p.x === elma.x && p.y === elma.y; }));
   }
   function git(dx, dy) {
     if (!hayatta) return;
-    var son = bekleyen || yon;
-    if (son && son.x === -dx && son.y === -dy) return; // ters yöne dönülmez
-    if (!yon) yon = { x: dx, y: dy }; else bekleyen = { x: dx, y: dy };
+    var son = bek || yon;
+    if (son && son.x === -dx && son.y === -dy) return;
+    if (!yon) yon = { x: dx, y: dy }; else if (!son || son.x !== dx || son.y !== dy) bek = { x: dx, y: dy };
+  }
+  function parcacik(px, py, renk, n) {
+    for (var i = 0; i < n; i++) parc.push({ x: px, y: py, vx: Px.rastgele(-2, 2), vy: Px.rastgele(-2.5, 1), o: 28, r: renk });
   }
   function adim() {
-    if (!hayatta) return;
-    if (yon) {
-      if (bekleyen) { yon = bekleyen; bekleyen = null; }
-      var b = { x: yilan[0].x + yon.x, y: yilan[0].y + yon.y };
-      var yedi = b.x === elma.x && b.y === elma.y;
-      var govde = yilan.slice(0, yedi ? yilan.length : yilan.length - 1);
-      if (b.x < 0 || b.y < 0 || b.x >= N || b.y >= N || govde.some(function (p) { return p.x === b.x && p.y === b.y; })) {
-        hayatta = false; ciz(); Skor.oyunBitti("yilan", puan); return;
-      }
-      yilan.unshift(b);
-      if (yedi) { puan++; document.getElementById("puan").textContent = puan; if (yilan.length < N * N) elmaKoy(); }
-      else yilan.pop();
+    if (!yon) return;
+    if (bek) { yon = bek; bek = null; }
+    onc = yil.map(function (p) { return { x: p.x, y: p.y }; });
+    var b = { x: yil[0].x + yon.x, y: yil[0].y + yon.y };
+    var yedi = b.x === elma.x && b.y === elma.y;
+    var govde = yil.slice(0, yedi ? yil.length : yil.length - 1);
+    if (b.x < 0 || b.y < 0 || b.x >= N || b.y >= N || govde.some(function (p) { return p.x === b.x && p.y === b.y; })) {
+      hayatta = false; sars = 18; Px.ses("vur");
+      parcacik(yil[0].x * S + 10, yil[0].y * S + 10, "#ef7d57", 18);
+      bitisT = setTimeout(function () { Px.ses("kaybet"); Skor.oyunBitti("yilan", puan); }, 650);
+      return;
     }
-    ciz();
+    yil.unshift(b);
+    if (yedi) {
+      onc.push({ x: onc[onc.length - 1].x, y: onc[onc.length - 1].y });
+      puan++; document.getElementById("puan").textContent = puan; Px.ses("yem");
+      parcacik(elma.x * S + 10, elma.y * S + 10, "#ef4d5e", 10);
+      adimMs = Math.max(70, 150 - puan * 3);
+      if (puan >= N * N - 4) { hayatta = false; Skor.oyunBitti("yilan", puan); return; }
+      elmaKoy();
+    } else yil.pop();
+    onc = onc.slice(0, yil.length);
+    while (onc.length < yil.length) onc.push({ x: yil[yil.length - 1].x, y: yil[yil.length - 1].y });
+  }
+  function guncelle() {
+    if (sars > 0) sars--;
+    parc.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += .12; p.o--; });
+    parc = parc.filter(function (p) { return p.o > 0; });
+    if (!hayatta || !yon) return;
+    ms += 16.667;
+    if (ms >= adimMs) { ms -= adimMs; adim(); }
   }
   function ciz() {
-    x.fillStyle = "#0b1220"; x.fillRect(0, 0, 400, 400);
-    x.fillStyle = "#ef4444"; x.beginPath(); x.arc(elma.x * H + 10, elma.y * H + 10, 8, 0, 7); x.fill();
-    yilan.forEach(function (p, i) { x.fillStyle = i ? "#22c55e" : "#86efac"; x.fillRect(p.x * H + 1, p.y * H + 1, H - 2, H - 2); });
-    if (!yon && hayatta) { x.fillStyle = "#fff"; x.font = "18px sans-serif"; x.textAlign = "center"; x.fillText("Başlamak için yön seç", 200, 150); }
+    var t = (hayatta && yon) ? Math.min(1, ms / adimMs) : 1;
+    var ox = sars ? Px.rastgele(-3, 3) : 0, oy = sars ? Px.rastgele(-3, 3) : 0;
+    x.save(); x.translate(ox, oy);
+    for (var i = 0; i < N; i++) for (var j = 0; j < N; j++) {
+      x.fillStyle = (i + j) % 2 ? "#2f6b3a" : "#2a5e34"; x.fillRect(i * S, j * S, S, S);
+      if ((i * 7 + j * 13) % 11 === 0) { x.fillStyle = "#3f8a48"; x.fillRect(i * S + 6, j * S + 8, 2, 4); x.fillRect(i * S + 12, j * S + 4, 2, 4); }
+    }
+    var bob = Math.sin(Date.now() / 160) * 1.5;
+    x.drawImage(ELMA, elma.x * S, elma.y * S + bob);
+    // gövde (kuyruktan başa); aralardaki boşluklar bağlayıcı dikdörtgenle kapatılır
+    var pz = yil.map(function (p, k) {
+      var o = onc[k] || p; return { x: (o.x + (p.x - o.x) * t) * S + 10, y: (o.y + (p.y - o.y) * t) * S + 10 };
+    });
+    for (var k = pz.length - 1; k >= 0; k--) {
+      var a = pz[k], ren = k % 2 ? "#a7f070" : "#73eff7";
+      ren = k % 2 ? "#5fcd5f" : "#38b764";
+      var bo = k === 0 ? 8 : (k === pz.length - 1 ? 5 : 7);
+      if (k < pz.length - 1) {
+        var c = pz[k + 1];
+        x.fillStyle = "#257179"; x.fillRect(Math.min(a.x, c.x) - bo, Math.min(a.y, c.y) - bo, Math.abs(a.x - c.x) + bo * 2, Math.abs(a.y - c.y) + bo * 2);
+      }
+    }
+    for (k = pz.length - 1; k >= 0; k--) {
+      a = pz[k]; bo = k === 0 ? 8 : (k === pz.length - 1 ? 5 : 7);
+      if (k < pz.length - 1) {
+        c = pz[k + 1];
+        x.fillStyle = k % 2 ? "#5fcd5f" : "#38b764";
+        x.fillRect(Math.min(a.x, c.x) - bo + 2, Math.min(a.y, c.y) - bo + 2, Math.abs(a.x - c.x) + bo * 2 - 4, Math.abs(a.y - c.y) + bo * 2 - 4);
+      }
+      x.fillStyle = "#257179"; x.fillRect(a.x - bo, a.y - bo, bo * 2, bo * 2);
+      x.fillStyle = k % 2 ? "#5fcd5f" : "#38b764"; x.fillRect(a.x - bo + 2, a.y - bo + 2, bo * 2 - 4, bo * 2 - 4);
+      x.fillStyle = "rgba(255,255,255,.35)"; x.fillRect(a.x - bo + 2, a.y - bo + 2, bo * 2 - 4, 2);
+    }
+    // kafa: göz ve dil
+    var h = pz[0], d = yon || { x: 1, y: 0 };
+    var px = -d.y, py = d.x;
+    x.fillStyle = "#257179"; x.fillRect(h.x - 9, h.y - 9, 18, 18);
+    x.fillStyle = "#73eff7"; x.fillRect(h.x - 7, h.y - 7, 14, 14);
+    x.fillStyle = "#fff"; x.fillRect(h.x + d.x * 3 + px * 5 - 2, h.y + d.y * 3 + py * 5 - 2, 4, 4); x.fillRect(h.x + d.x * 3 - px * 5 - 2, h.y + d.y * 3 - py * 5 - 2, 4, 4);
+    x.fillStyle = "#0d0e1a"; x.fillRect(h.x + d.x * 4 + px * 5 - 1, h.y + d.y * 4 + py * 5 - 1, 2, 2); x.fillRect(h.x + d.x * 4 - px * 5 - 1, h.y + d.y * 4 - py * 5 - 1, 2, 2);
+    if (Math.floor(Date.now() / 300) % 3 === 0 && hayatta) {
+      x.fillStyle = "#b13e53"; x.fillRect(h.x + d.x * 9 - 1 + (d.x ? 0 : -1), h.y + d.y * 9 - 1 + (d.y ? 0 : -1), 3 + (d.x ? 3 : 0), 3 + (d.y ? 3 : 0));
+    }
+    parc.forEach(function (p) { x.fillStyle = p.r; x.globalAlpha = p.o / 28; x.fillRect(p.x, p.y, 4, 4); x.globalAlpha = 1; });
+    x.restore();
+    if (!yon && hayatta) Px.yazi(x, "Bir yön tuşuna bas!", 200, 180, 18, "#ffcd75", "center");
   }
   document.addEventListener("keydown", function (e) {
-    var h = { ArrowUp: [0, -1], w: [0, -1], ArrowDown: [0, 1], s: [0, 1], ArrowLeft: [-1, 0], a: [-1, 0], ArrowRight: [1, 0], d: [1, 0] }[e.key];
-    if (h) { e.preventDefault(); git(h[0], h[1]); }
+    var m = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] }[e.code];
+    if (m) { e.preventDefault(); git(m[0], m[1]); }
   });
-  Array.prototype.forEach.call(document.querySelectorAll("[data-y]"), function (b) {
-    b.addEventListener("click", function () { var v = b.getAttribute("data-y").split(","); git(+v[0], +v[1]); });
+  [].forEach.call(document.querySelectorAll("[data-y]"), function (b) {
+    b.addEventListener("pointerdown", function (e) { e.preventDefault(); var v = b.getAttribute("data-y").split(","); git(+v[0], +v[1]); });
   });
-  // Kaydırma ile yön
-  var bx, by;
+  var bx = 0, by = 0;
   C.addEventListener("pointerdown", function (e) { bx = e.clientX; by = e.clientY; });
   C.addEventListener("pointerup", function (e) {
     var dx = e.clientX - bx, dy = e.clientY - by;
     if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
     if (Math.abs(dx) > Math.abs(dy)) git(dx > 0 ? 1 : -1, 0); else git(0, dy > 0 ? 1 : -1);
   });
-  document.getElementById("tekrar").addEventListener("click", yeni);
-  setInterval(adim, 110);
-  yeni();
+  document.getElementById("tekrar").addEventListener("click", function () { clearTimeout(bitisT); yeni(); });
+  yeni(); Px.dongu(guncelle, ciz);
 })();
 </script>
 </body>

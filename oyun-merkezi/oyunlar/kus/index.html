@@ -3,69 +3,126 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kuş — Oyun Merkezi</title>
+<title>Kanat Çırp — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
-<style></style>
 </head>
 <body data-oyun="kus">
-<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🐦 Kuş</h1>
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>KANAT ÇIRP</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
-  <canvas id="c" width="320" height="480" style="width:min(100%,320px)"></canvas>
-  <p class="ipucu">Boşluk / dokun = kanat çırp. Borulara çarpma!</p>
+  <canvas id="c" class="cv" width="144" height="224" style="--mw:360px"></canvas>
+  <p class="ipucu">Boşluk / dokun = kanat çırp. Borulardan geç, altın yıldızları topla!</p>
   <div id="bitti" class="kaplama" hidden>
-    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <h2>Düştün!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
     <button class="btn" id="tekrar">Tekrar oyna</button>
   </div>
 </main>
 <script src="../../config.js"></script>
 <script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
 <script>
-// Kuş: puan = geçilen boru sayısı
+// Kanat Çırp (eski adı Kuş): 144x224 düşük çözünürlük, ekranda büyütülür. Puan = geçilen boru sayısı
 (function () {
-  var C = document.getElementById("c"), x = C.getContext("2d");
-  var kus, borular, puan, calis, basladi, son, sayac;
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 144, H = 224, YER = 196;
+  var P = { y: "#ffcd75", o: "#ef7d57", k: "#1a1c2c", w: "#fff", r: "#b13e53", s: "#c98a4b", g: "#a7f070" };
+  // Kuş sağa bakar: gaga sağda. 3 kare kanat animasyonu
+  var KUS = [
+    [".....kkkk...", "...kkyyyykk.", "..kyyyyywwk.", ".kyyyyywkwko", ".kyyssyyyyokk", ".kysssyyyyroo", "..kyssyyyyok.", "...kkyyyykk.", ".....kkkk..."],
+    [".....kkkk...", "...kkyyyykk.", "..kyyyyywwk.", ".kyyyyywkwko", ".kyyyyyyyyokk", ".kyyyyyyyyroo", "..kysssyyyok.", "...kssssykk.", ".....kkkk..."],
+    [".....kkkk...", "..kkyyyyykk.", ".ksssyyyywwk", ".ksssyyywkwk", ".kysssyyyyokk", ".kyyyyyyyyroo", "..kyyyyyyyok.", "...kkyyyykk.", ".....kkkk..."]
+  ].map(function (r) { return Px.sprite(r.map(function (l) { return (l + "............").slice(0, 13); }), P, 1); });
+  var BORU_UST = [], uzak = [], bulut = [], yildiz = [];
+  var kus, borular, puan, calis, basladi, sayac, mesafe, parc, yildizlar, ol, sars, kare;
+  for (var i = 0; i < 6; i++) bulut.push({ x: Px.rastgele(0, W), y: Px.rastgele(15, 110), s: Px.tamsayi(1, 2), v: Px.rastgele(.1, .3) });
   function yeni() {
-    kus = { y: 220, v: 0 }; borular = []; puan = 0; calis = true; basladi = false; sayac = 0; son = performance.now();
+    kus = { y: 100, v: 0, a: 0 }; borular = []; puan = 0; calis = true; basladi = false; sayac = 40; mesafe = 0; parc = []; yildizlar = []; ol = false; sars = 0; kare = 0;
     document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
-    requestAnimationFrame(dongu);
   }
   function kanat() {
     if (!calis) return;
-    basladi = true; kus.v = -330;
+    basladi = true; kus.v = -3.1; Px.ses("zipla"); kare = 8;
+    for (var i = 0; i < 4; i++) parc.push({ x: 40, y: kus.y + 4, vx: Px.rastgele(-1, 0), vy: Px.rastgele(.2, 1), o: 14 });
   }
-  function dongu(t) {
-    if (!calis) return;
-    var dt = Math.min(0.04, (t - son) / 1000); son = t;
-    if (basladi) {
-      kus.v += 1000 * dt; kus.y += kus.v * dt; sayac -= dt;
-      if (sayac <= 0) { borular.push({ x: 340, bos: 120 + Math.random() * 220, gecti: false }); sayac = 1.5; }
-      borular.forEach(function (b) { b.x -= 120 * dt; });
-      borular = borular.filter(function (b) { return b.x > -60; });
-      borular.forEach(function (b) {
-        if (!b.gecti && b.x + 50 < 80) { b.gecti = true; puan++; document.getElementById("puan").textContent = puan; }
-        // Çarpışma: kuş yarıçapı 12, boru genişliği 50, boşluk 140
-        if (80 + 12 > b.x && 80 - 12 < b.x + 50 && (kus.y - 12 < b.bos - 70 || kus.y + 12 > b.bos + 70)) calis = false;
-      });
-      if (kus.y > 480 - 12 || kus.y < 12) calis = false;
+  function boruCiz(bx, ustBitis, bosluk) {
+    // üst boru (aşağı bakan ağız) ve alt boru
+    function boru(y0, y1, agizAlta) {
+      x.fillStyle = "#257179"; x.fillRect(bx, y0, 24, y1 - y0);
+      x.fillStyle = "#38b764"; x.fillRect(bx + 2, y0, 18, y1 - y0);
+      x.fillStyle = "#a7f070"; x.fillRect(bx + 4, y0, 4, y1 - y0);
+      x.fillStyle = "#257179"; x.fillRect(bx + 17, y0, 3, y1 - y0);
+      var ay = agizAlta ? y1 - 9 : y0;
+      x.fillStyle = "#0d0e1a"; x.fillRect(bx - 3, ay - 1, 30, 11);
+      x.fillStyle = "#38b764"; x.fillRect(bx - 2, ay, 28, 9);
+      x.fillStyle = "#a7f070"; x.fillRect(bx - 1, ay + 1, 5, 7);
+      x.fillStyle = "#257179"; x.fillRect(bx + 20, ay + 1, 5, 7);
     }
-    ciz();
-    if (!calis) { Skor.oyunBitti("kus", puan); return; }
-    requestAnimationFrame(dongu);
+    boru(0, ustBitis, true); boru(ustBitis + bosluk, YER, false);
+  }
+  function guncelle() {
+    bulut.forEach(function (b) { b.x -= b.v * (basladi && calis ? 1 : .4); if (b.x < -40) b.x = W + 10; });
+    parc.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.o--; }); parc = parc.filter(function (p) { return p.o > 0; });
+    if (sars > 0) sars--;
+    if (kare > 0) kare--;
+    if (!basladi) { kus.y = 100 + Math.sin(Date.now() / 220) * 4; return; }
+    if (calis) mesafe += 1.3;
+    kus.v += .19; if (kus.v > 4.6) kus.v = 4.6; kus.y += kus.v;
+    kus.a = Px.sinir(kus.v * 8, -25, 55);
+    if (calis) {
+      sayac++;
+      if (sayac >= 78) { sayac = 0; var bos = 56 - Math.min(14, puan * .6); borular.push({ x: W + 4, ust: Px.tamsayi(26, YER - bos - 26), bos: bos, gecti: false }); if (Math.random() < .5) yildizlar.push({ x: W + 16, y: 0, al: false, b: borular[borular.length - 1] }); }
+      borular.forEach(function (b) { b.x -= 1.3; });
+      borular = borular.filter(function (b) { return b.x > -34; });
+      yildizlar.forEach(function (s) { s.x -= 1.3; s.y = s.b.ust + s.b.bos / 2; });
+      yildizlar = yildizlar.filter(function (s) { return s.x > -10 && !s.al; });
+      yildizlar.forEach(function (s) { if (Math.abs(s.x - 40) < 9 && Math.abs(s.y - kus.y) < 11) { s.al = true; puan++; document.getElementById("puan").textContent = puan; Px.ses("para"); for (var i = 0; i < 8; i++) parc.push({ x: s.x, y: s.y, vx: Px.rastgele(-1.5, 1.5), vy: Px.rastgele(-1.5, 1.5), o: 16 }); } });
+      borular.forEach(function (b) {
+        if (!b.gecti && b.x + 24 < 34) { b.gecti = true; puan++; document.getElementById("puan").textContent = puan; Px.ses("puan"); }
+        if (40 + 6 > b.x - 3 && 40 - 6 < b.x + 27 && (kus.y - 5 < b.ust || kus.y + 5 > b.ust + b.bos)) olum();
+      });
+      if (kus.y > YER - 6 || kus.y < -2) olum();
+    } else if (kus.y > YER - 6) { kus.y = YER - 6; }
+  }
+  function olum() {
+    if (!calis) return; calis = false; sars = 12; Px.ses("vur");
+    for (var i = 0; i < 16; i++) parc.push({ x: 40, y: kus.y, vx: Px.rastgele(-2, 2), vy: Px.rastgele(-2, 2), o: 24 });
+    setTimeout(function () { Px.ses("kaybet"); Skor.oyunBitti("kus", puan); }, 700);
   }
   function ciz() {
-    x.fillStyle = "#38bdf8"; x.fillRect(0, 0, 320, 480);
-    x.fillStyle = "#16a34a";
-    borular.forEach(function (b) { x.fillRect(b.x, 0, 50, b.bos - 70); x.fillRect(b.x, b.bos + 70, 50, 480); });
-    x.font = "28px sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillStyle = "#000";
-    x.fillText("🐦", 80, kus.y);
-    if (!basladi) { x.fillStyle = "#fff"; x.font = "18px sans-serif"; x.fillText("Başlamak için dokun", 160, 120); }
+    x.save(); if (sars) x.translate(Px.tamsayi(-2, 2), Px.tamsayi(-2, 2));
+    // gökyüzü bantları
+    var bant = ["#41a6f6", "#4cb4f7", "#73c7f9", "#94dcfa", "#b6ecfb"];
+    for (var i = 0; i < bant.length; i++) { x.fillStyle = bant[i]; x.fillRect(0, i * 40, W, 41); }
+    x.fillStyle = "#fff"; bulut.forEach(function (b) { var s = b.s; x.fillRect(b.x, b.y, 18 * s, 5 * s); x.fillRect(b.x + 3 * s, b.y - 3 * s, 10 * s, 4 * s); });
+    // uzak şehir/ağaç siluetleri (kayar)
+    var kay = Math.floor(mesafe * .4) % 48;
+    x.fillStyle = "#73c7f9"; for (i = -1; i < 5; i++) { var bx = i * 48 - kay; x.fillRect(bx, YER - 34, 12, 34); x.fillRect(bx + 16, YER - 22, 14, 22); x.fillRect(bx + 32, YER - 40, 10, 40); }
+    x.fillStyle = "#38b764"; var kay2 = Math.floor(mesafe * .7) % 32; for (i = -1; i < 6; i++) { var cx = i * 32 - kay2; x.fillRect(cx, YER - 14, 20, 14); x.fillRect(cx + 4, YER - 18, 12, 6); }
+    borular.forEach(function (b) { boruCiz(Math.round(b.x), b.ust, b.bos); });
+    yildizlar.forEach(function (s) {
+      var f = Math.floor(Date.now() / 150) % 2, yy = Math.round(s.y), xx = Math.round(s.x);
+      x.fillStyle = "#0d0e1a"; x.fillRect(xx - 5, yy - 1, 11, 3); x.fillRect(xx - 1, yy - 5, 3, 11);
+      x.fillStyle = f ? "#ffcd75" : "#fff"; x.fillRect(xx - 4, yy, 9, 1); x.fillRect(xx, yy - 4, 1, 9); x.fillRect(xx - 2, yy - 2, 5, 5);
+    });
+    // zemin (kayan şeritli çim)
+    x.fillStyle = "#a7f070"; x.fillRect(0, YER, W, 4); x.fillStyle = "#38b764"; x.fillRect(0, YER + 4, W, 3); x.fillStyle = "#c98a4b"; x.fillRect(0, YER + 7, W, H - YER);
+    var kz = Math.floor(mesafe) % 12; x.fillStyle = "#b8793a"; for (i = -1; i < 14; i++) x.fillRect(i * 12 - kz, YER + 9, 6, 3);
+    x.fillStyle = "#8a5a2b"; for (i = -1; i < 14; i++) x.fillRect(i * 12 - kz + 6, YER + 16, 6, 3);
+    // kuş (sağa bakar) — kanat çırpınca kare değişir
+    var f = kare > 0 ? (kare > 4 ? 2 : 0) : (basladi ? 1 : Math.floor(Date.now() / 200) % 3);
+    if (calis || sars) {
+      x.save(); x.translate(40, Math.round(kus.y)); x.rotate(kus.a * Math.PI / 180);
+      x.drawImage(KUS[f], -6, -4); x.restore();
+    }
+    parc.forEach(function (p) { x.fillStyle = p.o > 8 ? "#fff" : "#ffcd75"; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
+    Px.yazi(x, String(puan), W / 2, 8, 20, "#fff", "center");
+    if (!basladi) { Px.yazi(x, "DOKUN!", W / 2, 70, 14, "#ffcd75", "center"); }
+    x.restore();
   }
-  document.addEventListener("keydown", function (e) { if (e.code === "Space") { e.preventDefault(); kanat(); } });
-  C.addEventListener("pointerdown", kanat);
+  document.addEventListener("keydown", function (e) { if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); kanat(); } });
+  C.addEventListener("pointerdown", function (e) { e.preventDefault(); kanat(); });
   document.getElementById("tekrar").addEventListener("click", yeni);
-  yeni();
+  yeni(); Px.dongu(guncelle, ciz);
 })();
 </script>
 </body>

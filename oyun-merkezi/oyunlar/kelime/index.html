@@ -5,62 +5,155 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kelime — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
-<style>#harfler{font-size:2.4rem;letter-spacing:.3em;font-weight:800;color:#fbbf24;margin:8px 0;text-align:center}
-#cevap{width:min(100%,280px);padding:12px;font-size:1.3rem;text-align:center;border-radius:10px;border:2px solid #475569;background:#0f172a;color:#fff;text-transform:uppercase}
-#mesaj{min-height:1.4em;color:#f87171}</style>
+<style>
+.kelimeSahne{width:100%;max-width:520px;background:#262b44;border:4px solid #0d0e1a;outline:3px solid #566c86;padding:14px 10px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden}
+.seritler{position:absolute;left:0;right:0;top:0;height:8px;background:repeating-linear-gradient(90deg,#ef4d5e 0 16px,#ffcd75 16px 32px,#38b764 32px 48px,#41a6f6 48px 64px,#b55088 64px 80px);animation:kay 2s steps(8) infinite}
+@keyframes kay{to{background-position:80px 0}}
+.can{font-size:1.5rem;letter-spacing:4px;color:#ef4d5e;text-shadow:2px 2px 0 #0d0e1a;min-height:1.8rem}
+.sure{width:100%;height:12px;background:#0d0e1a;border:2px solid #566c86}
+.sure i{display:block;height:100%;background:#38b764;transition:background .3s}
+.satir{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:56px}
+.tas,.yuva{width:48px;height:52px;font:inherit;font-size:1.5rem;font-weight:900;border:3px solid #0d0e1a;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
+.tas{cursor:pointer;color:#0d0e1a;box-shadow:inset 3px 3px 0 rgba(255,255,255,.45),inset -3px -3px 0 rgba(0,0,0,.3),0 4px 0 #0d0e1a;animation:zipla .5s steps(5) backwards;position:relative}
+.tas:active{top:3px;box-shadow:inset 3px 3px 0 rgba(255,255,255,.45),inset -3px -3px 0 rgba(0,0,0,.3),0 1px 0 #0d0e1a}
+.tas.kullanildi{visibility:hidden}
+@keyframes zipla{0%{transform:translateY(-40px);opacity:0}70%{transform:translateY(6px)}100%{transform:none;opacity:1}}
+.yuva{background:#0d0e1a;border-style:dashed;border-color:#566c86;color:#fff}
+.yuva.dolu{border-style:solid;border-color:#0d0e1a;cursor:pointer;box-shadow:inset 3px 3px 0 rgba(255,255,255,.4),inset -3px -3px 0 rgba(0,0,0,.3)}
+.satir.dogru .yuva{background:#38b764!important;animation:sek .4s steps(4)}
+.satir.yanlis{animation:salla .4s steps(6)}
+.satir.yanlis .yuva{background:#b13e53!important;color:#fff}
+@keyframes sek{50%{transform:translateY(-12px) scale(1.12)}}
+@keyframes salla{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#mesaj{min-height:1.4em;font-weight:900;color:#ffcd75;text-shadow:2px 2px 0 #0d0e1a;text-align:center}
+.ipuc{color:#a0aec0;font-size:.8rem}
+</style>
 </head>
 <body data-oyun="kelime">
-<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🔤 Kelime</h1>
-<div class="puanlar">Seri <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>KELİME AVI</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
-  <p class="ipucu">Karışık harflerden kelimeyi bul. Yanlış cevapta oyun biter!</p>
-  <div id="harfler" aria-live="polite"></div>
-  <input id="cevap" type="text" autocomplete="off" autocapitalize="characters" maxlength="12" aria-label="Cevabın" placeholder="Cevabını yaz">
-  <div class="kontrol"><button class="btn" id="gonderBtn">Tamam</button><button class="btn ikinci" id="karistir">🔀 Karıştır</button></div>
-  <div id="mesaj"></div>
+  <div class="kelimeSahne">
+    <div class="seritler"></div>
+    <div class="can" id="can"></div>
+    <div class="sure"><i id="sureCubuk" style="width:100%"></i></div>
+    <div class="satir" id="harfler" aria-label="Karışık harfler"></div>
+    <div class="satir" id="cevap" aria-label="Cevabın"></div>
+    <div class="kontrol">
+      <button class="btn yesil" id="gonderBtn" type="button">Tamam</button>
+      <button class="btn" id="karistir" type="button">Karıştır</button>
+      <button class="btn ikinci" id="silBtn" type="button">Sil</button>
+      <button class="btn kirmizi" id="gecBtn" type="button">Geç (-1 can)</button>
+    </div>
+    <div id="mesaj"></div>
+    <div class="ipuc">Tuşlara dokun ya da klavyeyle yaz. Harfler dolunca otomatik denenir.</div>
+  </div>
   <div id="bitti" class="kaplama" hidden>
     <h2>Oyun bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
     <button class="btn" id="tekrar">Tekrar oyna</button>
   </div>
 </main>
+<script src="kelimeler.js"></script>
+<script src="kelimeler2.js"></script>
+<script src="kelimeler3.js"></script>
 <script src="../../config.js"></script>
 <script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
 <script>
-// Kelime: harfleri karışık kelimeyi bul; puan = üst üste doğru bilinen kelime sayısı
+// Kelime: karışık harflerden kelimeyi bul. 3 can. Puan = doğru bilinen kelime. Görülen kelimeler hatırlanır, tekrar etmez.
 (function () {
-  var KELIMELER = ["ELMA", "KALEM", "OKUL", "KİTAP", "ARABA", "BALIK", "ÇİÇEK", "DENİZ", "GÜNEŞ", "BULUT", "KEDİ", "KÖPEK",
-    "ORMAN", "MASA", "SANDALYE", "PENCERE", "BİLGİSAYAR", "ÖĞRENCİ", "ÖĞRETMEN", "ARKADAŞ", "DEFTER", "SİLGİ", "ÇANTA",
-    "YILDIZ", "GÖKYÜZÜ", "MEVSİM", "KAPI", "TOP", "OYUN", "ŞEKER", "SÜT", "PEYNİR", "ZEYTİN", "DOMATES", "PATATES", "KARPUZ",
-    "ASLAN", "KAPLAN", "ZÜRAFA", "FİL", "TAVŞAN", "KUŞ", "KELEBEK", "ARI", "KARINCA", "DAĞ", "NEHİR", "GÖL", "ADA", "YOL",
-    "UÇAK", "GEMİ", "TREN", "BİSİKLET", "ROBOT", "UZAY", "ROKET", "GEZEGEN", "AY", "DÜNYA", "BAHAR", "YAZ", "KIŞ", "SONBAHAR"];
-  var sira, ix, puan, hedef, calis, goster;
-  var H = document.getElementById("harfler"), G = document.getElementById("cevap"), M = document.getElementById("mesaj");
-  function kar(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  var TUM = [], gor = {};
+  window.KELIME_LISTESI.forEach(function (k) { if (!gor[k]) { gor[k] = 1; TUM.push(k); } });
+  var KUME = {}; TUM.forEach(function (k) { KUME[k] = 1; });
+  function buyuk(s) { return s.toLocaleUpperCase("tr"); }
+  var RENK = ["#ef7d57", "#ffcd75", "#a7f070", "#73eff7", "#41a6f6", "#f4a6c0", "#c5b3f5"];
+  var ANAHTAR = "kelime_gorulen_v1";
+  var gorulen = {};
+  try { var g0 = JSON.parse(Px.oku(ANAHTAR) || "[]"); if (Array.isArray(g0)) g0.forEach(function (k) { gorulen[k] = 1; }); } catch (e) { }
+  function gorulenKaydet() { var l = Object.keys(gorulen); if (l.length > 2000) { l = l.slice(-1500); gorulen = {}; l.forEach(function (k) { gorulen[k] = 1; }); } Px.yaz(ANAHTAR, JSON.stringify(l)); }
+  var H = document.getElementById("harfler"), A = document.getElementById("cevap"), M = document.getElementById("mesaj"), CAN = document.getElementById("can"), SC = document.getElementById("sureCubuk");
+  var hedef, harfler, secim, puan, can, calis, kilit, kalan, toplam, sayac;
+  function bag() { var u = puan < 5 ? [3, 5] : puan < 15 ? [4, 7] : puan < 30 ? [5, 9] : [6, 12]; return u; }
+  function sec() {
+    var u = bag(), aday = TUM.filter(function (k) { return k.length >= u[0] && k.length <= u[1] && !gorulen[k]; });
+    if (!aday.length) { gorulen = {}; aday = TUM.filter(function (k) { return k.length >= u[0] && k.length <= u[1]; }); }
+    var k = aday[Px.tamsayi(0, aday.length - 1)]; gorulen[k] = 1; gorulenKaydet(); return k;
+  }
+  function kar(a) { for (var i = a.length - 1; i > 0; i--) { var j = Px.tamsayi(0, i), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function yeni() {
-    sira = kar(KELIMELER.slice()); ix = 0; puan = 0; calis = true; M.textContent = "";
+    puan = 0; can = 3; calis = true; kilit = false; M.textContent = "";
     document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
     sonraki();
   }
+  function canCiz() { CAN.textContent = ""; for (var i = 0; i < 3; i++) CAN.textContent += i < can ? "♥" : "♡"; }
   function sonraki() {
-    if (ix >= sira.length) { sira = kar(KELIMELER.slice()); ix = 0; } // liste bitince baştan karıştır
-    hedef = sira[ix++]; karistir(); G.value = ""; G.focus();
+    hedef = buyuk(sec()); harfler = hedef.split(""); secim = []; kilit = false;
+    kar(harfler); var d = 0; while (harfler.join("") === hedef && d++ < 20) kar(harfler);
+    toplam = kalan = 25 + hedef.length * 2.5;
+    clearInterval(sayac); sayac = setInterval(zaman, 200);
+    canCiz(); ciz();
   }
-  function karistir() {
-    var h; var dene = 0;
-    do { h = kar(hedef.split("")).join(""); dene++; } while (h === hedef && dene < 20);
-    goster = h; H.textContent = goster.split("").join(" ");
+  function zaman() {
+    if (!calis || kilit) return;
+    kalan -= .2; var o = Math.max(0, kalan / toplam);
+    SC.style.width = o * 100 + "%"; SC.style.background = o > .5 ? "#38b764" : o > .25 ? "#ffcd75" : "#ef4d5e";
+    if (kalan <= 0) kaybet("Süre doldu! Doğrusu: " + hedef);
   }
+  function ciz() {
+    H.textContent = ""; A.textContent = ""; A.className = "satir"; H.className = "satir";
+    harfler.forEach(function (h, i) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "tas" + (secim.indexOf(i) >= 0 ? " kullanildi" : "");
+      b.style.background = RENK[i % RENK.length]; b.style.animationDelay = i * 0.05 + "s"; b.textContent = h; b.setAttribute("aria-label", h);
+      b.addEventListener("click", function () { ekle(i); }); H.appendChild(b);
+    });
+    for (var i = 0; i < harfler.length; i++) {
+      var y = document.createElement("div"), s = secim[i];
+      y.className = "yuva" + (s !== undefined ? " dolu" : "");
+      if (s !== undefined) { y.textContent = harfler[s]; y.style.background = RENK[s % RENK.length]; y.style.color = "#0d0e1a"; (function (n) { y.addEventListener("click", function () { cikar(n); }); })(i); }
+      A.appendChild(y);
+    }
+  }
+  function ekle(i) {
+    if (!calis || kilit || secim.indexOf(i) >= 0 || secim.length >= harfler.length) return;
+    secim.push(i); Px.ses("tik"); ciz(); if (secim.length === harfler.length) kontrol();
+  }
+  function cikar(n) { if (!calis || kilit) return; secim.splice(n, 1); Px.ses("don"); ciz(); }
+  function kelimeSecim() { return secim.map(function (i) { return harfler[i]; }).join(""); }
+  function ayniHarf(a, b) { return a.split("").sort().join("") === b.split("").sort().join(""); }
   function kontrol() {
-    if (!calis) return;
-    var c = G.value.trim().toLocaleUpperCase("tr");
-    if (!c) return;
-    if (c === hedef) { puan++; document.getElementById("puan").textContent = puan; M.textContent = ""; sonraki(); }
-    else { calis = false; M.textContent = "Doğrusu: " + hedef; Skor.oyunBitti("kelime", puan); }
+    if (!calis || kilit || secim.length < 2) return;
+    var c = kelimeSecim();
+    // Aynı harflerle yazılan başka geçerli kelimeler de (anagram) kabul edilir
+    var gecerli = c === hedef || (ayniHarf(c, hedef) && KUME[c.toLocaleLowerCase("tr")]);
+    if (gecerli) {
+      kilit = true; puan++; document.getElementById("puan").textContent = puan; Px.ses("puan");
+      A.classList.add("dogru"); M.textContent = ["Harika!", "Süper!", "Bravo!", "Muhteşem!", "Tamam!"][puan % 5];
+      setTimeout(function () { M.textContent = ""; sonraki(); }, 650);
+    } else if (secim.length === harfler.length) {
+      kaybet("Olmadı! Doğrusu: " + hedef);
+    }
+  }
+  function kaybet(msg) {
+    if (!calis || kilit) return;
+    kilit = true; can--; Px.ses("vur"); canCiz(); M.textContent = msg;
+    A.classList.add("yanlis");
+    if (can <= 0) { calis = false; clearInterval(sayac); setTimeout(function () { Skor.oyunBitti("kelime", puan); }, 1200); return; }
+    setTimeout(function () { M.textContent = ""; sonraki(); }, 1500);
   }
   document.getElementById("gonderBtn").addEventListener("click", kontrol);
-  G.addEventListener("keydown", function (e) { if (e.key === "Enter") kontrol(); });
-  document.getElementById("karistir").addEventListener("click", function () { if (calis) karistir(); });
+  document.getElementById("karistir").addEventListener("click", function () { if (!calis || kilit) return; secim = []; kar(harfler); Px.ses("don"); ciz(); });
+  document.getElementById("silBtn").addEventListener("click", function () { cikar(secim.length - 1); });
+  document.getElementById("gecBtn").addEventListener("click", function () { kaybet("Geçildi. Doğrusu: " + hedef); });
+  document.addEventListener("keydown", function (e) {
+    if (!calis || kilit) return;
+    if (e.key === "Backspace") { cikar(secim.length - 1); return; }
+    if (e.key === "Enter") { kontrol(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
+    var ch = buyuk(e.key), ix = -1;
+    for (var i = 0; i < harfler.length; i++) if (harfler[i] === ch && secim.indexOf(i) < 0) { ix = i; break; }
+    if (ix >= 0) ekle(ix);
+  });
   document.getElementById("tekrar").addEventListener("click", yeni);
   yeni();
 })();

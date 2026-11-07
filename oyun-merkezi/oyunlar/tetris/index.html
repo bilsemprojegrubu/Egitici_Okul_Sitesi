@@ -5,19 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tetris — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
-<style>#tablo{display:flex;gap:12px;align-items:flex-start;justify-content:center}.yan{font-size:.95rem;display:flex;flex-direction:column;gap:6px}</style>
+
 </head>
 <body data-oyun="tetris">
-<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🧱 Tetris</h1>
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>TETRİS</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Satır <b id="satir">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
-  <canvas id="c" width="240" height="480" style="width:min(100%,240px)"></canvas>
+  <canvas id="c" class="cv" width="160" height="200" style="--mw:300px"></canvas>
   <p class="ipucu">← → yan, ↑ döndür, ↓ aşağı, boşluk = hızlı bırak</p>
-  <div class="kontrol">
-    <button class="btn" data-t="sol">◀</button><button class="btn" data-t="don">⟳</button>
-    <button class="btn" data-t="asagi">▼</button><button class="btn" data-t="sag">▶</button>
-    <button class="btn ikinci" data-t="birak">⤓</button>
-  </div>
+  <div id="padyer"></div>
   <div id="bitti" class="kaplama" hidden>
     <h2>Oyun bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -26,26 +22,44 @@
 </main>
 <script src="../../config.js"></script>
 <script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
 <script>
-// Tetris: standart puanlama (1 satır 40, 2 satır 100, 3 satır 300, 4 satır 1200) x (seviye+1)
+// Tetris: standart puanlama (1 satır 40, 2 satır 100, 3 satır 300, 4 satır 1200) x (seviye+1). 160x200 düşük çözünürlük, hücre 10px
 (function () {
-  var C = document.getElementById("c"), x = C.getContext("2d"), W = 10, H = 20, S = 24;
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 10, H = 20, S = 10;
   var SEKIL = {
     I: [[0, 1], [1, 1], [2, 1], [3, 1]], O: [[1, 0], [2, 0], [1, 1], [2, 1]], T: [[1, 0], [0, 1], [1, 1], [2, 1]],
     S: [[1, 0], [2, 0], [0, 1], [1, 1]], Z: [[0, 0], [1, 0], [1, 1], [2, 1]], J: [[0, 0], [0, 1], [1, 1], [2, 1]], L: [[2, 0], [0, 1], [1, 1], [2, 1]]
   };
-  var RENK = { I: "#22d3ee", O: "#facc15", T: "#a855f7", S: "#22c55e", Z: "#ef4444", J: "#3b82f6", L: "#f97316" };
-  var tahta, p, puan, satir, calis, son, birikim, torba;
+  var RENK = { I: "#41a6f6", O: "#ffcd75", T: "#b55ee0", S: "#38b764", Z: "#e0344f", J: "#3b5dc9", L: "#ef7d57" };
+  var tahta, p, puan, satir, calis, sayac, torba, sonraki, parc, yanan, sars, tik;
+  function renkAc(h, d) { var n = parseInt(h.slice(1), 16), r = (n >> 16) + d, g = ((n >> 8) & 255) + d, b = (n & 255) + d; r = Px.sinir(r, 0, 255); g = Px.sinir(g, 0, 255); b = Px.sinir(b, 0, 255); return "rgb(" + r + "," + g + "," + b + ")"; }
+  function blok(hx, hy, k, a) {
+    var c = RENK[k]; x.globalAlpha = a || 1;
+    x.fillStyle = "#0d0e1a"; x.fillRect(hx, hy, S, S);
+    x.fillStyle = c; x.fillRect(hx + 1, hy + 1, S - 2, S - 2);
+    x.fillStyle = renkAc(c, 70); x.fillRect(hx + 1, hy + 1, S - 2, 2); x.fillRect(hx + 1, hy + 1, 2, S - 2);
+    x.fillStyle = renkAc(c, -60); x.fillRect(hx + 1, hy + S - 3, S - 2, 2); x.fillRect(hx + S - 3, hy + 1, 2, S - 2);
+    x.fillStyle = "#fff"; x.fillRect(hx + 3, hy + 3, 2, 2);
+    x.globalAlpha = 1;
+  }
+  function sonrakiParca() {
+    if (!torba.length) torba = Object.keys(SEKIL).sort(function () { return Math.random() - .5; });
+    return torba.pop();
+  }
   function yeni() {
     tahta = []; for (var i = 0; i < H; i++) tahta.push(new Array(W).fill(null));
-    puan = 0; satir = 0; calis = true; birikim = 0; torba = []; son = performance.now();
+    puan = 0; satir = 0; calis = true; sayac = 0; torba = []; parc = []; yanan = []; sars = 0; tik = 0;
+    sonraki = sonrakiParca();
     document.getElementById("bitti").hidden = true; guncelle(); parca();
-    requestAnimationFrame(dongu);
   }
   function parca() { // 7'li torba yöntemi: parçalar adil dağılır
-    if (!torba.length) torba = Object.keys(SEKIL).sort(function () { return Math.random() - .5; });
-    var k = torba.pop(); p = { k: k, b: SEKIL[k].map(function (c) { return [c[0], c[1]]; }), x: 3, y: 0 };
-    if (cakisir(p.b, p.x, p.y)) { calis = false; Skor.oyunBitti("tetris", puan); }
+    var k = sonraki; sonraki = sonrakiParca();
+    p = { k: k, b: SEKIL[k].map(function (c) { return [c[0], c[1]]; }), x: 3, y: 0 };
+    if (cakisir(p.b, p.x, p.y)) {
+      calis = false; Px.ses("kaybet"); sars = 14;
+      setTimeout(function () { Skor.oyunBitti("tetris", puan); }, 500);
+    }
   }
   function cakisir(b, ox, oy) {
     return b.some(function (c) { var X = c[0] + ox, Y = c[1] + oy; return X < 0 || X >= W || Y >= H || (Y >= 0 && tahta[Y][X]); });
@@ -54,48 +68,78 @@
     if (p.k === "O") return;
     var m = p.k === "I" ? 3 : 2;
     var yb = p.b.map(function (c) { return [m - c[1], c[0]]; });
-    [0, -1, 1, -2, 2].some(function (k) { if (!cakisir(yb, p.x + k, p.y)) { p.b = yb; p.x += k; return true; } return false; });
+    [0, -1, 1, -2, 2].some(function (k) { if (!cakisir(yb, p.x + k, p.y)) { p.b = yb; p.x += k; Px.ses("don"); return true; } return false; });
   }
-  function git(dx) { if (!cakisir(p.b, p.x + dx, p.y)) p.x += dx; }
+  function git(dx) { if (!cakisir(p.b, p.x + dx, p.y)) { p.x += dx; Px.ses("tik"); } }
   function asagi() {
     if (!cakisir(p.b, p.x, p.y + 1)) { p.y++; return true; }
     kilitle(); return false;
   }
   function kilitle() {
     p.b.forEach(function (c) { var Y = c[1] + p.y; if (Y >= 0) tahta[Y][c[0] + p.x] = p.k; });
-    var n = 0;
-    for (var r = H - 1; r >= 0; r--) if (tahta[r].every(Boolean)) { tahta.splice(r, 1); tahta.unshift(new Array(W).fill(null)); n++; r++; }
-    if (n) { puan += [0, 40, 100, 300, 1200][n] * (Math.floor(satir / 10) + 1); satir += n; guncelle(); }
+    var n = 0, dolu = [];
+    for (var r = H - 1; r >= 0; r--) if (tahta[r].every(Boolean)) { dolu.push(r); tahta.splice(r, 1); tahta.unshift(new Array(W).fill(null)); n++; r++; }
+    if (n) {
+      puan += [0, 40, 100, 300, 1200][n] * (Math.floor(satir / 10) + 1); satir += n; guncelle();
+      Px.ses(n >= 4 ? "kazan" : "puan"); sars = n >= 4 ? 10 : 0;
+      dolu.forEach(function (r) { yanan.push({ r: r, o: 14 }); for (var i = 0; i < 10; i++) parc.push({ x: i * S + 5, y: r * S + 5, vx: Px.rastgele(-1.5, 1.5), vy: Px.rastgele(-2, 0), o: 22, c: ["#fff", "#ffcd75", "#41a6f6"][i % 3] }); });
+    } else Px.ses("tik");
     parca();
   }
   function birak() { var n = 0; while (cakisir(p.b, p.x, p.y + 1) === false) { p.y++; n++; } puan += n; guncelle(); kilitle(); }
   function guncelle() { document.getElementById("puan").textContent = puan; document.getElementById("satir").textContent = satir; }
-  function dongu(t) {
+  function adim() {
+    tik++;
+    if (sars) sars--;
+    parc.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.vy += .12; q.o--; }); parc = parc.filter(function (q) { return q.o > 0; });
+    yanan.forEach(function (y) { y.o--; }); yanan = yanan.filter(function (y) { return y.o > 0; });
     if (!calis) return;
-    birikim += t - son; son = t;
-    var bekle = Math.max(100, 700 - Math.floor(satir / 10) * 60);
-    while (birikim > bekle && calis) { birikim -= bekle; asagi(); }
-    if (calis) { ciz(); requestAnimationFrame(dongu); }
+    if (Px.p.ArrowLeft || Px.p.KeyA) git(-1);
+    if (Px.p.ArrowRight || Px.p.KeyD) git(1);
+    if (Px.p.ArrowUp || Px.p.KeyW) don();
+    if (Px.p.Space) { birak(); return; }
+    if (Px.p.ArrowDown || Px.p.KeyS) { if (asagi()) { puan++; guncelle(); } sayac = 0; }
+    // basılı tutulunca tekrar (yan hareket)
+    if (tik % 5 === 0) { if (Px.k.ArrowLeft || Px.k.KeyA) git(-1); if (Px.k.ArrowRight || Px.k.KeyD) git(1); if ((Px.k.ArrowDown || Px.k.KeyS) && asagi()) { puan++; guncelle(); } }
+    var bekle = Math.max(6, 42 - Math.floor(satir / 10) * 4);
+    sayac++; if (sayac >= bekle) { sayac = 0; asagi(); }
+  }
+  function mini(k, ox, oy) {
+    SEKIL[k].forEach(function (c) { x.fillStyle = "#0d0e1a"; x.fillRect(ox + c[0] * 5, oy + c[1] * 5, 5, 5); x.fillStyle = RENK[k]; x.fillRect(ox + c[0] * 5, oy + c[1] * 5, 4, 4); });
   }
   function ciz() {
-    x.fillStyle = "#0b1220"; x.fillRect(0, 0, 240, 480);
-    x.strokeStyle = "#1e293b"; x.lineWidth = 1;
-    for (var i = 1; i < W; i++) { x.beginPath(); x.moveTo(i * S, 0); x.lineTo(i * S, 480); x.stroke(); }
-    for (var j = 1; j < H; j++) { x.beginPath(); x.moveTo(0, j * S); x.lineTo(240, j * S); x.stroke(); }
-    tahta.forEach(function (sa, r) { sa.forEach(function (k, c) { if (k) { x.fillStyle = RENK[k]; x.fillRect(c * S + 1, r * S + 1, S - 2, S - 2); } }); });
-    if (p) { x.fillStyle = RENK[p.k]; p.b.forEach(function (c) { x.fillRect((c[0] + p.x) * S + 1, (c[1] + p.y) * S + 1, S - 2, S - 2); }); }
+    x.save(); if (sars) x.translate(Px.tamsayi(-1, 1), Px.tamsayi(-1, 1));
+    x.fillStyle = "#0d0e1a"; x.fillRect(0, 0, 160, 200);
+    // oyun alanı 100x200 solda; sağ panel
+    x.fillStyle = "#1a1c2c"; x.fillRect(0, 0, 100, 200);
+    x.fillStyle = "#23263d";
+    for (var i = 0; i < W; i++) for (var j = 0; j < H; j++) if ((i + j) % 2 === 0) x.fillRect(i * S, j * S, S, S);
+    tahta.forEach(function (sa, r) { sa.forEach(function (k, c) { if (k) blok(c * S, r * S, k); }); });
+    if (p && calis) {
+      var gy = 0; while (!cakisir(p.b, p.x, p.y + gy + 1)) gy++;
+      p.b.forEach(function (c) { var X = (c[0] + p.x) * S, Y = (c[1] + p.y + gy) * S; x.fillStyle = "rgba(255,255,255,.14)"; x.fillRect(X + 1, Y + 1, S - 2, S - 2); });
+      p.b.forEach(function (c) { blok((c[0] + p.x) * S, (c[1] + p.y) * S, p.k); });
+    }
+    yanan.forEach(function (y) { x.fillStyle = "rgba(255,255,255," + (y.o / 14) + ")"; x.fillRect(0, y.r * S, 100, S); });
+    parc.forEach(function (q) { x.fillStyle = q.c; x.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); });
+    // panel: dekoratif sütun + sonraki + bilgiler
+    var pat = ["#3b5dc9", "#41a6f6"]; for (j = 0; j < 20; j++) { x.fillStyle = pat[j % 2]; x.fillRect(100, j * 10, 4, 10); }
+    x.fillStyle = "#29366f"; x.fillRect(104, 0, 56, 200);
+    Px.yazi(x, "SIRADA", 108, 6, 9, "#ffcd75");
+    x.fillStyle = "#0d0e1a"; x.fillRect(108, 18, 44, 28); x.fillStyle = "#1a1c2c"; x.fillRect(109, 19, 42, 26);
+    if (sonraki) mini(sonraki, 115, 26);
+    Px.yazi(x, "PUAN", 108, 60, 9, "#a7f070"); Px.yazi(x, String(puan), 108, 72, 11, "#fff");
+    Px.yazi(x, "SATIR", 108, 92, 9, "#a7f070"); Px.yazi(x, String(satir), 108, 104, 11, "#fff");
+    Px.yazi(x, "SEVİYE", 108, 124, 9, "#a7f070"); Px.yazi(x, String(Math.floor(satir / 10) + 1), 108, 136, 11, "#fff");
+    // süsleme: küçük kayan bloklar
+    for (i = 0; i < 4; i++) { var ky = 160 + ((tik / 3 + i * 14) % 56) - 16; if (ky < 200) { x.globalAlpha = .6; var kk = "IOTSZJL"[i * 2 % 7]; mini(kk, 112 + i * 11, ky); x.globalAlpha = 1; } }
+    x.restore();
   }
-  var H_ = { sol: function () { git(-1); }, sag: function () { git(1); }, don: don, asagi: function () { if (asagi()) puan++; guncelle(); }, birak: birak };
-  document.addEventListener("keydown", function (e) {
-    if (!calis) return;
-    var k = { ArrowLeft: "sol", ArrowRight: "sag", ArrowUp: "don", ArrowDown: "asagi", " ": "birak" }[e.key];
-    if (k) { e.preventDefault(); H_[k](); ciz(); }
-  });
-  Array.prototype.forEach.call(document.querySelectorAll("[data-t]"), function (b) {
-    b.addEventListener("click", function () { if (calis) { H_[b.getAttribute("data-t")](); ciz(); } });
-  });
+  Px.pad(document.getElementById("padyer"), [
+    { t: "◀", k: "ArrowLeft" }, { t: "⟳", k: "ArrowUp" }, { t: "▼", k: "ArrowDown" }, { t: "▶", k: "ArrowRight" }, { t: "⤓", k: "Space" }
+  ]);
   document.getElementById("tekrar").addEventListener("click", yeni);
-  yeni();
+  yeni(); Px.dongu(adim, ciz);
 })();
 </script>
 </body>
