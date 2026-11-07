@@ -127,13 +127,16 @@
     x.beginPath(); x.moveTo(sg * 38, -4); x.quadraticCurveTo(sg * 46, 8, sg * 42, 30); x.lineWidth = 3; x.strokeStyle = "#c77af0"; x.stroke();
   }
   function kolcuk(sg, a) {
-    x.save(); x.translate(sg * 48, -2); x.rotate(a);
+    x.save();
     x.beginPath(); x.ellipse(0, 6, 9, 14, 0, 0, 6.2832); x.fillStyle = "#a43be0"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
     el(0, 32, 17, 15, "#92d62a");
     x.beginPath(); x.ellipse(-6, 25, 8, 5, 0, 0, 6.2832); x.fillStyle = "#b8ea4c"; x.fill();
     x.beginPath(); x.moveTo(-9, 31); x.quadraticCurveTo(-9, 38, -6, 42); x.moveTo(0, 30); x.lineTo(0, 44); x.moveTo(9, 31); x.quadraticCurveTo(9, 38, 6, 42); x.lineWidth = 2; x.strokeStyle = "#4f8a1a"; x.stroke();
     x.restore();
   }
+  function onbellek(w, h, ox, oy, fn) { var c = document.createElement("canvas"); c.width = w * 2; c.height = h * 2; var eski = x; x = c.getContext("2d"); x.scale(2, 2); x.translate(ox, oy); fn(); x = eski; return c; }
+  var SPR = { b: onbellek(170, 150, 85, 85, function () { govde(); yelek(-1); yelek(1); }), a: onbellek(60, 80, 30, 18, function () { kolcuk(1, 0); }), f: onbellek(50, 30, 25, 15, function () { el(0, 0, 19, 10, "#7fc21e"); }) };
+  function sp2(c, ox, oy) { x.drawImage(c, -ox, -oy, c.width / 2, c.height / 2); }
   var dnT = 0;
   function dansci() {
     // ikonik dans: kombo 10'un katlarında Spike dönerek kollarını sallar
@@ -142,8 +145,10 @@
     var cx = 200, cy = 118 + poz.bob * 1.2, sp = Math.sin(kare / 5) * 4, sx = 1, a1 = poz.a1, a2 = poz.a2, zp = 0, sq = 1 + (Math.floor(kare / 8) % 2) * .02;
     if (dnT > 0) { var ph = (70 - dnT) / 70; sx = Math.cos(ph * Math.PI * 6); a1 = -2.6 + Math.sin(kare / 2) * .5; a2 = 2.6 - Math.sin(kare / 2) * .5; zp = -Math.abs(Math.sin(ph * Math.PI * 6)) * 14; sp = Math.sin(kare / 2) * 6; }
     x.save(); x.translate(cx, cy + zp); x.rotate(dnT > 0 ? 0 : poz.lean); x.scale(sx, sq); x.lineJoin = "round";
-    el(-22 + sp, 54, 19, 10, "#7fc21e"); el(22 - sp, 54, 19, 10, "#7fc21e");
-    govde(); yelek(-1); yelek(1); kolcuk(-1, a1); kolcuk(1, a2);
+    x.save(); x.translate(-22 + sp, 54); sp2(SPR.f, 25, 15); x.restore(); x.save(); x.translate(22 - sp, 54); sp2(SPR.f, 25, 15); x.restore();
+    sp2(SPR.b, 85, 85);
+    x.save(); x.translate(-48, -2); x.rotate(a1); sp2(SPR.a, 30, 18); x.restore();
+    x.save(); x.translate(48, -2); x.rotate(a2); sp2(SPR.a, 30, 18); x.restore();
     x.restore();
   }
   function ciz() {
