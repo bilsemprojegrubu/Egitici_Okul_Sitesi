@@ -268,7 +268,7 @@
     if (bitis) return;
     insan(0); if (mod === 2) insan(1); else pl.forEach(function (p) { if (p.t === 1) botGuncelle(p, zor === 0 ? .42 : (zor === 2 ? .8 : .58)); });
     pl.forEach(function (p) { if (p.auto && p.hold && !p.yer && p.vy > -.8) { atGuc(p); p.auto = false; } });
-    pl.forEach(oyuncuFizik); ayrisma();
+    pl.forEach(oyuncuFizik); // Basket Random gibi karakterler iç içe geçebilir
     topFizik();
   }
   function daire(cx, cy, r, renk) { x.fillStyle = renk; for (var j = -r; j <= r; j++) { var w = Math.floor(Math.sqrt(r * r - j * j)); x.fillRect(Math.round(cx - w), Math.round(cy + j), w * 2 + 1, 1); } }
