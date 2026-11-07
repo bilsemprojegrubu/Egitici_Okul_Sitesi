@@ -157,6 +157,13 @@
     if (top.son === def) spBasla("korner", 1 - def, def === 0 ? PL : PR, top.y < CY ? PT : PB);
     else spBasla("aut", def, def === 0 ? PL + 16 : PR - 16, CY);
   }
+  function disariAt(p) { // bot arada sırada topu dışarı atar: taç veya korner olsun
+    var own = p.t === 0 ? top.x < CX : top.x > CX, tx, ty;
+    if (own && Math.random() < .5) { tx = p.t === 0 ? PL - 6 : PR + 6; ty = p.y < CY ? PT + 3 : PB - 3; }
+    else { tx = p.x + (p.t === 0 ? 8 : -8); ty = p.y < CY ? PT - 8 : PB + 8; }
+    var dx = tx - top.x, dy = ty - top.y, n = Math.sqrt(dx * dx + dy * dy) || 1;
+    top.vx = dx / n * 3.4; top.vy = dy / n * 3.4; top.vz = 0; top.z = 0; top.son = p.t; top.kafa = false; top.sahip = null; p.cd = 14; Px.ses("tik");
+  }
   function botGuncelle(p, oyuncuBot) {
     var kendi = p.t, kale = hedefKale(kendi), top_ = top, hiz = (.68 + .1 * zor);
     var yakin = topaYakin(kendi) === p;
@@ -168,6 +175,7 @@
       else {
         tx = kale; ty = Px.sinir(CY + (p.y < CY ? 14 : -14), PT + 8, PB - 8);
         if (Math.abs(p.x - kale) < 82 && p.cd === 0 && Math.random() < .06 * (zor + .5)) { aim(p, kale); sut(p, .5 + Math.random() * .5); }
+        else if (p.cd === 0 && Math.random() < .004) disariAt(p);
         else if (p.cd === 0 && Math.random() < .006) { aim(p, null); pas(p, Math.random() < .25 ? 1 : 0); if (!top.vz) { top.vx += Px.rastgele(-.7, .7); top.vy += Px.rastgele(-.9, .9); } }
       }
     } else {
