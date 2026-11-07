@@ -5,105 +5,288 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Futbol — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
-<style>#kale{position:relative;width:min(100%,380px);height:200px;background:linear-gradient(#16a34a,#15803d);border-radius:12px;border:3px solid #f1f5f9;overflow:hidden}
-#kale .dir{position:absolute;top:30px;bottom:30px;width:33.3%;border:0;background:transparent;cursor:pointer;font-size:1.4rem;color:#fff8}
-#kale .dir:hover{background:#ffffff22}
-#kaleci{position:absolute;top:60px;left:50%;font-size:3rem;transform:translateX(-50%);transition:left .35s}
-#top{position:absolute;bottom:6px;left:50%;font-size:2rem;transform:translateX(-50%);transition:left .35s,bottom .35s}
-#durum{font-size:1.05rem;min-height:2.6em;text-align:center;font-weight:700}
-#tablo{font-size:1.1rem}</style>
+<style>
+.kbar{display:none;align-items:center;gap:8px;font-size:.8rem;color:#ffcd75}
+.kbar input{width:120px;accent-color:#ffcd75}
+#kalbar{display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);min-height:0}
+</style>
 </head>
 <body data-oyun="futbol">
-<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>⚽ Futbol</h1>
-<div class="puanlar">Kazanılan maç <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>FUTBOL</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
-  <div id="tablo">Sen <b id="s1">0</b> - <b id="s2">0</b> Rakip · <span id="tur"></span></div>
-  <div id="kale" aria-label="Kale"><span id="kaleci">🧤</span><span id="top">⚽</span></div>
-  <div class="kontrol" id="secim">
-    <button class="btn" data-z="0">⬅ Sol</button><button class="btn" data-z="1">⬆ Orta</button><button class="btn" data-z="2">Sağ ➡</button>
-  </div>
-  <div id="durum">Şut için bir yön seç!</div>
-  <p class="ipucu">Penaltı maçı: 5'er atış. Maçı kazanırsan sonraki maça geçersin, kaybedersen ya da berabere kalırsan oyun biter.</p>
+  <canvas id="c" class="cv" width="240" height="160" style="--mw:760px"></canvas>
+  <div id="kalbar"><label class="kbar" id="kb1">Kaleci <input type="range" id="kr1" min="0" max="100" value="50"></label><label class="kbar" id="kb2">Kaleci <input type="range" id="kr2" min="0" max="100" value="50"></label></div>
+  <p class="ipucu" id="ipucu"></p>
+  <div id="padyer" style="display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);flex-wrap:wrap"></div>
   <div id="bitti" class="kaplama" hidden>
-    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <h2>Maç bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
     <button class="btn" id="tekrar">Tekrar oyna</button>
+    <button class="btn ikinci" id="menuBtn">Menü</button>
   </div>
 </main>
 <script src="../../config.js"></script>
 <script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
 <script>
-// Futbol: penaltı maçları. puan = üst üste kazanılan maç sayısı
+// Futbol: tepeden görünümlü 2'ye 2 + kaleci piksel maç. 1 oyuncu (bota karşı, sıralamaya yazılır: puan = gol*10 + galibiyet 20), 2 oyuncu (sıralamasız)
 (function () {
-  var s1, s2, atis, sirasi, mac, kilit, gecmis, biter;
-  var LEFT = ["16%", "50%", "84%"];
-  var kaleci = document.getElementById("kaleci"), top = document.getElementById("top"), D = document.getElementById("durum");
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, H = 160;
+  var PL = 14, PR = 226, PT = 20, PB = 152, GT = 69, GB = 103, CY = 86, CX = 120, SURE = 90 * 60;
+  var mod = 1, zor = 1, elle = false, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, kontrolId, bitis, ses2;
+  var insanlar; // [{takim, ctrl(oyuncu), tus, onceSut, sarj}]
+  function kit(ana, koyu, saç) {
+    var P = { k: "#0d0e1a", s: "#ffcd75", h: saç, j: ana, J: koyu, w: "#fff", p: "#1a1c2c", g: "#94a0b8" };
+    var g = ["..kkk..", ".khhhk.", ".ksssk.", "..sss..", ".jjjjj.", "sjjwjjs", "sjjjjjs", ".jJJJj.", ".ppppp."];
+    var b = [["..p.p..", "..s.s..", ".kk.kk."], [".pp.p..", ".s..ss.", ".kk..kk"], ["..p.pp.", ".ss.s..", "kk..kk."]];
+    return b.map(function (l) { return Px.sprite(g.concat(l), P, 1); });
+  }
+  var KIT = [kit("#e0344f", "#b13e53", "#5d275d"), kit("#41a6f6", "#3b5dc9", "#ef7d57")];
+  var KALECI = [kit("#a7f070", "#38b764", "#1a1c2c"), kit("#ffcd75", "#ef7d57", "#1a1c2c")];
+  function oyuncu(t, rol, px, py) { return { t: t, rol: rol, x: px, y: py, bx: px, by: py, vx: 0, vy: 0, yx: t === 0 ? 1 : -1, yy: 0, f: 0, cd: 0 }; }
+  function dizil() {
+    pl = [oyuncu(0, "k", PL + 7, CY), oyuncu(0, "f", 70, 62), oyuncu(0, "f", 70, 110), oyuncu(1, "k", PR - 7, CY), oyuncu(1, "f", 170, 62), oyuncu(1, "f", 170, 110)];
+    top = { x: CX, y: CY, vx: 0, vy: 0, d: 0, gol: 0, son: -1 };
+  }
   function yeni() {
-    mac = 0; document.getElementById("puan").textContent = 0;
-    document.getElementById("bitti").hidden = true; maciBaslat();
+    skor = [0, 0]; sure = SURE; altin = false; calis = true; tik = 0; parc = []; msayac = 0; sars = 0; bitis = false;
+    dizil();
+    insanlar = [{ t: 0, c: pl[1], onceSut: false, sarj: 0 }];
+    if (mod === 2) insanlar.push({ t: 1, c: pl[4], onceSut: false, sarj: 0 });
+    document.getElementById("bitti").hidden = true; yazBaslik();
+    kickoff(0, "BAŞLA!");
   }
-  function maciBaslat() {
-    s1 = 0; s2 = 0; atis = 0; sirasi = "ben"; kilit = false; gecmis = [0, 0, 0]; biter = false;
-    yaz(); D.textContent = "Maç " + (mac + 1) + " başladı! Şut için bir yön seç.";
-    sifirla();
+  function yazBaslik() { document.getElementById("puan").textContent = skor[0] * 10; }
+  function kickoff(t, m) {
+    var f = pl[0].t === 0; dizil2(); top.x = CX; top.y = CY; top.vx = top.vy = 0; top.gol = 0; mesaj = m; msayac = 70;
   }
-  function yaz() {
-    document.getElementById("s1").textContent = s1; document.getElementById("s2").textContent = s2;
-    document.getElementById("tur").textContent = "Atış " + (Math.min(5, Math.floor(atis / 2) + 1)) + "/5" + (atis >= 10 ? " (uzatma)" : "");
+  function dizil2() {
+    var yer = [[PL + 7, CY], [75, 62], [75, 110], [PR - 7, CY], [165, 62], [165, 110]];
+    pl.forEach(function (p, i) { p.x = yer[i][0]; p.y = yer[i][1]; p.vx = p.vy = 0; p.cd = 0; });
   }
-  function sifirla() { kaleci.style.left = "50%"; top.style.left = "50%"; top.style.bottom = "6px"; top.style.opacity = 1; }
-  // Rakip kaleci: maç ilerledikçe oyuncunun sık attığı köşeye daha çok gider
-  function kaleciSec() {
-    var enCok = gecmis.indexOf(Math.max.apply(null, gecmis));
-    var olas = Math.min(0.6, mac * 0.08);
-    return Math.random() < olas ? enCok : Math.floor(Math.random() * 3);
+  var KEY = {
+    0: { u: ["KeyW"], d: ["KeyS"], l: ["KeyA"], r: ["KeyD"], sut: ["KeyF"], pas: ["KeyG"], ku: ["KeyQ"], kd: ["KeyE"] },
+    1: { u: ["ArrowUp"], d: ["ArrowDown"], l: ["ArrowLeft"], r: ["ArrowRight"], sut: ["Enter"], pas: ["ShiftRight", "Slash"], ku: ["KeyO"], kd: ["KeyL"] }
+  };
+  function bas(t, ad) { var a = KEY[t][ad].slice(); if (mod === 1 && t === 0) { if (ad === "u") a.push("ArrowUp"); if (ad === "d") a.push("ArrowDown"); if (ad === "l") a.push("ArrowLeft"); if (ad === "r") a.push("ArrowRight"); if (ad === "sut") a.push("Space"); if (ad === "pas") a.push("KeyX"); } return a.some(function (k) { return Px.k[k]; }); }
+  function bas1(t, ad) { var a = KEY[t][ad].slice(); if (mod === 1 && t === 0) { if (ad === "sut") a.push("Space"); if (ad === "pas") a.push("KeyX"); } return a.some(function (k) { return Px.p[k]; }); }
+  function mesafe(a, b) { var dx = a.x - b.x, dy = a.y - b.y; return Math.sqrt(dx * dx + dy * dy); }
+  function oyunculari(t) { return pl.filter(function (p) { return p.t === t && p.rol === "f"; }); }
+  function topaYakin(t) { var l = oyunculari(t); return mesafe(l[0], top) <= mesafe(l[1], top) ? l[0] : l[1]; }
+  function hedefKale(t) { return t === 0 ? PR : PL; }
+  function topuSur(p, yon) { // sürerken top oyuncunun önünde yapışır
+    var tx = p.x + p.yx * 7, ty = p.y + p.yy * 7;
+    top.vx += (tx - top.x) * .22; top.vy += (ty - top.y) * .22; top.vx *= .8; top.vy *= .8; top.son = p.t;
   }
-  function tikla(z) {
-    if (kilit || biter) return;
-    kilit = true;
-    var atan = sirasi, kal = kaleciSec(), sut = z, gol;
-    if (atan === "ben") { gecmis[z]++; sut = z; gol = kal !== z; }
-    else { sut = Math.floor(Math.random() * 3); kal = z; gol = sut !== z; } // rakip şut çeker, ben kaleciyim
-    kaleci.style.left = LEFT[atan === "ben" ? kal : z];
-    top.style.left = LEFT[sut]; top.style.bottom = "110px";
-    setTimeout(function () {
-      if (gol) { if (atan === "ben") s1++; else s2++; }
-      D.textContent = atan === "ben" ? (gol ? "⚽ GOL!" : "🧤 Kaleci kurtardı!") : (gol ? "😬 Rakip gol attı" : "🧤 Kurtardın!");
-      atis++; yaz(); if (!bitiyorMu()) {
-        sirasi = sirasi === "ben" ? "rakip" : "ben";
-        setTimeout(function () {
-          sifirla(); kilit = false;
-          D.textContent = sirasi === "ben" ? "Sıra sende: şut yönünü seç" : "Rakip şut çekiyor: kurtarış yönünü seç";
-        }, 900);
+  function sut(p, guc) {
+    var dx = p.yx, dy = p.yy, gx = hedefKale(p.t);
+    var hy = Px.sinir(p.y + (Math.abs(p.yx) > .3 ? dy / Math.abs(dx) * Math.abs(gx - p.x) : 0), GT + 4, GB - 4);
+    var ax = gx - p.x, ay = hy - p.y, an = Math.sqrt(ax * ax + ay * ay) || 1;
+    if (dx * (gx - p.x) > 0 && Math.abs(gx - p.x) < 100) { dx = dx * .55 + ax / an * .45; dy = dy * .55 + ay / an * .45; var n = Math.sqrt(dx * dx + dy * dy) || 1; dx /= n; dy /= n; }
+    var v = 2.6 + guc * 3.3;
+    top.vx = dx * v; top.vy = dy * v; p.cd = 18; top.son = p.t; Px.ses("sut");
+    for (var i = 0; i < 4; i++) parc.push({ x: top.x, y: top.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 1), o: 10, c: "#fff" });
+  }
+  function pas(p) {
+    var l = oyunculari(p.t).filter(function (q) { return q !== p; })[0];
+    var dx = l.x + l.vx * 12 - p.x, dy = l.y + l.vy * 12 - p.y, n = Math.sqrt(dx * dx + dy * dy) || 1;
+    top.vx = dx / n * (2 + Math.min(2.2, n / 40)); top.vy = dy / n * (2 + Math.min(2.2, n / 40)); p.cd = 14; top.son = p.t; Px.ses("tik");
+    insanlar.forEach(function (h) { if (h.c === p) h.c = l; });
+  }
+  function botGuncelle(p, oyuncuBot) {
+    var kendi = p.t, kale = hedefKale(kendi), top_ = top, hiz = (.9 + .12 * zor) * (oyuncuBot ? 1 : 1);
+    var yakin = topaYakin(kendi) === p;
+    var tx = p.x, ty = p.y, sp = hiz;
+    var yon = kendi === 0 ? 1 : -1;
+    if (yakin) {
+      var d = mesafe(p, top_);
+      if (d > 8) { tx = top_.x + top_.vx * 4; ty = top_.y + top_.vy * 4; }
+      else {
+        tx = kale; ty = Px.sinir(CY + (p.y < CY ? 14 : -14), PT + 8, PB - 8);
+        if (Math.abs(p.x - kale) < 82 && p.cd === 0 && Math.random() < .06 * (zor + .5)) { aim(p, kale); sut(p, .5 + Math.random() * .5); }
+        else if (p.cd === 0 && Math.random() < .006) { aim(p, null); pas(p); }
       }
-    }, 450);
+    } else {
+      tx = Px.sinir(top_.x + yon * 38, PL + 20, PR - 20); ty = top_.y < CY ? PB - 30 : PT + 30; sp = hiz * .8;
+    }
+    var dx = tx - p.x, dy = ty - p.y, n = Math.sqrt(dx * dx + dy * dy);
+    if (n > 2) { p.vx = dx / n * sp; p.vy = dy / n * sp; p.yx = dx / n; p.yy = dy / n; } else { p.vx = p.vy = 0; }
   }
-  // 5'er atıştan sonra ya da fark kapanamayacak hale gelince biter; beraberlikte ani ölüm
-  function bitiyorMu() {
-    var benKalan = Math.max(0, 5 - Math.ceil(atis / 2)), rakipKalan = Math.max(0, 5 - Math.floor(atis / 2));
-    var bitti = false;
-    if (atis < 10) { if (s1 > s2 + rakipKalan || s2 > s1 + benKalan) bitti = true; }
-    else if (atis % 2 === 0 && s1 !== s2) bitti = true;
-    if (!bitti) return false;
-    biter = true;
+  function aim(p, kale) { if (kale === null) return; var dx = kale - p.x, dy = Px.sinir(CY + Px.rastgele(-12, 12), GT + 3, GB - 3) - p.y, n = Math.sqrt(dx * dx + dy * dy) || 1; p.yx = dx / n; p.yy = dy / n; }
+  function kaleciGuncelle(p) {
+    var insanMi = elle && insanlar.some(function (h) { return h.t === p.t; });
+    var hy = p.y;
+    if (insanMi) {
+      var r = document.getElementById(p.t === 0 ? "kr1" : "kr2"), v = +r.value;
+      if (bas(p.t, "ku")) v = Math.max(0, v - 3); if (bas(p.t, "kd")) v = Math.min(100, v + 3); r.value = v;
+      var hedef = GT - 6 + v / 100 * (GB - GT + 12); p.vy = Px.sinir(hedef - p.y, -1.6, 1.6);
+    } else {
+      var hedef2 = Px.sinir(top.y + top.vy * 3, GT - 2, GB + 2), uzak = Math.abs(top.x - p.x);
+      var topKaleye = (p.t === 0 ? top.vx < -.5 : top.vx > .5) || uzak < 70;
+      if (!topKaleye) hedef2 = CY;
+      p.vy = Px.sinir(hedef2 - p.y, -.75 - .08 * zor, .75 + .08 * zor);
+    }
+    p.vx = 0; p.y = Px.sinir(p.y + p.vy, GT - 8, GB + 8); p.yx = p.t === 0 ? 1 : -1;
+    var d = mesafe(p, top);
+    if (d < 8 && p.cd === 0) { top.vx = (p.t === 0 ? 1 : -1) * (2.4 + Math.random() * 1.5); top.vy = (top.y - p.y) * .25 + Px.rastgele(-1, 1); p.cd = 10; Px.ses("vur"); top.gol = 0; top.son = p.t; for (var i = 0; i < 4; i++) parc.push({ x: top.x, y: top.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 1), o: 10, c: "#a7f070" }); }
+  }
+  function insanGuncelle(h) {
+    var c = h.c, t = h.t;
+    // en yakın oyuncuya otomatik geç (topa 9 pikselden yakın değilse)
+    var yak = topaYakin(t); if (yak !== c && mesafe(c, top) > 14 && mesafe(yak, top) + 8 < mesafe(c, top)) h.c = c = yak;
+    var ux = (bas(t, "r") ? 1 : 0) - (bas(t, "l") ? 1 : 0), uy = (bas(t, "d") ? 1 : 0) - (bas(t, "u") ? 1 : 0);
+    var n = Math.sqrt(ux * ux + uy * uy);
+    if (n) { c.vx = ux / n * 1.2; c.vy = uy / n * 1.2; c.yx = ux / n; c.yy = uy / n; } else { c.vx = c.vy = 0; }
+    var diger = oyunculari(t).filter(function (q) { return q !== c; })[0]; botGuncelle(diger, false);
+    // şut: basılı tut = güç
+    var sut_ = bas(t, "sut");
+    if (sut_) h.sarj = Math.min(1, h.sarj + 1 / 40);
+    if (!sut_ && h.onceSut) { if (mesafe(c, top) < 11 && c.cd === 0) sut(c, Math.max(.3, h.sarj)); h.sarj = 0; }
+    h.onceSut = sut_;
+    if (bas1(t, "pas") && mesafe(c, top) < 12 && c.cd === 0) pas(c);
+  }
+  function gol(t) {
+    skor[t]++; yazBaslik(); mesaj = "GOOOL!"; msayac = 100; sars = 14; Px.ses("gol");
+    top.gol = 1; top.vx = top.vy = 0;
+    for (var i = 0; i < 40; i++) parc.push({ x: t === 0 ? PR + 4 : PL - 4, y: CY, vx: Px.rastgele(-2.5, 2.5), vy: Px.rastgele(-3, 1), o: 50, c: ["#ffcd75", "#fff", "#e0344f", "#41a6f6", "#a7f070"][i % 5] });
+    if (altin) { bitir(); return; }
+    setTimeout(function () { if (calis && !bitis) { dizil2(); top.x = CX; top.y = CY; top.vx = top.vy = 0; top.gol = 0; mesaj = "DEVAM!"; msayac = 40; } }, 1500);
+  }
+  function bitir() {
+    if (bitis) return; bitis = true;
     setTimeout(function () {
-      if (s1 > s2) {
-        mac++; document.getElementById("puan").textContent = mac;
-        D.textContent = "🎉 Maçı kazandın! (" + s1 + "-" + s2 + ")";
-        setTimeout(maciBaslat, 1500);
-      } else { D.textContent = "Maçı kaybettin (" + s1 + "-" + s2 + ")"; setTimeout(function () { Skor.oyunBitti("futbol", mac); }, 900); }
-    }, 900);
-    return true;
+      calis = false; var t0 = skor[0], t1 = skor[1];
+      if (mod === 1) { var puan = t0 * 10 + (t0 > t1 ? 20 : 0); document.getElementById("puan").textContent = puan; Skor.oyunBitti("futbol", puan); }
+      else Px.sonuc2(t0 === t1 ? "Berabere! " + t0 + " - " + t1 : (t0 > t1 ? "Kırmızı" : "Mavi") + " takım kazandı! " + t0 + " - " + t1);
+    }, 1200);
   }
-  Array.prototype.forEach.call(document.querySelectorAll("[data-z]"), function (b) {
-    b.addEventListener("click", function () { tikla(+b.getAttribute("data-z")); });
-  });
-  document.addEventListener("keydown", function (e) {
-    var z = { ArrowLeft: 0, ArrowUp: 1, ArrowRight: 2 }[e.key];
-    if (z !== undefined) { e.preventDefault(); tikla(z); }
-  });
-  document.getElementById("tekrar").addEventListener("click", yeni);
-  yeni();
+  function guncelle() {
+    tik++; if (sars) sars--; if (msayac) msayac--;
+    parc.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.vy += .05; q.o--; }); parc = parc.filter(function (q) { return q.o > 0; });
+    if (!calis) return;
+    if (!bitis && !top.gol) { sure--; if (sure <= 0) { if (skor[0] === skor[1]) { altin = true; sure = 0; mesaj = "ALTIN GOL!"; msayac = 80; } else { mesaj = "MAÇ BİTTİ"; msayac = 80; bitir(); } } }
+    if (altin && sure < 0) sure = 0;
+    if (bitis) { return; }
+    var kontrolEden = {};
+    insanlar.forEach(function (h) { kontrolEden[pl.indexOf(h.c)] = 1; });
+    // oyuncular
+    insanlar.forEach(insanGuncelle);
+    pl.forEach(function (p, i) {
+      if (p.rol === "k") { kaleciGuncelle(p); }
+      else if (!insanlar.some(function (h) { return h.c === p; }) && !(insanlar.some(function (h) { return h.t === p.t; }) && false)) {
+        if (!insanlar.some(function (h) { return h.t === p.t; }) || true) { if (!insanlar.some(function (h) { return h.t === p.t && oyunculari(p.t).indexOf(p) >= 0 && h.c !== p && true; })) botGuncelle(p, true); }
+      }
+      if (p.cd) p.cd--;
+    });
+    pl.forEach(function (p) {
+      if (p.rol === "k") return;
+      p.x = Px.sinir(p.x + p.vx, PL + 2, PR - 2); p.y = Px.sinir(p.y + p.vy, PT + 2, PB - 2);
+      if (p.vx || p.vy) p.f += .22;
+    });
+    // oyuncu-oyuncu ayrışma
+    for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) {
+      var a = pl[i], b = pl[j]; if (a.rol === "k" && b.rol === "k") continue;
+      var dx = b.x - a.x, dy = b.y - a.y, d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 7 && d > .01) { var it = (7 - d) / 2; if (a.rol !== "k") { a.x -= dx / d * it; a.y -= dy / d * it; } if (b.rol !== "k") { b.x += dx / d * it; b.y += dy / d * it; } }
+    }
+    // top
+    if (!top.gol) {
+      pl.forEach(function (p) {
+        if (p.rol === "k") return;
+        var d = mesafe(p, top);
+        if (d < 7.5 && p.cd === 0) topuSur(p);
+        if (d < 8 && p.cd === 0 && (Math.abs(p.vx) + Math.abs(p.vy) > .2) && tik % 12 === 0) Px.ses("tik");
+      });
+      top.x += top.vx; top.y += top.vy; top.vx *= .985; top.vy *= .985; top.d += top.vx * 8 + top.vy * 2;
+      var mouth = top.y > GT && top.y < GB;
+      if (top.y < PT + 2) { top.y = PT + 2; top.vy = Math.abs(top.vy) * .8; }
+      if (top.y > PB - 2) { top.y = PB - 2; top.vy = -Math.abs(top.vy) * .8; }
+      if (top.x < PL) { if (mouth) { if (top.x < PL - 2) { gol(1); return; } } else { top.x = PL; top.vx = Math.abs(top.vx) * .8; } }
+      if (top.x > PR) { if (mouth) { if (top.x > PR + 2) { gol(0); return; } } else { top.x = PR; top.vx = -Math.abs(top.vx) * .8; } }
+    }
+  }
+  function ciz() {
+    x.save(); if (sars) x.translate(Px.tamsayi(-1, 1), Px.tamsayi(-1, 1));
+    // çim şeritleri
+    for (var i = 0; i < 12; i++) { x.fillStyle = i % 2 ? "#2f9e46" : "#38b764"; x.fillRect(PL - 12 + i * 20, 0, 20, H); }
+    x.fillStyle = "#0d0e1a"; x.fillRect(0, 0, W, 14);
+    // tribünler (üst/alt)
+    for (i = 0; i < 40; i++) { x.fillStyle = ["#e0344f", "#ffcd75", "#fff", "#41a6f6", "#b55ee0"][i % 5]; x.fillRect(i * 6 + 1, 14 + (Math.floor(tik / 15 + i) % 2), 4, 4); x.fillRect(i * 6 + 1, 156 + (Math.floor(tik / 15 + i * 3) % 2) - 1, 4, 4); }
+    x.fillStyle = "#566c86"; x.fillRect(0, 18, W, 2); x.fillRect(0, 154, W, 2);
+    // çizgiler
+    x.fillStyle = "rgba(255,255,255,.9)";
+    x.fillRect(PL, PT, PR - PL, 1); x.fillRect(PL, PB, PR - PL, 1); x.fillRect(PL, PT, 1, PB - PT); x.fillRect(PR, PT, 1, PB - PT); x.fillRect(CX, PT, 1, PB - PT);
+    for (var a = 0; a < 64; a++) { var an = a / 64 * Math.PI * 2; x.fillRect(Math.round(CX + Math.cos(an) * 18), Math.round(CY + Math.sin(an) * 18), 1, 1); }
+    x.fillRect(CX - 1, CY - 1, 3, 3);
+    x.fillRect(PL, CY - 28, 22, 1); x.fillRect(PL, CY + 28, 22, 1); x.fillRect(PL + 22, CY - 28, 1, 57);
+    x.fillRect(PR - 22, CY - 28, 22, 1); x.fillRect(PR - 22, CY + 28, 22, 1); x.fillRect(PR - 22, CY - 28, 1, 57);
+    // kaleler
+    [[PL - 11, 1], [PR, -1]].forEach(function (g) {
+      var gx = g[0]; x.fillStyle = "rgba(0,0,0,.35)"; x.fillRect(gx, GT, 11, GB - GT);
+      x.fillStyle = "rgba(255,255,255,.35)"; for (var u = 0; u < 11; u += 3) x.fillRect(gx + u, GT, 1, GB - GT); for (var v = GT; v < GB; v += 3) x.fillRect(gx, v, 11, 1);
+      x.fillStyle = "#fff"; x.fillRect(gx, GT - 1, 11, 2); x.fillRect(gx, GB - 1, 11, 2); x.fillRect(g[1] === 1 ? gx : gx + 10, GT, 1, GB - GT);
+    });
+    // oyuncular (y'ye göre sıralı)
+    var sirali = pl.slice().sort(function (p, q) { return p.y - q.y; });
+    sirali.forEach(function (p) {
+      var set = p.rol === "k" ? KALECI[p.t] : KIT[p.t], fr = (p.vx || p.vy) ? 1 + (Math.floor(p.f) % 2) : 0, im = set[fr];
+      if (p.yx < -.1) im = Px.cevir(im);
+      x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(Math.round(p.x) - 3, Math.round(p.y) + 5, 7, 2);
+      x.drawImage(im, Math.round(p.x) - 4, Math.round(p.y) - 8);
+    });
+    // kontrol edilen oyuncuya ok
+    if (calis) insanlar.forEach(function (h) {
+      var c = h.c, col = h.t === 0 ? "#ffb0b0" : "#b0d8ff"; x.fillStyle = "#0d0e1a"; x.fillRect(Math.round(c.x) - 3, Math.round(c.y) - 15, 7, 5);
+      x.fillStyle = col; x.fillRect(Math.round(c.x) - 2, Math.round(c.y) - 14, 5, 2); x.fillRect(Math.round(c.x) - 1, Math.round(c.y) - 12, 3, 1);
+      if (h.sarj > 0) { x.fillStyle = "#0d0e1a"; x.fillRect(Math.round(c.x) - 7, Math.round(c.y) + 8, 15, 4); x.fillStyle = h.sarj > .8 ? "#e0344f" : "#ffcd75"; x.fillRect(Math.round(c.x) - 6, Math.round(c.y) + 9, Math.round(13 * h.sarj), 2); }
+    });
+    // top
+    x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(Math.round(top.x) - 2, Math.round(top.y) + 2, 5, 2);
+    x.fillStyle = "#0d0e1a"; x.fillRect(Math.round(top.x) - 3, Math.round(top.y) - 3, 6, 6);
+    x.fillStyle = "#fff"; x.fillRect(Math.round(top.x) - 2, Math.round(top.y) - 2, 4, 4);
+    x.fillStyle = "#1a1c2c"; var ph = Math.floor(top.d / 20) % 2 ? 1 : 0; x.fillRect(Math.round(top.x) - 1 + ph, Math.round(top.y) - 1, 2, 2);
+    parc.forEach(function (q) { x.fillStyle = q.c; x.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); });
+    // skor tabelası
+    var sn = Math.ceil(sure / 60), dk = Math.floor(sn / 60), sc = sn % 60;
+    Px.yazi(x, "KIR " + skor[0], 6, 2, 9, "#ffb0b0"); Px.yazi(x, skor[1] + " MAV", W - 6, 2, 9, "#b0d8ff", "right");
+    Px.yazi(x, altin ? "ALTIN" : dk + ":" + (sc < 10 ? "0" : "") + sc, CX, 2, 9, "#ffcd75", "center");
+    if (msayac > 0 && calis) Px.yazi(x, mesaj, CX, 56, mesaj === "GOOOL!" ? 20 : 12, mesaj === "GOOOL!" ? "#ffcd75" : "#fff", "center");
+    x.restore();
+  }
+  function kurPad() {
+    var py = document.getElementById("padyer"); py.innerHTML = "";
+    function ekle(t) {
+      var d = document.createElement("div"); py.appendChild(d); var K = KEY[t];
+      var sut = K.sut[0], pas_ = K.pas[0], u = K.u[0], dd = K.d[0], l = K.l[0], r = K.r[0];
+      if (t === 0 && mod === 1) { /* tek kişilikte aynı tuş kodları (WASD) kullanılır */ }
+      Px.pad(d, [{ t: "◀", k: l }, { t: "▲", k: u }, { t: "▼", k: dd }, { t: "▶", k: r }, { t: "ŞUT", k: sut }, { t: "PAS", k: pas_ }]);
+    }
+    ekle(0); if (mod === 2) ekle(1);
+    document.getElementById("kb1").style.display = elle ? "flex" : "none"; document.getElementById("kb2").style.display = elle && mod === 2 ? "flex" : "none";
+  }
+  function basla(m, z) {
+    mod = m; zor = z;
+    document.getElementById("ipucu").textContent = m === 1
+      ? "Hareket: WASD / ok tuşları. ŞUT: F veya boşluk (basılı tut = güçlü). PAS: G veya X." + (elle ? " Kaleci: Q/E ya da çubuk." : "")
+      : "Kırmızı: WASD, F=şut, G=pas" + (elle ? ", Q/E kaleci" : "") + " · Mavi: oklar, Enter=şut, Sağ Shift=pas" + (elle ? ", O/L kaleci" : "") + ". (Sıralamaya yazılmaz)";
+    kurPad(); yeni();
+  }
+  var son = { m: 1, z: 1 };
+  var menu = Px.menu({ baslik: "FUTBOL", not: "2'ye 2 mini maç · 90 saniye", secenekler: [
+    { ad: "1 Oyuncu · Kolay", alt: "Bota karşı", fn: function () { son = { m: 1, z: 0 }; basla(1, 0); } },
+    { ad: "1 Oyuncu · Normal", alt: "Bota karşı · sıralamaya yazılır", fn: function () { son = { m: 1, z: 1 }; basla(1, 1); } },
+    { ad: "1 Oyuncu · Zor", alt: "Hızlı bot", fn: function () { son = { m: 1, z: 2 }; basla(1, 2); } },
+    { ad: "2 Oyuncu", alt: "Aynı ekranda · sıralamasız", fn: function () { son = { m: 2, z: 1 }; basla(2, 1); } }
+  ], ek: function (m) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "btn ikinci"; b.textContent = "Kaleci: OTOMATİK";
+    b.addEventListener("click", function () { elle = !elle; b.textContent = "Kaleci: " + (elle ? "ÇUBUKLA ELLE" : "OTOMATİK"); Px.ses("tik"); });
+    m.appendChild(b);
+  } });
+  dizil(); skor = [0, 0]; sure = SURE; calis = false; tik = 0; parc = []; insanlar = []; mesaj = ""; msayac = 0;
+  document.getElementById("tekrar").addEventListener("click", function () { basla(son.m, son.z); });
+  document.getElementById("menuBtn").addEventListener("click", function () { calis = false; menu.ac(); });
+  Px.dongu(guncelle, ciz);
 })();
 </script>
 </body>

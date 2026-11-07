@@ -8,10 +8,10 @@
 
   // Geçerli oyun kodları (kurulum.sql içindeki liste ile aynı olmalı)
   var OYUN_ADLARI = {
-    "bilgi-kalesi": "🏰 Bilgi Kalesi", "yilan": "🐍 Yılan", "2048": "🔢 2048",
-    "hafiza": "🃏 Hafıza", "balon": "🎈 Balon", "kelime": "🔤 Kelime",
-    "futbol": "⚽ Futbol", "platform": "🏃 Platform", "tetris": "🧱 Tetris",
-    "kus": "🐦 Kuş", "basket": "🏀 Basket", "voleybol": "🏐 Voleybol"
+    "bilgi-kalesi": "Kale Savaşı", "yilan": "Yılan", "2048": "2048",
+    "hafiza": "Hafıza", "balon": "Balon", "kelime": "Kelime",
+    "futbol": "Futbol", "platform": "Platform", "tetris": "Tetris",
+    "kus": "Kuş", "basket": "Basket", "voleybol": "Voleybol"
   };
   var OYUNLAR = Object.keys(OYUN_ADLARI);
 
@@ -213,7 +213,7 @@
       kap._jeton = jeton;
       kap.hidden = false;
       kap.textContent = "";
-      kap.appendChild(eleman("h3", "🏆 En İyi 10"));
+      kap.appendChild(eleman("h3", "En İyi 10"));
       var durum = eleman("p", "Yükleniyor...", "sira-durum");
       kap.appendChild(durum);
       return liste(oyun, 10).then(function (d) {
@@ -248,7 +248,7 @@
       var d = document;
       var bitti = d.getElementById("bitti"), s = d.getElementById("sonuc"),
         p = d.getElementById("siralama"), r = d.getElementById("rekor");
-      if (s) s.textContent = "Puanın: " + puan + (sonuc.yeni ? "  🎉 Yeni rekor!" : "");
+      if (s) s.textContent = "Puanın: " + puan + (sonuc.yeni ? "  - Yeni rekor!" : "");
       if (r) r.textContent = String(sonuc.rekor);
       if (bitti) bitti.hidden = false;
       if (p) paneliCiz(p, oyun);
@@ -268,15 +268,17 @@
     if (stilEklendi) return; stilEklendi = true;
     var st = document.createElement("style");
     st.textContent =
-      ".skor-ad-ort{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}" +
-      ".skor-ad-kutu{background:#1e293b;color:#f1f5f9;border-radius:14px;padding:20px;max-width:340px;width:100%;font-family:system-ui,Arial,sans-serif;box-shadow:0 10px 40px #000a}" +
-      ".skor-ad-kutu h2{font-size:1.15rem;margin-bottom:8px}" +
-      ".skor-ad-kutu input{width:100%;padding:10px;border-radius:8px;border:2px solid #475569;background:#0f172a;color:#fff;font-size:1rem;margin:8px 0}" +
-      ".skor-ad-uyari{font-size:.85rem;color:#fbbf24;margin-bottom:4px}" +
-      ".skor-ad-hata{font-size:.85rem;color:#f87171;min-height:1.2em}" +
+      ".skor-ad-ort{position:fixed;inset:0;background:rgba(13,14,26,.8);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px}" +
+      ".skor-ad-kutu{background:#262b44;color:#f4f4f4;border:4px solid #566c86;box-shadow:0 0 0 4px #0d0e1a,8px 8px 0 4px #0d0e1a;padding:18px;max-width:340px;width:100%;font-family:'Courier New',monospace;font-weight:bold}" +
+      ".skor-ad-kutu h2{font-size:1.15rem;margin-bottom:8px;color:#ffcd75}" +
+      ".skor-ad-kutu input{width:100%;padding:10px;border:3px solid #566c86;background:#0d0e1a;color:#fff;font:inherit;font-size:1rem;margin:8px 0;outline:none}" +
+      ".skor-ad-kutu input:focus{border-color:#ffcd75}" +
+      ".skor-ad-uyari{font-size:.85rem;color:#ffcd75;margin-bottom:4px}" +
+      ".skor-ad-hata{font-size:.85rem;color:#ef7d57;min-height:1.2em}" +
       ".skor-ad-dugmeler{display:flex;gap:8px;margin-top:8px}" +
-      ".skor-ad-dugmeler button{flex:1;padding:10px;border:0;border-radius:8px;font-size:1rem;cursor:pointer;background:#334155;color:#fff}" +
-      ".skor-ad-dugmeler button.ana{background:#38bdf8;color:#0f172a;font-weight:700}";
+      ".skor-ad-dugmeler button{flex:1;padding:10px;border:3px solid #0d0e1a;font:inherit;font-size:1rem;cursor:pointer;background:#566c86;color:#fff;box-shadow:0 4px 0 #0d0e1a}" +
+      ".skor-ad-dugmeler button:active{transform:translateY(3px);box-shadow:0 1px 0 #0d0e1a}" +
+      ".skor-ad-dugmeler button.ana{background:#ffcd75;color:#0d0e1a}";
     document.head.appendChild(st);
   }
   // Takma ad penceresini açar. Kaydedilirse devam() çağrılır.
@@ -287,7 +289,7 @@
       var ort = eleman("div", null, "skor-ad-ort"); ort.id = "skorAdPenceresi";
       var kutu = eleman("div", null, "skor-ad-kutu");
       kutu.appendChild(eleman("h2", "Takma adını yaz"));
-      kutu.appendChild(eleman("p", "⚠️ Gerçek adını yazma, takma ad kullan (2-12 karakter).", "skor-ad-uyari"));
+      kutu.appendChild(eleman("p", "Gerçek adını yazma, takma ad kullan (2-12 karakter).", "skor-ad-uyari"));
       var inp = eleman("input"); inp.type = "text"; inp.maxLength = 12; inp.placeholder = "Örn: SuperKedi";
       inp.setAttribute("autocomplete", "off"); inp.setAttribute("aria-label", "Takma ad");
       inp.value = takmaAd();
@@ -325,8 +327,7 @@
       if (oyun && r) r.textContent = String(rekor(oyun));
       var atlandi = false;
       try { atlandi = global.sessionStorage.getItem("oyunMerkezi_adAtla") === "1"; } catch (e) { }
-      // Oyun sayfasında takma ad yoksa bir kez sor
-      if (oyun !== null && gov.hasAttribute("data-oyun") && !takmaAd() && !atlandi) adSor();
+      // Takma ad yalnızca ilk skor gönderilirken sorulur (menü ve 2 kişilik maçlar kesilmesin)
       kuyrukBosalt();
     } catch (e) { }
   }

@@ -1,4 +1,4 @@
-# 🎮 Oyun Merkezi
+# Oyun Merkezi
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -6,20 +6,22 @@
 
 | Oyun | Puan nedir? |
 |---|---|
-| 🏰 Bilgi Kalesi | Ulaşılan dalga |
-| 🐍 Yılan | Yenen elma |
-| 🔢 2048 | Birleştirme puanı |
-| 🃏 Hafıza | 1000 − hamle×20 − saniye×3 |
-| 🎈 Balon | 60 sn'de patlatılan balonların puanı |
-| 🔤 Kelime | En uzun doğru kelime serisi |
-| ⚽ Futbol | Kazanılan penaltı maçı |
-| 🏃 Platform | Mesafe + jeton |
-| 🧱 Tetris | Satır puanı |
-| 🐦 Kuş | Geçilen boru |
-| 🏀 Basket | 30 sn'de atılan sayı |
-| 🏐 Voleybol | Rakip 5 sayı alana kadar aldığın sayı |
+| Kale Savaşı | Dalga×50 + öldürülen düşman (sonsuz dalga, 10'da bir boss) |
+| Yılan | Yenen elma |
+| 2048 | Birleştirme puanı |
+| Hafıza | 1000 − hamle×20 − saniye×3 |
+| Balon | 60 sn'de patlatılan balonların puanı |
+| Kelime | En uzun doğru kelime serisi |
+| Futbol | Kazanılan penaltı maçı |
+| Platform | Mesafe + jeton |
+| Tetris | Satır puanı |
+| Kuş | Geçilen boru |
+| Basket | 90 sn'lik maçta attığın sayı (2'ye 2) |
+| Voleybol (2'ye 2) | Rakip 5 sayı alana kadar aldığın sayı |
 
-Yerel rekorlar `localStorage`'da tutulur (`oyunMerkezi_<oyun>`; Bilgi Kalesi için `bilgiKalesi_v1`). Sıralama kapalıyken ya da internet yokken oyunlar eskisi gibi çalışır, sadece sıralama gizlenir.
+Tüm arayüz piksel sanatı tarzındadır (emoji yok, sprite'lar kodla çizilir); her oyunda ses açma/kapama ve sağ üstte tam ekran düğmesi vardır. **Sıralamaya yalnızca tek kişilik modlar yazılır**; 2 kişilik maçlar sıralamaya gitmez.
+
+Yerel rekorlar `localStorage`'da tutulur (`oyunMerkezi_<oyun>`). Sıralama kapalıyken ya da internet yokken oyunlar eskisi gibi çalışır, sadece sıralama gizlenir.
 
 ## Gizlilik
 
@@ -36,7 +38,7 @@ Yerel rekorlar `localStorage`'da tutulur (`oyunMerkezi_<oyun>`; Bilgi Kalesi iç
    ```js
    window.OYUN_AYAR = { SUPABASE_URL: "https://xxxx.supabase.co", SUPABASE_ANON_KEY: "eyJ..." };
    ```
-5. Dosyayı kaydedip siteyi yenileyin. Ana sayfada **🏆 Sıralama** bağlantısı görünür.
+5. Dosyayı kaydedip siteyi yenileyin. Ana sayfada **Sıralama** bağlantısı görünür.
 
 `config.js` yer tutucu halindeyken sıralama sessizce kapalı kalır.
 
@@ -50,7 +52,7 @@ Tüm bağlantılar göreli olduğu için site alt klasörde (`github.io/depo-adi
    (Bu depoda site alt klasördedir: `https://KULLANICIADI.github.io/DEPO-ADI/oyun-merkezi/`; kökteki `index.html` oraya yönlendirir.)
 4. `config.js` içindeki gerçek değerleri commit'lemeyi unutmayın (anon anahtar herkese açıktır, güvenlik veritabanı kurallarındadır).
 
-## ⚠️ Supabase ücretsiz paketi hakkında
+## Supabase ücretsiz paketi hakkında
 
 Ücretsiz paketteki projeler **1 hafta hiç kullanılmazsa duraklatılır**. Sıralama kaybolmuş gibi görünürse Supabase panelinde projeyi açıp **Restore / Resume project** ile tekrar başlatın. Duraklatılmışken oyunlar çalışmaya devam eder, sadece sıralama "yüklenemedi" der. Puanlar internet yokken yerelde bekler ve bağlantı gelince gönderilir (en fazla 20 kayıt).
 
@@ -63,5 +65,6 @@ config.js                   Supabase ayarı (yer tutucu)
 skor.js                     ortak sıralama kodu (global "Skor")
 supabase/kurulum.sql        veritabanı kurulumu
 oyunlar/ortak.css           oyunların ortak stili
-oyunlar/<oyun>/index.html   her oyun tek dosya (bilgi-kalesi: game.js, sorular.js, style.css ayrı)
+oyunlar/piksel.js           ortak piksel çizim, ses, tam ekran, menü kodu (global "Px")
+oyunlar/<oyun>/index.html   her oyun tek dosya
 ```
