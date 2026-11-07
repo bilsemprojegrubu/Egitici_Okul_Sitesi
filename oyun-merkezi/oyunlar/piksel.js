@@ -151,7 +151,20 @@
   };
   IKON.tam = ["###....###", "#........#", "#........#", "..........", "..........", "#........#", "#........#", "###....###"];
   function ikonYap(ad) { return Px.sprite(IKON[ad], { "#": "#f4f4f4" }, 3).toDataURL(); }
-  var tamBtn, sesBtn, aracDiv, hizBtn;
+  var tamBtn, sesBtn, aracDiv, hizBtn, uiBtn;
+  // Arayüz boyutu: %100 / %90 / %75 / %60 (seçim hatırlanır)
+  var UI = [100, 90, 75, 60];
+  Px.ui = parseInt(oku("px_ui"), 10) || 100;
+  if (UI.indexOf(Px.ui) < 0) Px.ui = 100;
+  function uiUygula() { document.documentElement.style.setProperty("--ui", String(Px.ui / 100)); if (uiBtn) uiBtn.textContent = Px.ui + "%"; }
+  uiUygula();
+  function uiEkle() {
+    uiBtn = document.createElement("button"); uiBtn.type = "button"; uiBtn.className = "arac-d arac-hiz"; uiBtn.setAttribute("aria-label", "Arayüz boyutu");
+    uiBtn.addEventListener("click", function () {
+      Px.ui = UI[(UI.indexOf(Px.ui) + 1) % UI.length]; yaz("px_ui", String(Px.ui)); uiUygula(); Px.ses("tik"); sigdir();
+    });
+    uiUygula(); aracDiv.insertBefore(uiBtn, aracDiv.firstChild);
+  }
   // Oyun hızı: 1x / 2x / 4x (döngü kullanan oyunlarda görünür, seçim hatırlanır)
   Px.hiz = parseInt(oku("px_hiz"), 10) || 1;
   if ([1, 2, 4].indexOf(Px.hiz) < 0) Px.hiz = 1;
@@ -165,7 +178,8 @@
     });
     guncelle(); aracDiv.insertBefore(hizBtn, aracDiv.firstChild);
   }
-  function tamMi() { return !!(document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains("tam")); }
+  var yedekTam = false; // tarayıcı tam ekran vermezse (iPhone) elle tam ekran
+  function tamMi() { return !!(document.fullscreenElement || document.webkitFullscreenElement || yedekTam); }
   function tamGuncelle() {
     var a = tamMi();
     if (a) document.body.classList.add("tam"); else document.body.classList.remove("tam");
@@ -234,9 +248,9 @@
         (document.exitFullscreen || document.webkitExitFullscreen).call(document);
       } else if (el.requestFullscreen || el.webkitRequestFullscreen) {
         var p = (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
-        if (p && p.catch) p.catch(function () { document.body.classList.toggle("tam"); tamGuncelle(); });
-      } else { document.body.classList.toggle("tam"); tamGuncelle(); } // iPhone gibi yerlerde yedek
-    } catch (e) { document.body.classList.toggle("tam"); tamGuncelle(); }
+        if (p && p.catch) p.catch(function () { yedekTam = !yedekTam; tamGuncelle(); });
+      } else { yedekTam = !yedekTam; tamGuncelle(); } // iPhone gibi yerlerde yedek
+    } catch (e) { yedekTam = !yedekTam; tamGuncelle(); }
   };
   function sesGuncelle() { if (sesBtn) sesBtn.style.backgroundImage = "url(" + ikonYap(sessiz ? "sessiz" : "ses") + ")"; }
   function aracKur() {
@@ -245,7 +259,7 @@
     tamBtn = document.createElement("button"); tamBtn.type = "button"; tamBtn.className = "arac-d"; tamBtn.setAttribute("aria-label", "Tam ekran");
     sesBtn.addEventListener("click", function () { sessiz = !sessiz; yaz("px_ses", sessiz ? "0" : "1"); sesGuncelle(); Px.ses("tik"); });
     tamBtn.addEventListener("click", Px.tamEkran);
-    d.appendChild(sesBtn); d.appendChild(tamBtn); document.body.appendChild(d); aracDiv = d; if (Px.hizGerek) hizEkle();
+    d.appendChild(sesBtn); d.appendChild(tamBtn); document.body.appendChild(d); aracDiv = d; uiEkle(); if (Px.hizGerek) hizEkle();
     sesGuncelle(); tamGuncelle(); sigIzle();
     document.addEventListener("fullscreenchange", tamGuncelle);
     document.addEventListener("webkitfullscreenchange", tamGuncelle);
@@ -290,17 +304,17 @@
     var ip = sahne.querySelector(".ipucu");
     if (ip) { var p = document.createElement("p"); p.className = "ipucu"; p.textContent = ip.textContent; m.appendChild(p); }
     var b = document.createElement("button"); b.type = "button"; b.className = "btn buyuk yesil"; b.textContent = "▶ BAŞLA";
-    m.appendChild(b); sahne.appendChild(m); kapiAcik = true;
+    m.appendChild(b); var ha = document.createElement("p"); ha.className = "ipucu"; ha.textContent = "Başlamak için herhangi bir tuşa bas ya da ekrana dokun"; m.appendChild(ha); sahne.appendChild(m); kapiAcik = true;
     function basla() {
       if (!kapiAcik) return; kapiAcik = false; m.remove(); Px.ses("al");
       window.removeEventListener("keydown", tus, true); window.removeEventListener("keyup", tus, true);
       if (devam) devam();
     }
     function tus(e) {
-      if (e.type === "keydown" && (e.code === "Enter" || e.code === "Space")) { e.preventDefault(); e.stopImmediatePropagation(); basla(); return; }
       e.preventDefault(); e.stopImmediatePropagation(); // bekleyen oyun tuşlara tepki vermesin
+      if (e.type === "keydown" && !e.repeat && ["Shift", "Control", "Alt", "Meta", "CapsLock", "Tab"].indexOf(e.key) < 0) basla(); // herhangi bir tuş
     }
-    b.addEventListener("click", basla);
+    m.addEventListener("click", basla); // ekrana / kaplamaya dokunmak da başlatır
     window.addEventListener("keydown", tus, true); window.addEventListener("keyup", tus, true);
     try { b.focus({ preventScroll: true }); } catch (e) { }
   };
