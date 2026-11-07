@@ -192,6 +192,7 @@
     p.ang = Px.sinir((p.ang || 0) + (hedefA - (p.ang || 0)) * .25, -1.1, 1.1);
     if (!p.yer) { p.av = 0; p.ang += ((p.ja || 0) - p.ang) * .18; } // zıplarken basılan yöne yatık kalır, havada değişmez // havada sallanma yok: gittiği yöne doğru yatar
     if (p.hold && !p.dunk && (!p.yer || p.chg > 0)) p.ang += (-p.face * (p.yer ? .3 : .5) - p.ang) * .2; // topla şut hazırlığında / havada geriye eğilir
+    if (p.ov > 0) { p.ov--; if (!p.yer) p.ang += ((p.vx < -.1 ? -1 : 1) * p.face * 1.5 - p.ang) * .3; } // başkasının üstünden atlarken yan yatar
     p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) ;
     if (p.stl > 0) p.stl--; if (p.swp > 0) { p.sw += Math.sin(p.swp / 8 * Math.PI) * 90; p.swp--; }
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = -25; p.th += (hedef - p.th) * (p.chg > 0 ? .18 : .3);
@@ -204,7 +205,7 @@
       var a = pl[i], b = pl[j], dx = b.x - a.x, key = i + "_" + j;
       if (Math.abs(dx) >= 26) { ovr[key] = 0; continue; }
       if (Math.abs(a.y - b.y) > 26) ovr[key] = 1; // biri ötekinin kafasının üstünden aşıyor: iç içe geçmeden geçebilir
-      if (ovr[key] && (!a.yer || !b.yer)) continue;
+      if (ovr[key] && (!a.yer || !b.yer)) { var ust = a.y < b.y ? a : b; if (!ust.yer) ust.ov = 6; continue; } // üstünden aşan yan yatar
       var m = (26 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x = Px.sinir(a.x - m, 8, W - 8); b.x = Px.sinir(b.x + m, 8, W - 8);
     }
   }
