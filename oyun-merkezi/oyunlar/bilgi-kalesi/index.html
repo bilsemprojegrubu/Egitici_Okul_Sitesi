@@ -423,7 +423,7 @@
     if (u.heal) { healAI(u, dr, spm); return; }
     for (i = 0; i < U.length; i++) {
       o = U[i];
-      if (o.s === en && !o.dead) { dd = (o.x - u.x) * dr; if (dd <= -4 && !u.ok && !u.heal && -dd <= u.r + 2) dd = -dd; if (dd > -4) { scr = u.hunt ? dd - ((o.ok || o.heal) ? 170 : 0) : dd; if (scr < bs) { bs = scr; bd = dd; best = o; } } }
+      if (o.s === en && !o.dead) { dd = (o.x - u.x) * dr; if (dd <= -4 && !u.ok && !u.heal && -dd <= u.r + 2 + (z.em === 1 ? 45 : 14)) dd = -dd; if (dd > -4) { scr = u.hunt ? dd - ((o.ok || o.heal) ? 170 : 0) : dd; if (scr < bs) { bs = scr; bd = dd; best = o; } } }
     }
     if (u.twh) best = null; // kule avcısı: askerleri görmezden gelir
     var tg = null, td = 1e9;
@@ -450,7 +450,7 @@
       return;
     }
     var hareket = 0;
-    if (z.em === 1) hareket = dr;
+    if (z.em === 1) hareket = u.bk && !u.ok ? -dr : dr; // hücumda arkada düşman bırakma: dönüp temizle
     else if (z.em === 2) { var ev = front(u.s) + dr * (8 + (u.id % 5) * 5); if (Math.abs(u.x - ev) > 2.5) hareket = u.x < ev ? 1 : -1; }
     else if (mod === 1 && u.s === 1) {
       var rally = front(1) - 70 - (u.id % 5) * 7;
