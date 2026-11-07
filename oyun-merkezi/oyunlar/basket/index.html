@@ -166,7 +166,7 @@
     if (top.h) { var e = el(top.h); top.x = e.x + e.dx * 2; top.y = e.y + e.dy * 2; top.vx = top.vy = 0; return; }
     var r = V.r, py = top.y;
     top.vy += V.g; top.vx += V.w || 0; top.x += top.vx; top.y += top.vy; top.vx *= .999; top.d += top.vx * 12;
-    if (top.y > ZEMIN - r) { top.y = ZEMIN - r; top.vy = -Math.abs(top.vy) * (V.bn || (V.g > .13 ? .5 : .78)); top.vx *= V.kar ? .99 : .92; if (Math.abs(top.vy) > .8) Px.ses("tik"); if (Math.abs(top.vy) < .5) top.vy = 0; }
+    if (top.y > ZEMIN - r) { top.y = ZEMIN - r; if (V.tc === 2) { top.vy = 0; top.vx *= .85; } else { top.vy = -Math.abs(top.vy) * (V.tc === 1 ? .96 : (V.bn || (V.g > .13 ? .5 : .78))); top.vx *= V.kar ? .99 : .92; if (Math.abs(top.vy) > .8) Px.ses("tik"); if (Math.abs(top.vy) < (V.tc === 1 ? .25 : .5)) top.vy = 0; } }
     if (top.y < r) { top.y = r; top.vy = Math.abs(top.vy) * .6; }
     if (top.x < r) { top.x = r; top.vx = Math.abs(top.vx) * .7; }
     if (top.x > W - r) { top.x = W - r; top.vx = -Math.abs(top.vx) * .7; }
