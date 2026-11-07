@@ -309,6 +309,29 @@
   var PNG = {}, PNG_HAZIR = 0, PNG_N = 3 + 2 * 3;
   (function () { var ad = ["bacak0", "bacak1", "bacak2", "govde0", "govde1", "kafa0", "kafa1", "kol0", "kol1"]; PNG_N = ad.length; ad.forEach(function (n) { var im = new Image(); im.onload = function () { PNG_HAZIR++; }; im.src = "karakter/" + n + ".png"; PNG[n] = im; }); })();
   function cizK(n, dx, dy, w, h) { x.drawImage(PNG[n], dx, dy, w, h); }
+  // pürüzsüz (piksel olmayan) karakter: yüksek çözünürlüklü saydam katmana vektör olarak çizilir
+  function cizVek2(p, fr) { return cizVek(p, fr); }
+  function cizVek(p, fr) {
+    var o = C._ov; if (!o || !o.width) return false;
+    var c = o.getContext("2d"), sc = o.width / C.width, hr = V.hr, a = (p.th + (p.sw || 0)) * Math.PI / 180, K = "#15151f";
+    var jer = p.t === 0 ? "#e8303f" : "#ffc125", cizgi = p.t === 0 ? "#fff" : "#8a2be2", ten = p.t === 0 ? "#f5d5b0" : "#c9996b", sac = p.t === 0 ? "#8a4a35" : "#14141a";
+    function yuv(x0, y0, w, h, r, dolgu) { c.beginPath(); if (c.roundRect) c.roundRect(x0, y0, w, h, r); else c.rect(x0, y0, w, h); c.fillStyle = dolgu; c.fill(); c.lineWidth = .7; c.strokeStyle = K; c.stroke(); }
+    c.save(); c.setTransform(sc, 0, 0, sc, 0, 0); c.imageSmoothingEnabled = true;
+    c.translate(p.x, p.y); c.rotate(p.ang || 0);
+    var bac = fr === 0 ? [[-1.6, 0]] : fr === 1 ? [[-3.4, 0], [.6, 0]] : [[-.4, 0], [-3.6, 0]];
+    for (var i = 0; i < bac.length; i++) { var lx = bac[i][0]; yuv(lx, -20, 3, 17, 1, ten); yuv(lx, -6, 3, 3, 0, "#fff"); yuv(lx - .4, -3.4, 5.6, 3.4, 1.2, K); }
+    yuv(-3.8, -17 - BOY, 7.6, 12, 1.6, jer);
+    c.fillStyle = cizgi; c.fillRect(-3.8, -13 - BOY, 7.6, 1.2); c.fillRect(-3.8, -9 - BOY, 7.6, 1.2);
+    var hy = -(18 + BOY + hr);
+    c.beginPath(); c.arc(0, hy, hr + 1, 0, 7); c.fillStyle = ten; c.fill(); c.lineWidth = .7; c.strokeStyle = K; c.stroke();
+    c.beginPath(); c.arc(0, hy, hr + 1, Math.PI * 1.02, Math.PI * 1.98); c.fillStyle = sac; c.fill();
+    c.beginPath(); c.arc(p.face * (hr * .45), hy + .4, .75, 0, 7); c.fillStyle = K; c.fill();
+    c.translate(p.face * 3, -15 - BOY); c.rotate(-p.face * a);
+    var L = V.L * 14 / 11; c.lineCap = "round"; c.strokeStyle = K; c.lineWidth = 3.6; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, L); c.stroke();
+    c.strokeStyle = ten; c.lineWidth = 2.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, L); c.stroke();
+    c.strokeStyle = jer; c.lineWidth = 2.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 3.2); c.stroke();
+    c.restore(); return true;
+  }
   function cizPng(p, fr) {
     var g = p.ang || 0, hr = V.hr, a = (p.th + (p.sw || 0)) * Math.PI / 180, k = (hr + 1) / 4;
     x.save(); x.translate(Math.round(p.x), Math.round(p.y)); x.rotate(g); x.imageSmoothingEnabled = false; x.scale(1.6, 1); // daha dolgun gövde
@@ -324,6 +347,7 @@
     x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px0 - 6, ZEMIN, 12, 2);
     var ana_x = x; x = OX; OX.clearRect(0, 0, 64, 80); // karakter önce dik bir piksel sprite'a çizilir, sonra ayaktan döndürülür
     var fr = p.yer ? (Math.abs(p.vx) > .3 ? Math.floor(p.f) % 2 : 0) : 2;
+    if (cizVek2(p, fr)) { x = ana_x; return; }
     if (PNG_HAZIR >= PNG_N) { x = ana_x; cizPng(p, fr); return; }
     // ince, uzun bacaklar
     var lt = yy - 6 - B, lx = fr === 0 ? [-3, 1] : [-4, 2], ll = fr === 0 ? [6 + B, 6 + B] : fr === 1 ? [6 + B, 5 + B] : [4 + B, 4 + B];
