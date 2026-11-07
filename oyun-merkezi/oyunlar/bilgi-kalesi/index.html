@@ -457,7 +457,7 @@
       if (best && bd < 170) hareket = dr; else if (Math.abs(u.x - rally) > 3) hareket = u.x < rally ? 1 : -1;
     } else hareket = dr;
     if (hareket) {
-      if (z.em !== 2 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && o.ly === u.ly && !(o.r > 30 && u.r <= 30) && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
+      if (z.em === 0 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && o.ly === u.ly && !(o.r > 30 && u.r <= 30) && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
       u.x += hareket * u.sp * spm * (z.em === 2 ? 1.7 : 1); u.w++;
       u.x = Px.sinir(u.x, 6, WW - 6);
     }
