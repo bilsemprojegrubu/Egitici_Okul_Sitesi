@@ -188,11 +188,18 @@
       if (!acik() || OYUNLAR.indexOf(oyun) < 0) return Promise.resolve(null);
       adet = Math.max(1, Math.min(50, parseInt(adet === undefined ? 10 : adet, 10) || 10));
       var yol = "/rest/v1/skorlar?oyun=eq." + encodeURIComponent(oyun) +
-        "&select=takma_ad,puan&order=puan.desc&limit=" + adet;
+        "&select=takma_ad,puan&order=puan.desc&limit=200"; // aynı ad tekrar edebilir: fazla çekip ada göre tekilleştiriyoruz
       return istek(yol, { method: "GET" }).then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
           if (!Array.isArray(d)) return null;
-          return d.filter(function (k) { return k && typeof k.takma_ad === "string" && typeof k.puan === "number"; }).slice(0, adet);
+          // Her takma ad listede bir kez görünür: en yüksek puanı (liste puana göre azalan sıralı)
+          var gorulen = {};
+          return d.filter(function (k) {
+            if (!k || typeof k.takma_ad !== "string" || typeof k.puan !== "number") return false;
+            var a = k.takma_ad.toLowerCase();
+            if (gorulen[a]) return false;
+            gorulen[a] = true; return true;
+          }).slice(0, adet);
         }).catch(function () { return null; });
     } catch (e) { return Promise.resolve(null); }
   }
