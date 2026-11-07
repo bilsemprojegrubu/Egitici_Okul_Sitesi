@@ -365,7 +365,14 @@
       if (top.z > 0 || top.vz) { top.vz -= .12; top.z += top.vz; if (top.z <= 0) { top.z = 0; top.vz = top.vz < -.9 ? -top.vz * .35 : 0; } }
       top.x += top.vx; top.y += top.vy; top.vx *= fr_; top.vy *= fr_; top.d += top.vx * 8 + top.vy * 2;
       var mouth = top.y > GT && top.y < GB;
-      if (sh && !top.z) { top.y = Px.sinir(top.y, PT + 1, PB - 1); if (!mouth) top.x = Px.sinir(top.x, PL + 1, PR - 1); }
+      if (sh && !top.z) { // topla çizgiye yaslanan oyuncu: taç / korner
+        top.y = Px.sinir(top.y, PT + 1, PB - 1); if (!mouth) top.x = Px.sinir(top.x, PL + 1, PR - 1);
+        var kenar = top.y <= PT + 1.5 || top.y >= PB - 1.5 || (!mouth && (top.x <= PL + 1.5 || top.x >= PR - 1.5));
+        top.kn = kenar ? (top.kn || 0) + 1 : 0;
+        if (top.kn > 20) { top.kn = 0; top.son = sh.t; top.sahip = null;
+          if (top.y <= PT + 1.5 || top.y >= PB - 1.5) { spBasla("tac", 1 - sh.t, Px.sinir(top.x, PL + 10, PR - 10), top.y < CY ? PT : PB); return; }
+          endOut(top.x < CX ? 0 : 1); return; }
+      } else top.kn = 0;
       if (top.y < PT - 1 || top.y > PB + 1) { spBasla("tac", top.son < 0 ? 0 : 1 - top.son, Px.sinir(top.x, PL + 10, PR - 10), top.y < CY ? PT : PB); return; }
       if (top.x < PL) { if (mouth) { if (top.x < PL - 2) { gol(1); return; } } else if (top.x < PL - 1) { endOut(0); return; } }
       if (top.x > PR) { if (mouth) { if (top.x > PR + 2) { gol(0); return; } } else if (top.x > PR + 1) { endOut(1); return; } }
