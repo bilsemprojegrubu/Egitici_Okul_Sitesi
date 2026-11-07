@@ -97,39 +97,53 @@
     x.fillStyle = "rgba(255,255,255,.5)"; x.fillRect(-4, 1, 3, 12);
     x.restore();
   }
-  // ---- Spike benzeri piksel kaktüs (24x24 gövde, kol, bot) kodla çizilir ----
+  // ---- Spike tarzı piksel kaktüs (24x36): büyük çiçek, siyah gözler, şort, ayakkabı ----
   var SP = (function () {
-    var N = 24, g = []; for (var r = 0; r < N; r++) { g.push([]); for (var c = 0; c < N; c++) g[r].push("."); }
-    function put(c, r, ch) { if (r >= 0 && r < N && c >= 0 && c < N) g[r][c] = ch; }
-    var L = { 5: [5, 18], 6: [3, 20], 21: [3, 20], 22: [5, 18] }, r, c;
-    for (r = 5; r <= 22; r++) { var a = L[r] || [2, 21]; for (c = a[0]; c <= a[1]; c++) put(c, r, "g"); }
-    for (r = 6; r <= 21; r++) { for (c = 3; c <= 5; c++) if (g[r][c] === "g") g[r][c] = "G"; for (c = 17; c <= 20; c++) if (g[r][c] === "g") g[r][c] = "d"; }
-    for (r = 8; r <= 21; r++) { put(9, r, "d"); put(14, r, "d"); }
-    [[3, 9], [20, 8], [3, 15], [20, 14], [8, 6], [16, 6], [11, 20], [5, 20], [18, 19]].forEach(function (t) { put(t[0], t[1], "w"); });
-    // gözler
-    for (r = 9; r <= 14; r++) for (c = 5; c <= 10; c++) { put(c, r, "e"); put(c + 8, r, "e"); }
-    for (r = 11; r <= 14; r++) for (c = 8; c <= 9; c++) { put(c, r, "k"); put(c + 6, r, "k"); }
-    for (c = 5; c <= 10; c++) { put(c, 8, "k"); put(c + 8, 8, "k"); }
-    // gülen ağız
-    for (c = 8; c <= 15; c++) { put(c, 16, "k"); put(c, 19, "k"); } for (r = 17; r <= 18; r++) { put(7, r, "k"); put(16, r, "k"); for (c = 8; c <= 15; c++) put(c, r, r === 17 ? "t" : "m"); }
-    // çiçek (sol üst)
-    [[4, 0], [5, 0], [3, 1], [4, 1], [5, 1], [6, 1], [2, 2], [3, 2], [6, 2], [7, 2], [3, 3], [4, 3], [5, 3], [6, 3], [4, 4], [5, 4]].forEach(function (t) { put(t[0], t[1], "p"); });
-    put(4, 2, "y"); put(5, 2, "y"); put(4, 3, "y"); put(5, 3, "y"); put(3, 1, "P"); put(4, 0, "P"); put(2, 2, "P");
-    put(5, 5, "g"); put(6, 5, "g");
+    var NW = 24, NH = 36, g = [], r, c; for (r = 0; r < NH; r++) { g.push([]); for (c = 0; c < NW; c++) g[r].push("."); }
+    function put(c, r, ch) { if (r >= 0 && r < NH && c >= 0 && c < NW) g[r][c] = ch; }
+    var OY = 9;
+    for (r = OY; r < NH; r++) for (c = 0; c < NW; c++) { var dx = (c - 11.5) / 10.5, dy = (r - (OY + 11)) / 11.5; if (dx * dx + dy * dy <= 1) put(c, r, "g"); }
+    for (r = OY; r < NH; r++) for (c = 0; c < NW; c++) if (g[r][c] === "g") { if (c <= 5) g[r][c] = "G"; else if (c >= 18) g[r][c] = "d"; }
+    for (r = OY + 2; r < NH - 1; r++) { put(8, r, "d"); put(15, r, "d"); }
+    [[1, 14], [0, 20], [2, 26], [22, 14], [23, 20], [21, 26], [4, 11], [19, 11]].forEach(function (t) { put(t[0], t[1], "w"); });
+    [[3, 16], [20, 17], [4, 23], [19, 23]].forEach(function (t) { put(t[0], t[1], "w"); });
+    // gözler: tamamen siyah oval
+    for (r = OY + 3; r <= OY + 9; r++) for (c = 5; c <= 10; c++) { put(c, r, "k"); put(c + 8, r, "k"); }
+    [[5, OY + 3], [10, OY + 3], [13, OY + 3], [18, OY + 3], [5, OY + 9], [10, OY + 9], [13, OY + 9], [18, OY + 9]].forEach(function (t) { put(t[0], t[1], "g"); });
+    // gülümseme
+    for (c = 7; c <= 16; c++) { put(c, OY + 11, "k"); put(c, OY + 15, "k"); }
+    for (r = OY + 12; r <= OY + 14; r++) { put(6, r, "k"); put(17, r, "k"); for (c = 7; c <= 16; c++) put(c, r, r === OY + 12 ? "t" : (r === OY + 14 && c > 8 && c < 15 ? "L" : "m")); }
+    // KIYAFET: lacivert şort + sarı şerit + sarı kemer
+    for (r = 28; r < NH; r++) for (c = 0; c < NW; c++) if (g[r][c] !== ".") g[r][c] = "n";
+    for (c = 0; c < NW; c++) if (g[27][c] !== ".") g[27][c] = "y";
+    for (r = 28; r < NH; r++) { if (g[r][11] !== ".") g[r][11] = "y"; if (g[r][12] !== ".") g[r][12] = "y"; }
+    // BÜYÜK ÇİÇEK (kafanın üstünde): pembe taç yapraklar + sarı göbek
+    var pet = [[6, 1], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 1], [5, 2], [17, 2], [5, 3], [17, 3], [5, 4], [17, 4], [6, 5], [16, 5], [7, 6], [15, 6]];
+    for (r = 1; r <= 5; r++) for (c = 6; c <= 16; c++) put(c, r, "p");
+    pet.forEach(function (t) { put(t[0], t[1], "p"); });
+    for (r = 2; r <= 4; r++) for (c = 9; c <= 13; c++) put(c, r, "y");
+    for (r = 1; r <= 5; r++) { put(6, r, "P"); put(7, r, "P"); }
+    put(11, 6, "d"); put(11, 7, "g"); put(10, 7, "g"); put(12, 7, "g"); put(11, 8, "g");
     var cp = g.map(function (row) { return row.slice(); });
-    for (r = 0; r < N; r++) for (c = 0; c < N; c++) if (g[r][c] === ".") { var nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(function (d) { var rr = r + d[1], cc = c + d[0]; return rr >= 0 && rr < N && cc >= 0 && cc < N && g[rr][cc] !== "." && g[rr][cc] !== "k"; }); if (nb) cp[r][c] = "k"; }
-    var pal = { k: "#0d0e1a", g: "#38b764", G: "#a7f070", d: "#257179", w: "#fff8d0", e: "#ffffff", p: "#ff4fd8", P: "#ff9aee", y: "#ffe14d", t: "#ffffff", m: "#8a1f3a", o: "#a05a2c", O: "#6f3a1c" };
-    var kol = ["kkkkkkk", "kGggggk", "kGgggdk", "kGgggdk", "kGgggdk", "kGgggdk", "kGgggdk", "kGgggdk", "kGwgdwk", "kGggggk", "kkgggkk", ".kkkkk."];
-    var bot = [".kkkkkkkkk.", "kooooooooOk", "kooooooOOOk", "kkkkkkkkkkk"];
-    return { b: Px.sprite(cp.map(function (r) { return r.join(""); }), pal, 3), a: Px.sprite(kol, pal, 3), f: Px.sprite(bot, pal, 3) };
+    for (r = 0; r < NH; r++) for (c = 0; c < NW; c++) if (g[r][c] === ".") { var nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(function (d) { var rr = r + d[1], cc = c + d[0]; return rr >= 0 && rr < NH && cc >= 0 && cc < NW && g[rr][cc] !== "." && g[rr][cc] !== "k"; }); if (nb) cp[r][c] = "k"; }
+    var pal = { k: "#0d0e1a", g: "#38b764", G: "#a7f070", d: "#257179", w: "#fff8d0", e: "#ffffff", p: "#ff4fd8", P: "#ff9aee", y: "#ffe14d", t: "#ffffff", m: "#5d1030", L: "#ef4d5e", n: "#2b3a9a" };
+    var kol = ["kkkkkk", "kGgggk", "kGgdwk", "kGgggk", "kGgdwk", "kGggdk", "kGgggk", "kkgggk", ".kkkk."];
+    var ayak = [".kkkkkkk.", "kyyyyyyyk", "kgggggddk", "kkkkkkkkk"];
+    ayak = [".kkkkkkk.", "kWWWWWWWk", "kRRRRRRRk", "kkkkkkkkk"]; pal.W = "#fff"; pal.R = "#ef4d5e";
+    return { b: Px.sprite(cp.map(function (r) { return r.join(""); }), pal, 3), a: Px.sprite(kol, pal, 3), f: Px.sprite(ayak, pal, 3) };
   })();
+  var dnT = 0;
   function dansci() {
-    var cx = 200, cy = 112 + poz.bob * 1.2, sp = Math.round(Math.sin(kare / 5) * 4);
-    x.save(); x.imageSmoothingEnabled = false; x.translate(cx, cy); x.rotate(poz.lean);
-    x.drawImage(SP.f, -34 + sp, 34); x.drawImage(SP.f, 1 - sp, 34);
-    function kol(sx, a) { x.save(); x.translate(sx, -4); x.rotate(a); x.drawImage(SP.a, -10, -3); x.restore(); }
-    kol(-37, poz.a1); kol(37, poz.a2);
-    x.drawImage(SP.b, -36, -42 + (Math.floor(kare / 8) % 2));
+    // ikonik dans: kombo 10'un katlarında Spike dönerek kollarını sallar
+    if (kombo > 0 && kombo % 10 === 0 && dnT === 0 && !bitti) dnT = 70;
+    if (dnT > 0) dnT--;
+    var cx = 200, cy = 112 + poz.bob * 1.2, sp = Math.round(Math.sin(kare / 5) * 4), sx = 1, a1 = poz.a1, a2 = poz.a2, zp = 0;
+    if (dnT > 0) { var ph = (70 - dnT) / 70; sx = Math.cos(ph * Math.PI * 6); a1 = -2.6 + Math.sin(kare / 2) * .5; a2 = 2.6 - Math.sin(kare / 2) * .5; zp = -Math.abs(Math.sin(ph * Math.PI * 6)) * 14; sp = Math.round(Math.sin(kare / 2) * 6); }
+    x.save(); x.imageSmoothingEnabled = false; x.translate(cx, cy + zp); x.rotate(dnT > 0 ? 0 : poz.lean); x.scale(sx, 1);
+    x.drawImage(SP.f, -27 + sp, 48); x.drawImage(SP.f, 0 - sp, 48);
+    function kol(sx2, a) { x.save(); x.translate(sx2, 4); x.rotate(a); x.drawImage(SP.a, -9, -3); x.restore(); }
+    kol(-37, a1); kol(37, a2);
+    x.drawImage(SP.b, -36, -62 + (Math.floor(kare / 8) % 2));
     x.restore();
   }
   function ciz() {
