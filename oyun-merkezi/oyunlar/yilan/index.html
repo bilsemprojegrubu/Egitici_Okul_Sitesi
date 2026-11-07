@@ -98,39 +98,40 @@
     }
     var bob = Math.sin(Date.now() / 160) * 1.5;
     x.drawImage(ELMA, elma.x * S, elma.y * S + bob);
-    // gövde (kuyruktan başa); aralardaki boşluklar bağlayıcı dikdörtgenle kapatılır
+    // küp küp gövde (kuyruktan başa); dalga gibi ilerleyen nefes animasyonu
+    var zm = Date.now();
     var pz = yil.map(function (p, k) {
       var o = onc[k] || p; return { x: (o.x + (p.x - o.x) * t) * S + 10, y: (o.y + (p.y - o.y) * t) * S + 10 };
     });
-    for (var k = pz.length - 1; k >= 0; k--) {
-      var a = pz[k], ren = k % 2 ? "#a7f070" : "#73eff7";
-      ren = k % 2 ? "#5fcd5f" : "#38b764";
-      var bo = k === 0 ? 8 : (k === pz.length - 1 ? 5 : 7);
-      if (k < pz.length - 1) {
-        var c = pz[k + 1];
-        x.fillStyle = "#257179"; x.fillRect(Math.min(a.x, c.x) - bo, Math.min(a.y, c.y) - bo, Math.abs(a.x - c.x) + bo * 2, Math.abs(a.y - c.y) + bo * 2);
-      }
+    function kup(cx, cy, r, ust, yan, koyu) {
+      cx = Math.round(cx); cy = Math.round(cy);
+      x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(cx - r + 2, cy - r + 3, r * 2, r * 2);
+      x.fillStyle = koyu; x.fillRect(cx - r, cy - r, r * 2, r * 2);
+      x.fillStyle = yan; x.fillRect(cx - r + 1, cy - r + 1, r * 2 - 2, r * 2 - 2);
+      x.fillStyle = ust; x.fillRect(cx - r + 1, cy - r + 1, r * 2 - 5, r * 2 - 5);
+      x.fillStyle = "rgba(255,255,255,.45)"; x.fillRect(cx - r + 2, cy - r + 2, r * 2 - 7, 2);
     }
-    for (k = pz.length - 1; k >= 0; k--) {
-      a = pz[k]; bo = k === 0 ? 8 : (k === pz.length - 1 ? 5 : 7);
-      if (k < pz.length - 1) {
-        c = pz[k + 1];
-        x.fillStyle = k % 2 ? "#5fcd5f" : "#38b764";
-        x.fillRect(Math.min(a.x, c.x) - bo + 2, Math.min(a.y, c.y) - bo + 2, Math.abs(a.x - c.x) + bo * 2 - 4, Math.abs(a.y - c.y) + bo * 2 - 4);
-      }
-      x.fillStyle = "#257179"; x.fillRect(a.x - bo, a.y - bo, bo * 2, bo * 2);
-      x.fillStyle = k % 2 ? "#5fcd5f" : "#38b764"; x.fillRect(a.x - bo + 2, a.y - bo + 2, bo * 2 - 4, bo * 2 - 4);
-      x.fillStyle = "rgba(255,255,255,.35)"; x.fillRect(a.x - bo + 2, a.y - bo + 2, bo * 2 - 4, 2);
+    for (var k = pz.length - 1; k >= 1; k--) {
+      var a = pz[k], w = Math.sin(zm / 170 - k * 0.8);
+      var bo = 7 + (w > 0.55 ? 1 : 0) - (w < -0.55 ? 1 : 0);
+      if (k === pz.length - 1) bo = Math.min(bo, 6);
+      var acik = w > 0.55;
+      if (k % 2) kup(a.x, a.y, bo, acik ? "#73eff7" : "#41a6f6", "#3b5dc9", "#1f2a6b");
+      else kup(a.x, a.y, bo, acik ? "#73eff7" : "#29adff", "#3b5dc9", "#1f2a6b");
     }
-    // kafa: göz ve dil
+    // yeşil küp kafa: göz, kırpma ve dil
     var h = pz[0], d = yon || { x: 1, y: 0 };
     var px = -d.y, py = d.x;
-    x.fillStyle = "#257179"; x.fillRect(h.x - 9, h.y - 9, 18, 18);
-    x.fillStyle = "#73eff7"; x.fillRect(h.x - 7, h.y - 7, 14, 14);
-    x.fillStyle = "#fff"; x.fillRect(h.x + d.x * 3 + px * 5 - 2, h.y + d.y * 3 + py * 5 - 2, 4, 4); x.fillRect(h.x + d.x * 3 - px * 5 - 2, h.y + d.y * 3 - py * 5 - 2, 4, 4);
+    var hz = Math.round(Math.sin(zm / 140));
+    kup(h.x, h.y, 9 + (hz > 0 ? 0 : 0), "#a7f070", "#38b764", "#14532d");
+    var gz = (Math.floor(zm / 200) % 12 === 0);
+    x.fillStyle = "#fff"; x.fillRect(h.x + d.x * 3 + px * 5 - 2, h.y + d.y * 3 + py * 5 - 2, 4, gz ? 2 : 4); x.fillRect(h.x + d.x * 3 - px * 5 - 2, h.y + d.y * 3 - py * 5 - 2, 4, gz ? 2 : 4);
     x.fillStyle = "#0d0e1a"; x.fillRect(h.x + d.x * 4 + px * 5 - 1, h.y + d.y * 4 + py * 5 - 1, 2, 2); x.fillRect(h.x + d.x * 4 - px * 5 - 1, h.y + d.y * 4 - py * 5 - 1, 2, 2);
-    if (Math.floor(Date.now() / 300) % 3 === 0 && hayatta) {
-      x.fillStyle = "#b13e53"; x.fillRect(h.x + d.x * 9 - 1 + (d.x ? 0 : -1), h.y + d.y * 9 - 1 + (d.y ? 0 : -1), 3 + (d.x ? 3 : 0), 3 + (d.y ? 3 : 0));
+    if (hayatta && Math.floor(zm / 250) % 3 !== 1) {
+      var u = 3 + Math.round(Math.abs(Math.sin(zm / 120)) * 3);
+      x.fillStyle = "#b13e53"; x.fillRect(h.x + d.x * 10 - 1 + (d.x ? 0 : -1), h.y + d.y * 10 - 1 + (d.y ? 0 : -1), 3 + (d.x ? u : 0), 3 + (d.y ? u : 0));
+      if (d.x < 0) x.fillRect(h.x - 10 - u, h.y - 1, u, 3);
+      if (d.y < 0) x.fillRect(h.x - 1, h.y - 10 - u, 3, u);
     }
     parc.forEach(function (p) { x.fillStyle = p.r; x.globalAlpha = p.o / 28; x.fillRect(p.x, p.y, 4, 4); x.globalAlpha = 1; });
     x.restore();
