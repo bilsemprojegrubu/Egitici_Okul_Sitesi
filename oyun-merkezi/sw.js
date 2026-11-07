@@ -1,6 +1,6 @@
 // Çevrimdışı çalışma + uygulama olarak yükleme. Sürüm numarası değişince önbellek yenilenir.
 // DİKKAT: sürüm değişince surum.js ile BİRLİKTE burayı da değiştir (tarayıcı güncellemeyi bu dosyadaki değişiklikten anlar).
-var SURUM = "1.9.56";
+var SURUM = "1.9.57";
 var AD = "oyun-merkezi-" + SURUM;
 var DOSYALAR = [
   "config.js",
@@ -12,6 +12,7 @@ var DOSYALAR = [
   "merkez.css",
   "oyunlar/2048/index.html",
   "oyunlar/araba/index.html",
+  "oyunlar/dans/index.html",
   "oyunlar/balon/index.html",
   "oyunlar/basket/index.html",
   "oyunlar/basket/karakter/bacak0.png",
