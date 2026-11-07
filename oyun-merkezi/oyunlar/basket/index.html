@@ -299,12 +299,25 @@
     x.fillStyle = glow ? "#fff" : "#ffcd75"; x.fillRect(h.tipx - 1, h.y - 1 + ry, 3, 3);
     if (g.p > 0) { x.fillStyle = "rgba(255,205,117," + (g.p / 90).toFixed(2) + ")"; x.fillRect(a - 3, h.y - 3 + ry, b - a + 7, 2); x.fillRect(a - 3, h.y + 3 + ry, b - a + 7, 1); }
   }
+  // PNG karakter parçaları (4x çözünürlük): bacak, gövde, kafa, kol. Parçalar ayaktan birlikte döner, eğik pikseller yumuşar.
+  var PNG = {}, PNG_HAZIR = 0, PNG_N = 3 + 2 * 3;
+  (function () { var ad = ["bacak0", "bacak1", "bacak2", "govde0", "govde1", "kafa0", "kafa1", "kol0", "kol1"]; PNG_N = ad.length; ad.forEach(function (n) { var im = new Image(); im.onload = function () { PNG_HAZIR++; }; im.src = "karakter/" + n + ".png"; PNG[n] = im; }); })();
+  function cizPng(p, fr) {
+    var g = p.ang || 0, hr = V.hr, a = (p.th + (p.sw || 0)) * Math.PI / 180, k = (hr + 1) / 4;
+    x.save(); x.translate(Math.round(p.x), Math.round(p.y)); x.rotate(g); x.imageSmoothingEnabled = Math.abs(g) > .02;
+    x.drawImage(PNG["bacak" + fr], -5, -20, 10, 20);
+    x.drawImage(PNG["govde" + p.t], -3, -17 - BOY, 6, 12);
+    x.save(); x.translate(0, -(18 + BOY + hr)); x.scale(p.face * k, k); x.drawImage(PNG["kafa" + p.t], -4.5, -4.5, 9, 9); x.restore();
+    x.translate(p.face * 3, -15 - BOY); x.rotate(-p.face * a); x.scale(1, V.L / 11); x.drawImage(PNG["kol" + p.t], -2, -2, 5, 14);
+    x.restore();
+  }
   var OC = document.createElement("canvas"); OC.width = 64; OC.height = 80; var OX = OC.getContext("2d");
   function cizOyuncu(p, n) {
     var B = BOY, ana = p.t === 0 ? "#e0344f" : "#3b5dc9", koyu = p.t === 0 ? "#b13e53" : "#29366f", px0 = Math.round(p.x), py0 = Math.round(p.y), yx = 32, yy = 72;
     x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px0 - 6, ZEMIN, 12, 2);
     var ana_x = x; x = OX; OX.clearRect(0, 0, 64, 80); // karakter önce dik bir piksel sprite'a çizilir, sonra ayaktan döndürülür
     var fr = p.yer ? (Math.abs(p.vx) > .3 ? Math.floor(p.f) % 2 : 0) : 2;
+    if (PNG_HAZIR >= PNG_N) { x = ana_x; cizPng(p, fr); return; }
     // ince, uzun bacaklar
     var lt = yy - 6 - B, lx = fr === 0 ? [-3, 1] : [-4, 2], ll = fr === 0 ? [6 + B, 6 + B] : fr === 1 ? [6 + B, 5 + B] : [4 + B, 4 + B];
     for (var q = 0; q < 2; q++) {
