@@ -148,7 +148,7 @@
     if (Math.abs(e.x - cx) < 14 && e.y < h.y + 6) {
       p.hold = false; p.dunk = 0; p.cd = 24; top.h = null; top.x = cx; top.y = h.y - 5; top.vx = 0; top.vy = 2.6; top.cd = 20;
       var a = ag[p.t]; a.sv += 6; a.rv += 5; Px.ses("sut");
-    }
+    } else if (!p.yer && p.vy > -.8) { p.dunk = 0; p.pw = Math.max(p.pw || 0, .7); atGuc(p); }
   }
   function insan(hi) { // takımın İKİ oyuncusu birlikte, aynı tuşlarla yönetilir
     var tak = pl.filter(function (q) { return q.t === hi; }), h = hoop(hi);
