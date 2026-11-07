@@ -255,6 +255,7 @@
   // ---- Menü kaplaması: tek / iki kişilik seçimi ----
   // o: {baslik, not, secenekler:[{ad, alt, fn}]} ; döner {ac, kapat}
   Px.menu = function (o) {
+    Px.menuVar = true; // menüsü olan oyun zaten bir butonla başlar
     var sahne = document.querySelector(".sahne");
     var m = document.createElement("div"); m.className = "kaplama menu"; m.id = "menu";
     var h = document.createElement("h2"); h.textContent = o.baslik; m.appendChild(h);
@@ -279,13 +280,39 @@
   Px.rastgele = function (a, b) { return a + Math.random() * (b - a); };
   Px.tamsayi = function (a, b) { return Math.floor(Px.rastgele(a, b + 1)); };
   Px.sinir = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  // BAŞLA kapısı: menüsü olmayan oyunlar, oyuncu bir butona basana kadar bekler
+  var kapiAcik = false;
+  Px.kapi = function (devam) {
+    if (kapiAcik || document.getElementById("baslaKapi")) return;
+    var sahne = document.querySelector(".sahne"); if (!sahne) { if (devam) devam(); return; }
+    var m = document.createElement("div"); m.className = "kaplama menu"; m.id = "baslaKapi";
+    var h = document.createElement("h2"); h.textContent = (document.title || "OYUN").split(" — ")[0].toLocaleUpperCase("tr"); m.appendChild(h);
+    var ip = sahne.querySelector(".ipucu");
+    if (ip) { var p = document.createElement("p"); p.className = "ipucu"; p.textContent = ip.textContent; m.appendChild(p); }
+    var b = document.createElement("button"); b.type = "button"; b.className = "btn buyuk yesil"; b.textContent = "▶ BAŞLA";
+    m.appendChild(b); sahne.appendChild(m); kapiAcik = true;
+    function basla() {
+      if (!kapiAcik) return; kapiAcik = false; m.remove(); Px.ses("al");
+      window.removeEventListener("keydown", tus, true); window.removeEventListener("keyup", tus, true);
+      if (devam) devam();
+    }
+    function tus(e) {
+      if (e.type === "keydown" && (e.code === "Enter" || e.code === "Space")) { e.preventDefault(); e.stopImmediatePropagation(); basla(); return; }
+      e.preventDefault(); e.stopImmediatePropagation(); // bekleyen oyun tuşlara tepki vermesin
+    }
+    b.addEventListener("click", basla);
+    window.addEventListener("keydown", tus, true); window.addEventListener("keyup", tus, true);
+    try { b.focus({ preventScroll: true }); } catch (e) { }
+  };
   // Sabit adımlı oyun döngüsü (60 fps mantık, ekran hızından bağımsız)
   Px.dongu = function (guncelle, ciz) {
-    var onceki = 0, birik = 0, calisiyor = true;
+    var onceki = 0, birik = 0, calisiyor = true, bekle = false;
     Px.hizGerek = true; hizEkle();
+    if (!Px.menuVar) { bekle = true; Px.kapi(function () { bekle = false; onceki = 0; birik = 0; }); }
     function kare(t) {
       if (!calisiyor) return;
       if (!onceki) onceki = t;
+      if (bekle) { onceki = t; Px.temizle(); ciz(); Px.son(); requestAnimationFrame(kare); return; }
       birik += Math.min(100, t - onceki) * Px.hiz; onceki = t;
       var n = 0;
       while (birik >= 16.667 && n < 5 * Px.hiz) { guncelle(); birik -= 16.667; n++; }
