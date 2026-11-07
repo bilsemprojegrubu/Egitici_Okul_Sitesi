@@ -51,7 +51,7 @@
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <div class="oyunalan" id="oyunalan">
-    <canvas id="c" class="cv" width="280" height="150" style="--mw:860px"></canvas>
+    <canvas id="c" class="cv" width="280" height="184" style="--mw:860px"></canvas>
     <aside id="yan" class="yan" hidden></aside>
   </div>
   <p class="ipucu" id="ipucu"></p>
@@ -72,7 +72,7 @@
 // Sağ menü: SAVAŞÇILAR / YÜKSELTMELER / BOOSTER / KULELER. Boss'lar 300. dalgaya kadar hep farklı (30 boss), sonra başa döner.
 // 2 oyuncu: iki kale karşılıklı, tek ekranda (sıralamaya yazılmaz). 2 oyuncuda eski 12 tuşluk düzen aynen çalışır.
 (function () {
-  var C = document.getElementById("c"), x = C.getContext("2d"), GY = 122, VW = 280, WW = 1000;
+  var C = document.getElementById("c"), x = C.getContext("2d"), GY = 116, VH = 184, HZ = 80, SLP = .024, VW = 280, WW = 1000;
   var mod = 1, cam = 0, tik = 0, calis = false, S, U, P, F, wv, kills, sars, idc = 0, mesaj = "", msayac = 0, over = 0, wq, wt, wsp, wi, wf, sonPuan = -1, tab = 0;
   // ---- birlikler ----  (c: fiyat, hp, d: hasar, r: menzil, cd: bekleme, sp: hız, ok: 1 ok / 2 büyü / 3 kaya, arm: ok zırhı)
   var UK = [
@@ -160,11 +160,14 @@
   function dmul(z) { return (1 + .1 * z.lv) * (1 + .12 * z.ud); }
   function cdv(z, b) { return Math.round(b * (1 - .08 * z.uc)); }
   function pf(px, py, n, cols, l, sp) { for (var i = 0; i < n; i++) F.push({ x: px + Px.rastgele(-3, 3), y: py + Px.rastgele(-3, 3), vx: Px.rastgele(-sp, sp), vy: Px.rastgele(-sp, .3), l: l || 20, c: cols[i % cols.length] }); }
-  function twX(i) { return front(1) - 18 - i * 17; }
+  // kuleler yolun iki yanında: çift slot arka sıra (6), tek slot ön sıra (6)
+  function twX(i) { return front(1) - 24 - (i >> 1) * 24 - (i & 1) * 12; }
+  function twDy(i) { return i & 1 ? 32 : -13; }
+  function ro(wx) { return mod === 1 ? Math.round(wx * SLP) : 0; } // yol bize doğru hafif eğik
   function twHp(lv) { return 120 + lv * 70; }
   function twUp(t, lv) { return Math.round(TW[t].c * .85 * Math.pow(1.55, lv)); }
   function twSlots(s) { return 3 + S[s].uy; } // KAPASİTE sekmesinden 12'ye kadar
-  function mkTw(t, lv, i) { return { t: t, lv: lv, i: i, x: twX(i), hp: twHp(lv), mhp: twHp(lv), cd: 0, fl: 0, dead: 0, tw: 1, s: 1 }; }
+  function mkTw(t, lv, i) { return { t: t, lv: lv, i: i, dy: twDy(i), x: twX(i), hp: twHp(lv), mhp: twHp(lv), cd: 0, fl: 0, dead: 0, tw: 1, s: 1 }; }
   function twPlan(s, t) {
     var z = S[s], sl = twSlots(s), i, best = -1, bl = 9;
     for (i = 0; i < sl; i++) if (!z.tw[i]) return { m: "k", i: i, c: TW[t].c };
@@ -182,7 +185,7 @@
   }
   function yapU(s, k, hm, dm) {
     var en = mod === 1 && s === 0, t = en ? EK[k] : UK[k], z = S[s];
-    var u = { id: ++idc, s: s, k: k, x: 0, hp: t.hp * hm, mhp: t.hp * hm, d: t.d * dm, r: t.r, cd: 0, cdm: t.cd, sp: t.sp * (en ? 1 : 1 + .06 * z.us), ok: t.ok || 0, fl: 0, at: 0, w: 0, ly: (idc % 3) * 2, boss: 0, fly: t.fly || 0, g: en ? Math.ceil(t.g * (1 + wv * .04)) : Math.round(t.c * .5), dead: 0, bi: 0, arm: t.arm || 0, hunt: t.hunt || 0, heal: t.heal ? t.heal * hm : 0, bomb: t.bomb || 0, pz: t.psn || 0, pd: 0, psn: 0, slow: 0, slowf: .55, frz: 0, sh: 0, cy: 0, chg: 0, def: null, twh: t.twh || 0, res: t.res || 0, bd: 1, bsp: 1 };
+    var u = { id: ++idc, s: s, k: k, x: 0, hp: t.hp * hm, mhp: t.hp * hm, d: t.d * dm, r: t.r, cd: 0, cdm: t.cd, sp: t.sp * (en ? 1 : 1 + .06 * z.us), ok: t.ok || 0, fl: 0, at: 0, w: 0, ly: ((idc * 5) % 7 - 3) * 2, boss: 0, fly: t.fly || 0, g: en ? Math.ceil(t.g * (1 + wv * .04)) : Math.round(t.c * .5), dead: 0, bi: 0, arm: t.arm || 0, hunt: t.hunt || 0, heal: t.heal ? t.heal * hm : 0, bomb: t.bomb || 0, pz: t.psn || 0, pd: 0, psn: 0, slow: 0, slowf: .55, frz: 0, sh: 0, cy: 0, chg: 0, def: null, twh: t.twh || 0, res: t.res || 0, bd: 1, bsp: 1 };
     u.x = s === 0 ? (mod === 1 ? 40 + Px.rastgele(0, 12) : front(0) + 4) : front(1) - 4;
     U.push(u); return u;
   }
@@ -234,7 +237,7 @@
   // KAPASİTE: kule yuvası sayısı (12'ye kadar) ve asker limiti
   reg("cap_t", 4, {
     n: "KULE YUVASI", cost: function (s) { return Math.round(100 * Math.pow(1.4, S[s].uy)); }, lim: function (s) { return S[s].uy >= 9 ? "MAX" : ""; },
-    ek: function (s) { return " " + twSlots(s) + "/12"; }, run: function (s) { S[s].uy++; Px.ses("birles"); pf(twX(twSlots(s) - 1), GY - 10, 10, ["#ffcd75", "#fff"], 24, 1.2); },
+    ek: function (s) { return " " + twSlots(s) + "/12"; }, run: function (s) { S[s].uy++; Px.ses("birles"); pf(twX(twSlots(s) - 1), GY - 10 + twDy(twSlots(s) - 1), 10, ["#ffcd75", "#fff"], 24, 1.2); },
     info: function (s) { return "Maksimum kule sayısı +1 (şu an " + twSlots(s) + "), her türden istediğin kadar"; }
   });
   reg("cap_u", 4, {
@@ -302,7 +305,7 @@
       run: function (s) {
         var z = S[s], p = twPlan(s, ti); if (!p) return;
         if (p.m === "k") z.tw[p.i] = mkTw(ti, 1, p.i); else { var w = z.tw[p.i]; w.lv++; w.mhp = twHp(w.lv); w.hp = w.mhp; }
-        Px.ses("birles"); pf(twX(p.i), GY - 20, 12, ["#ffcd75", "#fff"], 26, 1.4);
+        Px.ses("birles"); pf(twX(p.i), GY - 20 + twDy(p.i), 12, ["#ffcd75", "#fff"], 26, 1.4);
       }
     });
   });
@@ -316,7 +319,7 @@
         var l = w.lv, e = [(5 + 4 * l) + " altın/2sn", "HAS " + Math.round(twAtk(w)) + " MNZ 105", "+" + (4 + 3 * l) + " can/0,8sn", "Yavaşlat %" + Math.round((1 - twSlow(w)) * 100), "Hasar +%" + Math.round((.12 + .05 * l) * 100) + " (kule), +%" + Math.round((.1 + .04 * l) * 100) + " (asker)", "Hız +%" + Math.round((.1 + .04 * l) * 100) + " (kule), +%" + Math.round((.08 + .03 * l) * 100) + " (asker)"][w.t];
         return e + " · CAN " + Math.round(w.hp) + "/" + w.mhp;
       },
-      run: function (s) { var w = S[s].tw[i]; if (!w || w.lv >= 5) return; w.lv++; w.mhp = twHp(w.lv); w.hp = w.mhp; Px.ses("birles"); pf(w.x, GY - 20, 10, ["#ffcd75", "#fff"], 24, 1.4); }
+      run: function (s) { var w = S[s].tw[i]; if (!w || w.lv >= 5) return; w.lv++; w.mhp = twHp(w.lv); w.hp = w.mhp; Px.ses("birles"); pf(w.x, GY - 20 + w.dy, 10, ["#ffcd75", "#fff"], 24, 1.4); }
     });
   })(si);
   KM1.forEach(function (e) { if (A[e[1]]) A[e[1]].kl = e[0].replace("Digit", "").replace("Key", ""); });
@@ -340,12 +343,12 @@
     if (tg.arm && kind === 1) d *= 1 - tg.arm;
     tg.hp -= d; tg.fl = 5; var i;
     if (tg.tw) {
-      if (tg.hp <= 0 && !tg.dead) { tg.dead = 1; S[1].tw[tg.i] = null; Px.ses("patlama"); sars = 8; pf(tg.x, GY - 12, 18, ["#94a0b8", "#ffcd75", "#566c86"], 30, 2); mesaj = "KULE YIKILDI!"; msayac = 60; }
+      if (tg.hp <= 0 && !tg.dead) { tg.dead = 1; S[1].tw[tg.i] = null; Px.ses("patlama"); sars = 8; pf(tg.x, GY - 12 + tg.dy, 18, ["#94a0b8", "#ffcd75", "#566c86"], 30, 2); mesaj = "KULE YIKILDI!"; msayac = 60; }
       return;
     }
     if (kind >= 0) {
       if (tg.boss) { sars = Math.max(sars, 3); if (tik % 3 === 0) Px.ses("vur"); for (i = 0; i < 3; i++) F.push({ x: tg.x + Px.rastgele(-6, 6), y: GY - Px.rastgele(8, 30), vx: Px.rastgele(-1.5, 1.5), vy: Px.rastgele(-2, 0), l: 18, c: ["#fff", "#ffcd75", "#ef7d57"][i] }); }
-      else F.push({ x: tg.x, y: GY - 10, vx: Px.rastgele(-1, 1), vy: -1, l: 10, c: "#fff" });
+      else F.push({ x: tg.x, y: GY - 10 + (tg.dy || 0), vx: Px.rastgele(-1, 1), vy: -1, l: 10, c: "#fff" });
     }
     if (tg.hp <= 0 && !tg.dead) {
       tg.dead = 1;
@@ -396,7 +399,7 @@
     var i, a, w = null, wr = 1, fx = null, tx;
     if (u.cd <= 0) {
       for (i = 0; i < U.length; i++) { a = U[i]; if (a.s === u.s && !a.dead && a.hp < a.mhp && Math.abs(a.x - u.x) < 60) { var r = a.hp / a.mhp; if (r < wr) { wr = r; w = a; } } }
-      if (w) { w.hp = Math.min(w.mhp, w.hp + u.heal); u.cd = u.cdm; u.at = 10; pf(w.x, GY - 14, 5, ["#a7f070", "#fff"], 22, .6); }
+      if (w) { w.hp = Math.min(w.mhp, w.hp + u.heal); u.cd = u.cdm; u.at = 10; pf(w.x, GY - 14 + w.dy, 5, ["#a7f070", "#fff"], 22, .6); }
     }
     for (i = 0; i < U.length; i++) { a = U[i]; if (a.s === u.s && !a.dead && !a.heal) { var p = a.x * dr; if (fx === null || p > fx) fx = p; } }
     tx = fx === null ? front(u.s) - dr * (70 + (u.id % 5) * 7) * -1 : fx * dr - dr * 16;
@@ -496,25 +499,25 @@
       if (!w || w.dead) return;
       w.x = twX(w.i); if (w.fl > 0) w.fl--; w.cd += gs;
       var l = w.lv, ne = null, nd = 105;
-      if (w.t >= 4) { if (w.cd >= 36) { w.cd = 0; pf(w.x, GY - 34, 2, w.t === 4 ? ["#ef7d57", "#ffcd75"] : ["#b55ee0", "#73eff7"], 22, .6); } }
-      else if (w.t === 0) { if (w.cd >= 120) { w.cd = 0; var g = Math.round((5 + 4 * l) * gm * gd); z1.g += g; pf(w.x, GY - 30, 4, ["#ffcd75", "#fff"], 26, .5); F.push({ x: w.x, y: GY - 34, vx: 0, vy: -.7, l: 30, c: "#ffcd75" }); } }
+      if (w.t >= 4) { if (w.cd >= 36) { w.cd = 0; pf(w.x, GY - 34 + w.dy, 2, w.t === 4 ? ["#ef7d57", "#ffcd75"] : ["#b55ee0", "#73eff7"], 22, .6); } }
+      else if (w.t === 0) { if (w.cd >= 120) { w.cd = 0; var g = Math.round((5 + 4 * l) * gm * gd); z1.g += g; pf(w.x, GY - 30 + w.dy, 4, ["#ffcd75", "#fff"], 26, .5); F.push({ x: w.x, y: GY - 34 + w.dy, vx: 0, vy: -.7, l: 30, c: "#ffcd75" }); } }
       else if (w.t === 1) {
         if (w.cd >= Math.max(22, 44 - 4 * l)) {
           U.forEach(function (u) { if (u.s === 0 && !u.dead) { var d = w.x - u.x; if (d > -6 && d < nd) { nd = d; ne = u; } } });
-          if (ne) { w.cd = 0; P.push({ x: w.x, y: GY - 28, vx: -2.8, s: 1, d: twAtk(w), k: 1, l: 90 }); }
+          if (ne) { w.cd = 0; P.push({ x: w.x, y: GY - 28 + w.dy, vx: -2.8, s: 1, d: twAtk(w), k: 1, l: 90 }); }
         }
       } else if (w.t === 2) {
         if (w.cd >= 48) {
           w.cd = 0; var n = 0, hl = Math.round((4 + 3 * l) * gd);
           U.forEach(function (u) { if (u.s === 1 && !u.dead && u.hp < u.mhp && n < 6 && Math.abs(u.x - w.x) < 85) { u.hp = Math.min(u.mhp, u.hp + hl); n++; pf(u.x, GY - 14, 2, ["#a7f070", "#fff"], 20, .5); } });
           if (z1.hp < mhp(1)) { z1.hp = Math.min(mhp(1), z1.hp + 2 + 2 * l); n++; }
-          if (n) pf(w.x, GY - 30, 3, ["#a7f070", "#fff"], 20, .5);
+          if (n) pf(w.x, GY - 30 + w.dy, 3, ["#a7f070", "#fff"], 20, .5);
         }
       } else if (w.t === 3) {
         if (w.cd >= 40) {
           w.cd = 0; var hit = false;
           U.forEach(function (u) { if (u.s === 0 && !u.dead && w.x - u.x > -6 && w.x - u.x < 95) { u.slow = 80; u.slowf = twSlow(w); vur(u, (1 + .8 * l) * (1 + .15 * z1.uk), 1, 4); hit = true; } });
-          if (hit) pf(w.x - 20, GY - 20, 4, ["#73eff7", "#fff"], 20, 1.5);
+          if (hit) pf(w.x - 20, GY - 20 + w.dy, 4, ["#73eff7", "#fff"], 20, 1.5);
         }
       }
     });
@@ -893,28 +896,53 @@
     else if (p.k === 4) { x.fillStyle = "#73eff7"; x.fillRect(px - 3 + (dr > 0 ? 0 : 2), py - 1, 5, 3); x.fillStyle = "#fff"; x.fillRect(px - 1, py, 3, 1); x.fillStyle = "#3b5dc9"; x.fillRect(px - dr * 4, py, 2, 1); }
     else { x.fillStyle = "#a47040"; x.fillRect(px - (dr > 0 ? 6 : 0), py, 7, 1); x.fillStyle = "#dfe9f5"; x.fillRect(px + (dr > 0 ? 0 : -6), py, 2, 1); }
   }
+  function cizAgac(tx, th) { x.fillStyle = "#5a3a1a"; x.fillRect(tx, GY - 6, 3, 6); x.fillStyle = "#257179"; for (var j = 0; j < 3; j++) x.fillRect(tx - 5 + j * 2, GY - th + j * 5, 13 - j * 4, 6); x.fillStyle = "#38b764"; x.fillRect(tx - 1, GY - th, 5, 3); }
+  function at(wx, dy, fn, a) { x.save(); x.translate(0, ro(wx) + dy); fn(a); x.restore(); }
+  function cizZemin(g0, g1) {
+    var i, c, y0;
+    x.fillStyle = "#38b764"; x.fillRect(g0, HZ, VW, VH - HZ);
+    x.fillStyle = "#2a9d58"; x.fillRect(g0, HZ, VW, 9); x.fillStyle = "#257179"; x.fillRect(g0, HZ, VW, 1);
+    for (i = Math.floor(g0 / 11) * 11; i < g1; i += 11) { var yy = HZ + 3 + (i * 7 % 97) % (VH - HZ - 6); x.fillStyle = (i / 11) % 3 ? "#2a9d58" : "#a7f070"; x.fillRect(i + (i % 5), yy, 2, 1); x.fillRect(i + (i % 5), yy - 1, 1, 1); }
+    // yol: bize doğru hafif eğik, toprak şerit
+    for (c = Math.floor(g0 / 4) * 4; c < g1; c += 4) {
+      y0 = GY + ro(c + 2) - 10;
+      x.fillStyle = "#7a4a2b"; x.fillRect(c, y0 - 1, 4, 1); x.fillRect(c, y0 + 21, 4, 1);
+      x.fillStyle = "#c98a4b"; x.fillRect(c, y0, 4, 21);
+      x.fillStyle = "#b07a40"; if ((c >> 2) % 3 === 0) x.fillRect(c + 1, y0 + 4 + (c * 3 % 9), 2, 1);
+      if ((c >> 2) % 5 === 1) { x.fillStyle = "#a47040"; x.fillRect(c, y0 + 12 + (c % 4), 2, 2); }
+    }
+  }
   function cizDunya() {
-    var i, g0 = Math.round(cam), g1 = g0 + VW;
-    x.fillStyle = "#38b764"; x.fillRect(g0, GY, VW, 4); x.fillStyle = "#a7f070"; for (i = Math.floor(g0 / 9) * 9; i < g1; i += 9) x.fillRect(i, GY, 3, 1);
-    x.fillStyle = "#7a4a2b"; x.fillRect(g0, GY + 4, VW, 30); x.fillStyle = "#5a3a1a"; for (i = Math.floor(g0 / 14) * 14; i < g1; i += 14) { x.fillRect(i, GY + 8 + (i % 3) * 4, 6, 2); x.fillRect(i + 7, GY + 18 + (i % 5) * 2, 4, 2); }
-    for (i = 0; i < WW; i += 53) { var tx = i + (i * 7 % 23); if (tx < g0 - 12 || tx > g1 + 12) continue; if (mod === 1 && (tx < 70 || (tx > 700 && tx < 980))) continue; if (mod === 2 && tx > 100 && tx < 220) continue; var th = 14 + (i % 4) * 4; x.fillStyle = "#5a3a1a"; x.fillRect(tx, GY - 6, 3, 6); x.fillStyle = "#257179"; for (var j = 0; j < 3; j++) x.fillRect(tx - 5 + j * 2, GY - th + j * 5, 13 - j * 4, 6); x.fillStyle = "#38b764"; x.fillRect(tx - 1, GY - th, 5, 3); }
-    if (mod === 1) { cizMagara(); x.fillStyle = "#566c86"; for (i = 120; i < 700; i += 120) { if (i < g0 - 8 || i > g1) continue; x.fillRect(i, GY - 5, 5, 5); x.fillRect(i + 1, GY - 7, 3, 2); } }
-    else { x.fillStyle = "#fff"; x.fillRect(WW / 2 - 1, GY, 2, 4); }
-    [1, 0].forEach(function (s) { if (hasC(s)) { for (var m = 0; m < S[s].mines; m++) cizMaden(s, m); cizKale(s); } });
-    if (mod === 1) { for (i = 0; i < twSlots(1); i++) cizYuva(i); S[1].tw.forEach(function (w) { if (w && !w.dead) cizKule(w); }); }
-    U.forEach(cizUnit);
-    P.forEach(cizMermi);
-    F.forEach(function (f) { x.fillStyle = f.c; x.fillRect(Math.round(f.x), Math.round(f.y), 2, 2); });
+    var i, g0 = Math.round(cam), g1 = g0 + VW, L = [];
+    cizZemin(g0, g1);
+    for (i = 0; i < WW; i += 53) {
+      var tx = i + (i * 7 % 23); if (tx < g0 - 12 || tx > g1 + 12) continue; if (mod === 1 && (tx < 70 || (tx > 700 && tx < 980))) continue; if (mod === 2 && tx > 100 && tx < 220) continue;
+      var th = 14 + (i % 4) * 4;
+      if ((i / 53) % 2 === 0) at(tx, -22, function () { cizAgac(tx, th); }); else { x.save(); x.translate(0, ro(tx) + 34 + (i % 3) * 4); x.fillStyle = "#257179"; x.fillRect(tx - 3, GY - 4, 8, 4); x.fillStyle = "#38b764"; x.fillRect(tx - 2, GY - 5, 6, 2); x.restore(); }
+    }
+    if (mod === 1) { x.fillStyle = "#566c86"; for (i = 120; i < 700; i += 120) { if (i < g0 - 8 || i > g1) continue; at(i, 13, function () { x.fillRect(i, GY - 5, 5, 5); x.fillRect(i + 1, GY - 7, 3, 2); }); } }
+    else { x.fillStyle = "#fff"; x.fillRect(WW / 2 - 1, GY - 2, 2, 5); }
+    if (mod === 1) L.push({ k: ro(30) - 10, x: 30, dy: 0, fn: cizMagara });
+    [1, 0].forEach(function (s) { if (hasC(s)) { var rx = S[s].cx; for (var m = 0; m < S[s].mines; m++) L.push({ k: ro(rx) - 7, x: rx, dy: 0, fn: cizMaden, a: s, b: m }); L.push({ k: ro(rx) - 9, x: rx, dy: 0, fn: cizKale, a: s }); } });
+    if (mod === 1) {
+      for (i = 0; i < twSlots(1); i++) if (!S[1].tw[i]) L.push({ k: ro(twX(i)) + twDy(i), x: twX(i), dy: twDy(i), fn: cizYuva, a: i });
+      S[1].tw.forEach(function (w) { if (w && !w.dead) L.push({ k: ro(w.x) + w.dy, x: w.x, dy: w.dy, fn: cizKule, a: w }); });
+    }
+    U.forEach(function (u) { L.push({ k: ro(u.x) + u.ly, x: u.x, dy: 0, fn: cizUnit, a: u }); });
+    L.sort(function (p, q) { return p.k - q.k; });
+    L.forEach(function (e) { x.save(); x.translate(0, ro(e.x) + e.dy); e.fn(e.a, e.b); x.restore(); });
+    P.forEach(function (p) { x.save(); x.translate(0, ro(p.x)); cizMermi(p); x.restore(); });
+    F.forEach(function (f) { x.fillStyle = f.c; x.fillRect(Math.round(f.x), Math.round(f.y + ro(f.x)), 2, 2); });
   }
   function coin(cx, cy) { x.fillStyle = "#0d0e1a"; x.fillRect(cx, cy, 7, 7); x.fillStyle = "#ffcd75"; x.fillRect(cx + 1, cy + 1, 5, 5); x.fillStyle = "#fff"; x.fillRect(cx + 2, cy + 2, 1, 2); }
   function ciz() {
     var bant = ["#1a1c2c", "#29366f", "#3b5dc9", "#41a6f6", "#73c7f9"], i;
-    for (i = 0; i < 5; i++) { x.fillStyle = bant[i]; x.fillRect(0, i * 26, VW, 27); }
+    for (i = 0; i < 5; i++) { x.fillStyle = bant[i]; x.fillRect(0, i * 17, VW, 18); }
     x.fillStyle = "#ffcd75"; x.fillRect(VW - 40, 18, 12, 12); x.fillStyle = "#fff"; x.fillRect(VW - 38, 20, 4, 4);
     x.fillStyle = "rgba(255,255,255,.5)"; for (i = 0; i < 5; i++) { var cxx = ((i * 97 + tik * .1 - cam * .15) % (VW + 60) + VW + 60) % (VW + 60) - 30; x.fillRect(Math.round(cxx), 30 + i * 9, 26, 5); x.fillRect(Math.round(cxx) + 5, 27 + i * 9, 14, 3); }
     var off = -Math.round(cam * .35);
-    for (i = -1; i < 12; i++) { var mxp = i * 90 + off % 90 + 20; tri(mxp, GY, 40 + ((i + 20) % 3) * 9, "#566c86", true); }
-    off = -Math.round(cam * .6); for (i = -1; i < 12; i++) tri(i * 70 + off % 70 + 30, GY, 22 + ((i + 20) % 4) * 4, "#257179", false);
+    for (i = -1; i < 12; i++) { var mxp = i * 90 + off % 90 + 20; tri(mxp, HZ + 1, 24 + ((i + 20) % 3) * 6, "#566c86", true); }
+    off = -Math.round(cam * .6); for (i = -1; i < 12; i++) tri(i * 70 + off % 70 + 30, HZ + 1, 12 + ((i + 20) % 4) * 3, "#257179", false);
     x.save(); x.translate(-Math.round(cam) + (sars ? Px.tamsayi(-1, 1) : 0), sars ? Px.tamsayi(-1, 1) : 0);
     cizDunya(); x.restore();
     // HUD
@@ -931,11 +959,11 @@
     }
     if (msayac > 0) Px.yazi(x, mesaj, VW / 2, 56, 13, "#fff", "center");
     if (mod === 1) {
-      var mw = VW - 12, sx = 6; x.fillStyle = "rgba(13,14,26,.7)"; x.fillRect(sx - 1, 141, mw + 2, 7); x.fillStyle = "rgba(255,255,255,.12)"; x.fillRect(sx, 142, mw, 5);
-      U.forEach(function (u) { x.fillStyle = u.boss ? "#ff3030" : (u.s === 0 ? "#e0344f" : "#73c7f9"); x.fillRect(sx + Math.round(u.x / WW * mw), 143, 1, 3); });
-      S[1].tw.forEach(function (w) { if (w) { x.fillStyle = "#c58cf0"; x.fillRect(sx + Math.round(w.x / WW * mw), 143, 1, 3); } });
-      x.fillStyle = "#ffcd75"; x.fillRect(sx + Math.round(S[1].cx / WW * mw) - 1, 142, 3, 5);
-      x.strokeStyle = "#fff"; x.lineWidth = 1; x.strokeRect(sx + Math.round(cam / WW * mw) + .5, 141.5, Math.round(VW / WW * mw), 6);
+      var mw = VW - 12, sx = 6, MY = VH - 9; x.fillStyle = "rgba(13,14,26,.7)"; x.fillRect(sx - 1, MY, mw + 2, 7); x.fillStyle = "rgba(255,255,255,.12)"; x.fillRect(sx, MY + 1, mw, 5);
+      U.forEach(function (u) { x.fillStyle = u.boss ? "#ff3030" : (u.s === 0 ? "#e0344f" : "#73c7f9"); x.fillRect(sx + Math.round(u.x / WW * mw), MY + 2, 1, 3); });
+      S[1].tw.forEach(function (w) { if (w) { x.fillStyle = "#c58cf0"; x.fillRect(sx + Math.round(w.x / WW * mw), MY + 2, 1, 3); } });
+      x.fillStyle = "#ffcd75"; x.fillRect(sx + Math.round(S[1].cx / WW * mw) - 1, MY + 1, 3, 5);
+      x.strokeStyle = "#fff"; x.lineWidth = 1; x.strokeRect(sx + Math.round(cam / WW * mw) + .5, MY - .5, Math.round(VW / WW * mw), 6);
     }
   }
 
@@ -1014,12 +1042,12 @@
       ["ipucu", "padyer", "paneller"].forEach(function (id) { var e = document.getElementById(id); if (!e || e.hidden) return; if (getComputedStyle(e).display === "none") return; below += e.offsetHeight + 10; });
       var availH = ih - topAbs - below - 12, availW = sah.clientWidth - 24, cwid, pw = 0, wide = vw >= 700;
       if (mod === 1) {
-        if (wide) { pw = Math.max(210, Math.min(290, Math.round(availW * .27))); cwid = Math.min(availW - pw - 8, (availH - bw) * VW / 150 + bw); }
-        else { cwid = Math.min(availW, (Math.max(100, availH - 200) - bw) * VW / 150 + bw); }
-      } else cwid = Math.min(availW, 860, (availH - bw) * VW / 150 + bw);
+        if (wide) { pw = Math.max(210, Math.min(290, Math.round(availW * .27))); cwid = Math.min(availW - pw - 8, (availH - bw) * VW / VH + bw); }
+        else { cwid = Math.min(availW, (Math.max(100, availH - 200) - bw) * VW / VH + bw); }
+      } else cwid = Math.min(availW, 860, (availH - bw) * VW / VH + bw);
       cwid = Math.floor(Math.max(120, cwid));
       oa.style.setProperty("--cw", cwid + "px"); oa.style.setProperty("--pw", wide ? pw + "px" : "100%");
-      var ch = (cwid - bw) * 150 / VW + bw;
+      var ch = (cwid - bw) * VH / VW + bw;
       if (mod === 1) yan.style.height = wide ? Math.round(ch) + "px" : Math.max(120, Math.round(ih - (topAbs + ch) - 28 - below)) + "px";
     }
   }
@@ -1067,8 +1095,8 @@
   } });
   var sur = null;
   C.addEventListener("pointerdown", function (e) {
-    if (mod !== 1 || !calis) return; var r = C.getBoundingClientRect(), ly = (e.clientY - r.top) / r.height * 150, lx = (e.clientX - r.left) / r.width * VW;
-    if (ly >= 140) { cam = Px.sinir((lx - 6) / (VW - 12) * WW - VW / 2, 0, WW - VW); return; }
+    if (mod !== 1 || !calis) return; var r = C.getBoundingClientRect(), ly = (e.clientY - r.top) / r.height * VH, lx = (e.clientX - r.left) / r.width * VW;
+    if (ly >= VH - 10) { cam = Px.sinir((lx - 6) / (VW - 12) * WW - VW / 2, 0, WW - VW); return; }
     sur = e.clientX; try { C.setPointerCapture(e.pointerId); } catch (z) { }
   });
   C.addEventListener("pointermove", function (e) { if (sur === null) return; var r = C.getBoundingClientRect(); cam = Px.sinir(cam - (e.clientX - sur) * VW / r.width, 0, WW - VW); sur = e.clientX; });
