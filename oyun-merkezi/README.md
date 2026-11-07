@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.8** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -85,6 +85,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 
 | Sürüm | Neler değişti |
 |---|---|
+| 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
 | 1.8 | Uygulama olarak yükleme (PWA): ana ekranda "Uygulama olarak yükle" düğmesi, çevrimdışı çalışma, uygulama simgesi |
 | 1.7 | Arayüz boyutu artık ayar çubuğu: %50 - %150 arası (büyütme de var), %100'e sıfırla düğmesi |
 | 1.6 | Ana ekranda sürüm numarası; README'de sürüm geçmişi |

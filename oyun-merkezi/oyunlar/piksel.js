@@ -310,6 +310,27 @@
   Px.rastgele = function (a, b) { return a + Math.random() * (b - a); };
   Px.tamsayi = function (a, b) { return Math.floor(Px.rastgele(a, b + 1)); };
   Px.sinir = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  // Boşluk (Space) ile "Tekrar oyna": oyun bitti kaplaması açıkken, takma ad kutusu odakta değilse çalışır
+  (function () {
+    var bt = null, acildi = 0, ipucu = null;
+    function bul() {
+      if (bt) return bt; bt = document.getElementById("bitti"); if (!bt) return null;
+      var t = document.getElementById("tekrar");
+      if (t) { ipucu = document.createElement("p"); ipucu.className = "ipucu"; ipucu.textContent = "Boşluk (Space) tuşuyla da tekrar oynayabilirsin"; t.parentNode.appendChild(ipucu); }
+      new MutationObserver(function () { if (!bt.hidden) acildi = Date.now(); }).observe(bt, { attributes: true, attributeFilter: ["hidden"] });
+      if (!bt.hidden) acildi = Date.now();
+      return bt;
+    }
+    document.addEventListener("DOMContentLoaded", bul);
+    window.addEventListener("keydown", function (e) {
+      if (e.code !== "Space" && e.key !== " ") return;
+      var b = bul(), t = document.getElementById("tekrar"), ae = document.activeElement;
+      if (!b || b.hidden || !t || t.hidden || e.repeat) return;
+      if (ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA")) return;
+      if (Date.now() - acildi < 700) return; // oyunun son anında basılı kalan boşluk hemen yeniden başlatmasın
+      e.preventDefault(); e.stopImmediatePropagation(); t.click();
+    }, true);
+  })();
   // BAŞLA kapısı: menüsü olmayan oyunlar, oyuncu bir butona basana kadar bekler
   var kapiAcik = false;
   Px.kapi = function (devam) {
