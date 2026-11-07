@@ -51,7 +51,7 @@
   function oyuncu(t, px, id) { return { t: t, id: id, x: px, y: ZEMIN, vx: 0, vy: 0, yer: true, face: t === 0 ? 1 : -1, hold: false, cd: 0, f: 0, ph: id * 2, th: 100, bz: 0, pw: .8, chg: 0, auto: false }; }
   function varyant(i) { var b = { L: 9, hr: 4, hy: 64, rw: 18, g: .1, r: 4, fr: .82, kar: 0, pg: .15, jm: 1, pts: 1, w: 0, bn: 0, tc: 0, n: "" }, v = VARYANT[i]; for (var k in v) b[k] = v[k]; return b; }
   function dizil() {
-    pl = [oyuncu(0, 70, 0), oyuncu(1, 170, 0)];
+    pl = [oyuncu(0, 50, 0), oyuncu(0, 95, 1), oyuncu(1, 145, 0), oyuncu(1, 190, 1)];
     top = { x: 120, y: 50, vx: 0, vy: 0, h: null, cd: 0, d: 0 };
   }
   function yeni() {
@@ -66,13 +66,15 @@
     return { l: ["KeyA"], r: ["KeyD"], z: ["KeyW"], a: ["KeyF"] };
   }
   function bas(h, ad) { var a = keys(h)[ad]; for (var i = 0; i < a.length; i++) if (Px.k[a[i]]) return true; return false; }
-  function el(p) { // el konumu: omuz ve kol, gövdenin eğilme açısıyla (p.ang) kalçadan döner
+  function el(p) { // el konumu: kol ayaktan (p.x, p.y) dönen gövdeyle birlikte p.ang kadar döner
     var a = (p.th + (p.sw || 0)) * Math.PI / 180, g = p.ang || 0, c = Math.cos(g), sn = Math.sin(g);
-    var ox = p.face * 3, oy = -9, sx = p.x + ox * c - oy * sn, sy = p.y - 6 - BOY + ox * sn + oy * c;
-    var ax = p.face * Math.sin(a), ay = Math.cos(a), dx = ax * c - ay * sn, dy = ax * sn + ay * c;
-    return { x: sx + dx * V.L, y: sy + dy * V.L, dx: dx, dy: dy, sx: sx, sy: sy };
+    var ox = p.face * 3, oy = -15 - BOY, ax = p.face * Math.sin(a), ay = Math.cos(a), ex = ox + ax * V.L, ey = oy + ay * V.L;
+    return { x: p.x + ex * c - ey * sn, y: p.y + ex * sn + ey * c, dx: ax * c - ay * sn, dy: ax * sn + ay * c };
   }
-  function zipla(p, vx, pw) { if (!p.yer) return; pw = pw === undefined ? .8 : pw; p.pw = pw; p.vy = -(3.0 + 1.9 * pw) * V.jm * .85; p.yer = false; if (vx !== undefined) p.vx = vx; Px.ses("zipla"); }
+  function elUp(p) { // sprite içinde (dik duran) kol: omuz ve el
+    var a = (p.th + (p.sw || 0)) * Math.PI / 180, sx = 32 + p.face * 3, sy = 72 - 15 - BOY;
+    return { sx: sx, sy: sy, x: sx + p.face * Math.sin(a) * V.L, y: sy + Math.cos(a) * V.L };
+  }  function zipla(p, vx, pw) { if (!p.yer) return; pw = pw === undefined ? .8 : pw; p.pw = pw; p.vy = -(3.0 + 1.9 * pw) * V.jm * .85; p.yer = false; if (vx !== undefined) p.vx = vx; Px.ses("zipla"); }
   function at(p, vx, vy) {
     if (!p.hold) return; p.hold = false; top.h = null; top.vx = vx; top.vy = vy; top.cd = 20; p.cd = 24; Px.ses("sut");
   }
@@ -154,19 +156,19 @@
     if (p.y >= ZEMIN) { if (!p.yer && p.vy > 3) { p.landed = (Math.random() < .5 ? -1 : 1) * p.vy; Px.ses("tik"); for (var i = 0; i < 3; i++) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 0), o: 12, c: V.kar ? "#fff" : "#c8a070" }); } p.y = ZEMIN; p.vy = 0; if (!p.yer) p.auto = false; p.yer = true; p.vx *= V.fr; }
     else p.yer = false;
     p.x = Px.sinir(p.x, 8, W - 8);
-    // sallanma: gövde kalçadan yaylanır. Hızla koşunca öne yatar, hızlı iner/çarparsa yere yatacak kadar savrulur.
+    // sallanma: karakter AYAKTAN yaylanır (tamamen döner). Koşarken hafif öne yatar, sert inişte biraz savrulur.
     var dv = p.vx - (p.pvx || 0); p.pvx = p.vx;
-    if (p.landed) { p.av = (p.av || 0) + Math.sign(p.vx || p.face) * p.landed * .16 + (Math.random() - .5) * .3; p.landed = 0; }
-    p.av = (p.av || 0) - dv * .3;
-    var hedefA = Px.sinir(p.vx * .45, -.6, .6); // momentum yönünde öne eğil
-    p.av += -.09 * ((p.ang || 0) - hedefA); p.av *= .9; p.ang = Px.sinir((p.ang || 0) + p.av, -1.5, 1.5);
-    p.sw = p.ang * -40 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 2.2) * 30 : 0) + (p.yer ? 0 : Math.sin(tik / 4 + p.id) * 20);
+    if (p.landed) { p.av = (p.av || 0) + Math.sign(p.vx || p.face) * p.landed * .035; p.landed = 0; }
+    p.av = (p.av || 0) - dv * .12;
+    var hedefA = Px.sinir(p.vx * .18, -.25, .25);
+    p.av += -.11 * ((p.ang || 0) - hedefA); p.av *= .85; p.ang = Px.sinir((p.ang || 0) + p.av, -.9, .9);
+    p.sw = p.ang * -18 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 2.2) * 24 : 0) + (p.yer ? 0 : Math.sin(tik / 4 + p.id) * 14);
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = 70; p.th += (hedef - p.th) * .3;
     if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
     if (p.cd) p.cd--;
   }
   function ayrisma() {
-    for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 15 && Math.abs(a.y - b.y) < 40) { var m = (15 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x -= m; b.x += m; } }
+    for (var it = 0; it < 4; it++) for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 17 && Math.abs(a.y - b.y) < 40) { var m = (17 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x -= m; b.x += m; } }
   }
   // Otomatik top alma: oyuncunun eli, gövdesi, kafası ve ayakları (yerdeki top için) topa yeterince yakınsa top alınır.
   function yakalanabilir(p) { return faz === 0 && !top.h && !p.cd && !top.cd; }
@@ -297,9 +299,11 @@
     x.fillStyle = glow ? "#fff" : "#ffcd75"; x.fillRect(h.tipx - 1, h.y - 1 + ry, 3, 3);
     if (g.p > 0) { x.fillStyle = "rgba(255,205,117," + (g.p / 90).toFixed(2) + ")"; x.fillRect(a - 3, h.y - 3 + ry, b - a + 7, 2); x.fillRect(a - 3, h.y + 3 + ry, b - a + 7, 1); }
   }
+  var OC = document.createElement("canvas"); OC.width = 64; OC.height = 80; var OX = OC.getContext("2d");
   function cizOyuncu(p, n) {
-    var B = BOY, ana = p.t === 0 ? "#e0344f" : "#3b5dc9", koyu = p.t === 0 ? "#b13e53" : "#29366f", yx = Math.round(p.x), yy = Math.round(p.y);
-    x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(yx - 6, ZEMIN, 12, 2);
+    var B = BOY, ana = p.t === 0 ? "#e0344f" : "#3b5dc9", koyu = p.t === 0 ? "#b13e53" : "#29366f", px0 = Math.round(p.x), py0 = Math.round(p.y), yx = 32, yy = 72;
+    x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px0 - 6, ZEMIN, 12, 2);
+    var ana_x = x; x = OX; OX.clearRect(0, 0, 64, 80); // karakter önce dik bir piksel sprite'a çizilir, sonra ayaktan döndürülür
     var fr = p.yer ? (Math.abs(p.vx) > .3 ? Math.floor(p.f) % 2 : 0) : 2;
     // bacaklar (uzun)
     x.fillStyle = "#0d0e1a";
@@ -309,7 +313,6 @@
     x.fillStyle = "#ffcd75"; if (fr === 0) { x.fillRect(yx - 2, yy - 5 - B, 2, 4 + B); x.fillRect(yx + 1, yy - 5 - B, 2, 4 + B); } else if (fr === 1) { x.fillRect(yx - 3, yy - 5 - B, 2, 4 + B); x.fillRect(yx + 2, yy - 5 - B, 2, 3 + B); } else { x.fillRect(yx - 3, yy - 4 - B, 2, 2 + B); x.fillRect(yx + 2, yy - 4 - B, 2, 2 + B); }
     x.fillStyle = "#fff"; x.fillRect(yx - 3, yy - 1, 3, 1); x.fillRect(yx + 1, yy - 1, 3, 1);
     // gövde (sallanırken yana yatar)
-    x.save(); x.translate(yx, yy - 6 - B); x.rotate(p.ang || 0); x.translate(-yx, -(yy - 6 - B));
     x.fillStyle = "#0d0e1a"; x.fillRect(yx - 5, yy - 17 - B, 10, 12); x.fillStyle = ana; x.fillRect(yx - 4, yy - 16 - B, 8, 10); x.fillStyle = koyu; x.fillRect(yx - 4, yy - 8 - B, 8, 2);
     x.fillStyle = "#fff"; x.fillRect(yx - 1, yy - 14 - B, 2, 4); x.fillRect(yx - 2, yy - 13 - B, 4, 1);
     // kafa
@@ -318,12 +321,12 @@
     var ex = yx + p.face * Math.max(2, Math.floor(hr * .45));
     x.fillStyle = "#fff"; x.fillRect(ex - 2, hy - 1, 4, 4); x.fillStyle = "#0d0e1a"; x.fillRect(ex - 1 + (p.face > 0 ? 1 : 0), hy, 2, 2);
     x.fillRect(yx + p.face * Math.max(1, Math.floor(hr * .3)) - 1, hy + Math.floor(hr * .55), 3, 1);
-    x.restore();
     // kol
-    var e = el(p), sx = e.sx, sy = e.sy, steps = Math.max(2, Math.round(V.L));
+    var e = elUp(p), sx = e.sx, sy = e.sy, steps = Math.max(2, Math.round(V.L));
     for (var i = 0; i <= steps; i++) { var px = sx + (e.x - sx) * i / steps, py = sy + (e.y - sy) * i / steps; x.fillStyle = "#0d0e1a"; x.fillRect(Math.round(px) - 2, Math.round(py) - 2, 4, 4); }
     for (i = 0; i <= steps; i++) { px = sx + (e.x - sx) * i / steps; py = sy + (e.y - sy) * i / steps; x.fillStyle = i < 3 ? ana : "#ffcd75"; x.fillRect(Math.round(px) - 1, Math.round(py) - 1, 2, 2); }
     x.fillStyle = "#ffcd75"; x.fillRect(Math.round(e.x) - 1, Math.round(e.y) - 1, 3, 3);
+    x = ana_x; x.save(); x.translate(px0, py0); x.rotate(p.ang || 0); x.imageSmoothingEnabled = false; x.drawImage(OC, -32, -72); x.restore();
   }
   function ciz() {
     x.save(); if (sars) { var sg = Math.min(3, Math.ceil(sars / 8)); x.translate(Px.tamsayi(-sg, sg), Px.tamsayi(-sg, sg)); }
@@ -391,14 +394,14 @@
     mod = m; zor = z;
     var ek = " Her sayıdan sonra komik bir değişiklik gelir (2x puan, kar, ağır top...)! 90 saniye." + (m === 2 ? " (Sıralamaya yazılmaz)" : "");
     document.getElementById("ipucu").textContent = (tek
-      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca adam zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır."
+      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır."
         : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): bas = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
-      : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). "
+      : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). İki adam birlikte hareket eder."
         : "Kırmızı: A D yürü, W zıpla (havada tekrar W veya F = ŞUT) · Mavi: ← → yürü, ↑ zıpla (havada tekrar ↑ veya Enter = ŞUT). Basılı tutup bırakmak = daha güçlü zıplama.")) + ek;
     kurPad(); yeni();
   }
   var son = { m: 1, z: 1 };
-  var menu = Px.menu({ baslik: "BASKET", not: "1'e 1 · iki potalı · komik değişiklikler", secenekler: [
+  var menu = Px.menu({ baslik: "BASKET", not: "2'ye 2 · iki potalı · komik değişiklikler", secenekler: [
     { ad: "1 Oyuncu · Kolay", alt: "Bota karşı", fn: function () { son = { m: 1, z: 0 }; basla(1, 0); } },
     { ad: "1 Oyuncu · Normal", alt: "Sıralamaya yazılır", fn: function () { son = { m: 1, z: 1 }; basla(1, 1); } },
     { ad: "1 Oyuncu · Zor", alt: "Hızlı botlar", fn: function () { son = { m: 1, z: 2 }; basla(1, 2); } },
