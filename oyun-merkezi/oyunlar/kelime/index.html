@@ -57,6 +57,7 @@
 <script src="kelimeler.js"></script>
 <script src="kelimeler2.js"></script>
 <script src="kelimeler3.js"></script>
+<script src="kelimeler4.js"></script>
 <script src="../../config.js"></script>
 <script src="../../skor.js"></script>
 <script src="../piksel.js"></script>
@@ -65,7 +66,7 @@
 (function () {
   var TUM = [], gor = {};
   window.KELIME_LISTESI.forEach(function (k) { if (!gor[k]) { gor[k] = 1; TUM.push(k); } });
-  var KUME = {}; TUM.forEach(function (k) { KUME[k] = 1; });
+  var KUME = {}; TUM.forEach(function (k) { KUME[k] = 1; }); (window.KELIME_GECERLI || []).forEach(function (k) { KUME[k] = 1; });
   function buyuk(s) { return s.toLocaleUpperCase("tr"); }
   var RENK = ["#ef7d57", "#ffcd75", "#a7f070", "#73eff7", "#41a6f6", "#f4a6c0", "#c5b3f5"];
   var ANAHTAR = "kelime_gorulen_v1";
@@ -121,11 +122,12 @@
   function cikar(n) { if (!calis || kilit) return; secim.splice(n, 1); Px.ses("don"); ciz(); }
   function kelimeSecim() { return secim.map(function (i) { return harfler[i]; }).join(""); }
   function ayniHarf(a, b) { return a.split("").sort().join("") === b.split("").sort().join(""); }
+  function dogruMu(c) { return c === hedef || (ayniHarf(c, hedef) && !!KUME[c.toLocaleLowerCase("tr")]); }
   function kontrol() {
     if (!calis || kilit || secim.length < 2) return;
     var c = kelimeSecim();
     // Aynı harflerle yazılan başka geçerli kelimeler de (anagram) kabul edilir
-    var gecerli = c === hedef || (ayniHarf(c, hedef) && KUME[c.toLocaleLowerCase("tr")]);
+    var gecerli = dogruMu(c);
     if (gecerli) {
       kilit = true; puan++; document.getElementById("puan").textContent = puan; Px.ses("puan");
       A.classList.add("dogru"); M.textContent = ["Harika!", "Süper!", "Bravo!", "Muhteşem!", "Tamam!"][puan % 5];
