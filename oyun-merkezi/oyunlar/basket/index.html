@@ -162,11 +162,8 @@
     else p.yer = false;
     p.x = Px.sinir(p.x, 8, W - 8);
     // sallanma: karakter AYAKTAN yaylanır (tamamen döner). Koşarken hafif öne yatar, sert inişte biraz savrulur.
-    var dv = p.vx - (p.pvx || 0); p.pvx = p.vx;
-    if (p.landed) { p.av = (p.av || 0) + Math.sign(p.vx || p.face) * p.landed * .06; p.landed = 0; }
-    p.av = (p.av || 0) - dv * .3;
-    var hedefA = Px.sinir(p.vx * .35, -.4, .4);
-    p.av += -.04 * ((p.ang || 0) - hedefA); p.av *= .93; p.ang = Px.sinir((p.ang || 0) + p.av, -1.1, 1.1);
+    p.landed = 0; p.av = 0; var hedefA = Px.sinir(p.vx * .35, -.4, .4); // yerde yaylanma yok: yumuşakça hedef eğime gelir
+    p.ang = Px.sinir((p.ang || 0) + (hedefA - (p.ang || 0)) * .25, -1.1, 1.1);
     if (!p.yer) { p.av = 0; p.ang += ((p.ja || 0) - p.ang) * .18; } // zıplarken basılan yöne yatık kalır, havada değişmez // havada sallanma yok: gittiği yöne doğru yatar
     p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) ;
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = 70; p.th += (hedef - p.th) * .3;
@@ -174,7 +171,7 @@
     if (p.cd) p.cd--;
   }
   function ayrisma() {
-    for (var it = 0; it < 4; it++) for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 17 && Math.abs(a.y - b.y) < 40) { var m = (17 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x -= m; b.x += m; } }
+    for (var it = 0; it < 4; it++) for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 26) { var m = (26 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x = Px.sinir(a.x - m, 8, W - 8); b.x = Px.sinir(b.x + m, 8, W - 8); } }
   }
   // Otomatik top alma: oyuncunun eli, gövdesi, kafası ve ayakları (yerdeki top için) topa yeterince yakınsa top alınır.
   function yakalanabilir(p) { return faz === 0 && !top.h && !p.cd && !top.cd; }

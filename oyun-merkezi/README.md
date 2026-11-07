@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.32** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.40** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -115,6 +115,14 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.30 | Kale Savaşı: düşmanlar güçlendirildi (can +%20, hasar +%15; taş/demir golem eski güçlerinin üstüne çıktı) |
 | 1.9.31 | Kale Savaşı: askerler arkalarındaki yakın düşmana dönüp vurabiliyor |
 | 1.9.32 | Basketbol: zıplarken basılan yöne yatık kalır, havada sallanmaz/değişmez |
+| 1.9.33 | Basketbol: oyuncular artık iç içe girmiyor (daha geniş mesafe, havada da) |
+| 1.9.34 | Basketbol: yerde de sallanma/yaylanma yok (çok tuşlu mod dahil) |
+| 1.9.35 | Kale Savaşı: askerler 3 şeritte yan yana ilerler, sıra beklemez, 3 kişi aynı anda savaşır |
+| 1.9.36 | Kale Savaşı: KULE sekmesinde sadece kule al/yükselt, kapasite dolunca alım kilitlenir + uyarı; KALE ONAR eklendi |
+| 1.9.37 | Kale Savaşı: golemler Iron Golem tarzı (kol kaldırıp vurur, detaylı), golemler hızlandı; mancınık gibi uzun menzilliler kısa menzilli askerleri durdurmaz |
+| 1.9.38 | Kale Savaşı: mancınığı iki adam omuzda taşır (asker ve ork mancınığı) |
+| 1.9.39 | Kale Savaşı: HÜCUM modunda askerler birbirini beklemez, herkes kendi menziline gelene kadar ilerler |
+| 1.9.40 | Kale Savaşı: kısa menzilli askerler ve golem, mancınık durunca durmaz; menzillerine gelene kadar ilerler |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
