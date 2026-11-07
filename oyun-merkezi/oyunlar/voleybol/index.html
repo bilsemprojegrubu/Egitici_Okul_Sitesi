@@ -109,19 +109,10 @@
     tik++; if (sars) sars--; if (golSayac) golSayac--;
     parc.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.o--; }); parc = parc.filter(function (p) { return p.o > 0; });
     if (!calis) return;
-    // kontroller: insan, takımında topa yakın olan oyuncuyu yönetir; diğer oyuncu bot
+    // kontroller: insanın takımındaki İKİ oyuncu birlikte, aynı tuşlarla yönetilir (tuşa basmazsan durur)
     var k = Px.k;
-    function sec(ts, ben) {
-      var c = ctrl[ben], d = pl[ts[0]], e = pl[ts[1]], yarim = ben === 0 ? top.x < NX + 20 : top.x > NX - 20;
-      var yak = Math.abs(d.x - top.x) <= Math.abs(e.x - top.x) ? d : e;
-      if (c !== d && c !== e) c = yak;
-      if (yarim && yak !== c && Math.abs(c.x - top.x) - Math.abs(yak.x - top.x) > 14 && c.yer) c = yak;
-      ctrl[ben] = c;
-    }
-    sec([0, 1], 0); if (mod === 2) sec([2, 3], 1);
-    if (mod === 1) kontrol(ctrl[0], k.KeyD || k.ArrowRight, k.KeyA || k.ArrowLeft, k.KeyW || k.ArrowUp || k.Space);
-    else { kontrol(ctrl[0], k.KeyD, k.KeyA, k.KeyW); kontrol(ctrl[1], k.ArrowRight, k.ArrowLeft, k.ArrowUp); }
-    pl.forEach(function (o) { if (o !== ctrl[0] && !(mod === 2 && o === ctrl[1])) bot(o); });
+    if (mod === 1) { var K1 = k.KeyD || k.ArrowRight, K2 = k.KeyA || k.ArrowLeft, K3 = k.KeyW || k.ArrowUp || k.Space; kontrol(pl[0], K1, K2, K3); kontrol(pl[1], K1, K2, K3); pl.forEach(function (o, i) { if (i > 1) bot(o); }); }
+    else { kontrol(pl[0], k.KeyD, k.KeyA, k.KeyW); kontrol(pl[1], k.KeyD, k.KeyA, k.KeyW); kontrol(pl[2], k.ArrowRight, k.ArrowLeft, k.ArrowUp); kontrol(pl[3], k.ArrowRight, k.ArrowLeft, k.ArrowUp); }
     pl.forEach(function (o) {
       if (o.sol) oyuncuGuncelle(o, PR, NX - 4 - PR + 2); else oyuncuGuncelle(o, NX + 4 + PR - 2, W - PR);
     });
@@ -168,8 +159,8 @@
       x.drawImage(im, Math.round(o.x - 5), yb);
     });
     // insanın yönettiği oyuncuların üstünde ok
-    if (calis) ctrl.forEach(function (c, n) {
-      if (n === 1 && mod === 1) return;
+    if (calis) pl.forEach(function (c) {
+      var n = c.sol ? 0 : 1; if (n === 1 && mod === 1) return;
       var ay = Math.round(c.y - 26 + Math.sin(tik / 6) * 1.5), ax = Math.round(c.x);
       x.fillStyle = "#0d0e1a"; x.fillRect(ax - 4, ay - 1, 9, 3); x.fillRect(ax - 3, ay + 2, 7, 2); x.fillRect(ax - 1, ay + 4, 3, 2);
       x.fillStyle = n === 0 ? "#ffb0b0" : "#b0d8ff"; x.fillRect(ax - 3, ay, 7, 1); x.fillRect(ax - 2, ay + 2, 5, 1); x.fillRect(ax, ay + 4, 1, 1);
@@ -185,8 +176,8 @@
   }
   function basla(m) {
     mod = m; document.getElementById("etiket").textContent = m === 1 ? "Puan" : "Kırmızı";
-    document.getElementById("ipucu").textContent = m === 1 ? "2'ye 2 maç: topa yakın oyuncuyu sen yönetirsin, yanındaki arkadaşın bot. A D / ← → ile git, W / ↑ / boşluk ile zıpla. Topu rakip sahaya düşür! Bot 5 sayı alınca biter, puanın aldığın sayıdır."
-      : "2 Oyuncu (her takımda 2 kişi, topa yakın olanı sen yönetirsin): Kırmızı A D W — Mavi ← → ↑. İlk 7 sayıyı alan kazanır. (Sıralamaya yazılmaz)";
+    document.getElementById("ipucu").textContent = m === 1 ? "2'ye 2 maç: kırmızı takımdaki İKİ oyuncuyu da sen aynı tuşlarla birlikte yönetirsin (tuşa basmazsan durur). A D / ← → = git, W / ↑ / BOŞLUK = ikisi birden zıpla. Topu rakip sahaya düşür! Bot 5 sayı alınca biter, puanın aldığın sayıdır."
+      : "2 Oyuncu (her takımın 2 oyuncusu aynı tuşlarla birlikte hareket eder): Kırmızı A D + W (zıpla) — Mavi ← → + ↑ (zıpla). İlk 7 sayıyı alan kazanır. (Sıralamaya yazılmaz)";
     kur(); yeni();
   }
   function kur() {
