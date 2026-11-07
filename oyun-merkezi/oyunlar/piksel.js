@@ -151,7 +151,20 @@
   };
   IKON.tam = ["###....###", "#........#", "#........#", "..........", "..........", "#........#", "#........#", "###....###"];
   function ikonYap(ad) { return Px.sprite(IKON[ad], { "#": "#f4f4f4" }, 3).toDataURL(); }
-  var tamBtn, sesBtn;
+  var tamBtn, sesBtn, aracDiv, hizBtn;
+  // Oyun hızı: 1x / 2x / 4x (döngü kullanan oyunlarda görünür, seçim hatırlanır)
+  Px.hiz = parseInt(oku("px_hiz"), 10) || 1;
+  if ([1, 2, 4].indexOf(Px.hiz) < 0) Px.hiz = 1;
+  function hizEkle() {
+    if (hizBtn || !aracDiv) return;
+    hizBtn = document.createElement("button"); hizBtn.type = "button"; hizBtn.className = "arac-d arac-hiz";
+    hizBtn.setAttribute("aria-label", "Oyun hızı");
+    var guncelle = function () { hizBtn.textContent = Px.hiz + "x"; };
+    hizBtn.addEventListener("click", function () {
+      Px.hiz = Px.hiz === 1 ? 2 : Px.hiz === 2 ? 4 : 1; yaz("px_hiz", String(Px.hiz)); guncelle(); Px.ses("tik");
+    });
+    guncelle(); aracDiv.insertBefore(hizBtn, aracDiv.firstChild);
+  }
   function tamMi() { return !!(document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains("tam")); }
   function tamGuncelle() {
     var a = tamMi();
@@ -177,7 +190,7 @@
     tamBtn = document.createElement("button"); tamBtn.type = "button"; tamBtn.className = "arac-d"; tamBtn.setAttribute("aria-label", "Tam ekran");
     sesBtn.addEventListener("click", function () { sessiz = !sessiz; yaz("px_ses", sessiz ? "0" : "1"); sesGuncelle(); Px.ses("tik"); });
     tamBtn.addEventListener("click", Px.tamEkran);
-    d.appendChild(sesBtn); d.appendChild(tamBtn); document.body.appendChild(d);
+    d.appendChild(sesBtn); d.appendChild(tamBtn); document.body.appendChild(d); aracDiv = d; if (Px.hizGerek) hizEkle();
     sesGuncelle(); tamGuncelle();
     document.addEventListener("fullscreenchange", tamGuncelle);
     document.addEventListener("webkitfullscreenchange", tamGuncelle);
@@ -214,12 +227,13 @@
   // Sabit adımlı oyun döngüsü (60 fps mantık, ekran hızından bağımsız)
   Px.dongu = function (guncelle, ciz) {
     var onceki = 0, birik = 0, calisiyor = true;
+    Px.hizGerek = true; hizEkle();
     function kare(t) {
       if (!calisiyor) return;
       if (!onceki) onceki = t;
-      birik += Math.min(100, t - onceki); onceki = t;
+      birik += Math.min(100, t - onceki) * Px.hiz; onceki = t;
       var n = 0;
-      while (birik >= 16.667 && n < 5) { guncelle(); birik -= 16.667; n++; }
+      while (birik >= 16.667 && n < 5 * Px.hiz) { guncelle(); birik -= 16.667; n++; }
       Px.temizle(); ciz(); Px.son();
       requestAnimationFrame(kare);
     }
