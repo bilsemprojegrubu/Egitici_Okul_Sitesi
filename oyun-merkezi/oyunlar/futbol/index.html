@@ -36,7 +36,7 @@
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, H = 160;
   var PL = 22, PR = 218, PT = 28, PB = 144, GT = 69, GB = 103, CY = 86, CX = 120, SURE = 5 * 60 * 60;
   var say = 0, gw = 0, sayNo = 0;
-  var FHIZ = .84, fbirik = 0; // maç hızı: eskisinin %84'ü
+  var FHIZ = .84, fbirik = 0, fbek = {}; // maç hızı: eskisinin %84'ü
   var tekrarAcik = true, kayit = [], rp = null, rpBekle = false;
   try { tekrarAcik = localStorage.getItem("fb_tekrar") !== "0"; } catch (e) { }
   Px.atla(function () { return !!rp; }, function () { if (rp) rp.t = 1e9; });
@@ -337,7 +337,7 @@
       if (fi >= rp.n) { pl = rp.pl0; top = rp.top0; rp = null; kayit = []; rpBitir(); return; }
       pl = kayit[fi].pl; top = kayit[fi].top; rp.t++; return;
     }
-    fbirik += FHIZ; if (fbirik < 1) return; fbirik -= 1;
+    fbirik += FHIZ; if (fbirik < 1) { for (var kk in Px.p) fbek[kk] = true; return; } fbirik -= 1; for (var k2 in fbek) Px.p[k2] = true; fbek = {};
     guncel0();
     if (calis && !pen && !sp && !bitis && say <= 0 && (!gw || (top.gol && gw === 120))) {
       kayit.push({ pl: pl.map(function (p) { return Object.assign({}, p); }), top: Object.assign({}, top) });
