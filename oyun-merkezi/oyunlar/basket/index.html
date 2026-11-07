@@ -170,8 +170,15 @@
     if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
     if (p.cd) p.cd--;
   }
+  var ovr = {};
   function ayrisma() {
-    for (var it = 0; it < 4; it++) for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 26) { var m = (26 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x = Px.sinir(a.x - m, 8, W - 8); b.x = Px.sinir(b.x + m, 8, W - 8); } }
+    for (var it = 0; it < 4; it++) for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) {
+      var a = pl[i], b = pl[j], dx = b.x - a.x, key = i + "_" + j;
+      if (Math.abs(dx) >= 26) { ovr[key] = 0; continue; }
+      if (Math.abs(a.y - b.y) > 26) ovr[key] = 1; // biri ötekinin kafasının üstünden aşıyor: iç içe geçmeden geçebilir
+      if (ovr[key] && (!a.yer || !b.yer)) continue;
+      var m = (26 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x = Px.sinir(a.x - m, 8, W - 8); b.x = Px.sinir(b.x + m, 8, W - 8);
+    }
   }
   // Otomatik top alma: oyuncunun eli, gövdesi, kafası ve ayakları (yerdeki top için) topa yeterince yakınsa top alınır.
   function yakalanabilir(p) { return faz === 0 && !top.h && !p.cd && !top.cd; }
@@ -181,6 +188,8 @@
     return m;
   }
   function topFizik() {
+    if (top.pro > 0) top.pro--;
+    if (top.h && faz === 0 && !(top.pro > 0)) { pl.forEach(function (p) { if (top.h && p.t !== top.h.t && p.cd === 0 && yakinlik(p) < V.r + 12 && Math.random() < (p.yer ? .1 : .35)) { top.h.hold = false; top.h.cd = 30; top.h = p; p.hold = true; top.pro = 40; Px.ses("al"); } }); }
     if (top.h) { var e = el(top.h); top.x = e.x + e.dx * 2; top.y = e.y + e.dy * 2; top.vx = top.vy = 0; return; }
     var r = V.r, py = top.y;
     top.vy += V.g; top.vx += V.w || 0; top.x += top.vx; top.y += top.vy; top.vx *= .999; top.d += top.vx * 12;
@@ -212,7 +221,6 @@
       var R = r + 11, n = yakinlik(p);
       if (n < R) { top.h = p; p.hold = true; top.vx = top.vy = 0; Px.ses("al"); }
     });
-    if (top.h && faz === 0) { pl.forEach(function (p) { if (p.t !== top.h.t && p.cd === 0) { var e = el(p), f = el(top.h); if (((Math.abs(e.x - f.x) < 6 && Math.abs(e.y - f.y) < 6) || (!p.yer && Math.abs(e.x - f.x) < 16 && Math.abs(e.y - f.y) < 18)) && Math.random() < (p.yer ? .05 : .3)) { top.h.hold = false; top.h.cd = 30; top.h = p; p.hold = true; Px.ses("al"); } } }); }
     // sıkışma koruması: top havada/bir yerde ~1.5 sn neredeyse kıpırdamıyorsa ortaya doğru it
     if (!top.h && faz === 0) {
       var yerde = top.y >= ZEMIN - r - 1.5;
