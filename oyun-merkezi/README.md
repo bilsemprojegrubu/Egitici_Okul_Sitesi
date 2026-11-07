@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.40** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.41** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -123,6 +123,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.38 | Kale Savaşı: mancınığı iki adam omuzda taşır (asker ve ork mancınığı) |
 | 1.9.39 | Kale Savaşı: HÜCUM modunda askerler birbirini beklemez, herkes kendi menziline gelene kadar ilerler |
 | 1.9.40 | Kale Savaşı: kısa menzilli askerler ve golem, mancınık durunca durmaz; menzillerine gelene kadar ilerler |
+| 1.9.41 | Basketbol: yakına girip zıplayarak top çalınır, nişan çizgisi yalnızca şut çekerken görünür, güç daha yavaş dolar |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |

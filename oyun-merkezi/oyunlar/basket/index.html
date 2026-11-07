@@ -39,7 +39,7 @@
     { n: "AY YERÇEKİMİ", pg: .1, g: .058, jm: .95 }, { n: "SÜPER ZIPLAMA", jm: 1.28 }, { n: "ZIPLAYAN TOP", bn: .85 },
     { n: "RÜZGAR →", w: .012 }, { n: "RÜZGAR ←", w: -.012 }, { n: "ÇİFT PUAN x2 · AĞIR TOP", pts: 2, g: .158, r: 5, tc: 2 }
   ];
-  var mod = 1, zor = 1, tek = true, V, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, bekle, bitis, vsayac, kar, tHeld, prevDn, prevA, ch, ign, BOY = 13, CH = 45;
+  var mod = 1, zor = 1, tek = true, V, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, bekle, bitis, vsayac, kar, tHeld, prevDn, prevA, ch, ign, BOY = 13, CH = 80;
   // faz: 0 = oyun, 1 = HAZIRLAN geri sayımı (her şey donuk), 2 = sayı sonrası kutlama (yavaş çekim, oyuncular donuk)
   var faz = 0, say = 0, kut = 0, ag = [{ s: 0, sv: 0, r: 0, rv: 0, p: 0 }, { s: 0, sv: 0, r: 0, rv: 0, p: 0 }], sonSayi = null;
   var jm = [0, 0], SAY_N = 54, SAY_B = 42, KUTLAMA = 130;
@@ -212,7 +212,7 @@
       var R = r + 11, n = yakinlik(p);
       if (n < R) { top.h = p; p.hold = true; top.vx = top.vy = 0; Px.ses("al"); }
     });
-    if (top.h && faz === 0) { pl.forEach(function (p) { if (p.t !== top.h.t && p.cd === 0) { var e = el(p), f = el(top.h); if (Math.abs(e.x - f.x) < 6 && Math.abs(e.y - f.y) < 6 && Math.random() < .05) { top.h.hold = false; top.h.cd = 30; top.h = p; p.hold = true; Px.ses("al"); } } }); }
+    if (top.h && faz === 0) { pl.forEach(function (p) { if (p.t !== top.h.t && p.cd === 0) { var e = el(p), f = el(top.h); if (((Math.abs(e.x - f.x) < 6 && Math.abs(e.y - f.y) < 6) || (!p.yer && Math.abs(e.x - f.x) < 16 && Math.abs(e.y - f.y) < 18)) && Math.random() < (p.yer ? .05 : .3)) { top.h.hold = false; top.h.cd = 30; top.h = p; p.hold = true; Px.ses("al"); } } }); }
     // sıkışma koruması: top havada/bir yerde ~1.5 sn neredeyse kıpırdamıyorsa ortaya doğru it
     if (!top.h && faz === 0) {
       var yerde = top.y >= ZEMIN - r - 1.5;
@@ -386,7 +386,7 @@
     pl.forEach(function (q) {
       if (!calis || faz !== 0 || !(q.t === 0 || mod === 2)) return;
       var hh = hoop(q.t), f = hh.sol ? -1 : 1;
-      if (q.hold && (q.yer || q.jh)) {
+      if (q.hold && q.chg > 0) {
         var pwr = q.chg > 0 ? Math.max(.12, q.chg) : (q.pw || .6), a = 56 * Math.PI / 180, sp = (2.6 + 4 * pwr) * Math.sqrt(V.g / .12) * (V.n === "AĞIR TOP" ? 1.05 : 1);
         var ee = el(q), tx = ee.x, ty = ee.y, tvx = f * Math.cos(a) * sp, tvy = -Math.sin(a) * sp;
         for (var st = 0; st < 46; st++) { tvy += V.g; tx += tvx; ty += tvy; if (st % 4 === 3 && ty < ZEMIN) { x.fillStyle = "rgba(255,255,255," + (0.8 - st / 70).toFixed(2) + ")"; x.fillRect(Math.round(tx), Math.round(ty), 2, 2); } }
