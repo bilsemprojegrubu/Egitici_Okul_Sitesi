@@ -167,7 +167,7 @@
     p.av = (p.av || 0) - dv * .3;
     var hedefA = Px.sinir(p.vx * .35, -.4, .4);
     p.av += -.04 * ((p.ang || 0) - hedefA); p.av *= .93; p.ang = Px.sinir((p.ang || 0) + p.av, -1.1, 1.1);
-    if (!p.yer) { p.av = 0; p.ang = 0; } // havada sallanma yok
+    if (!p.yer) { p.av = 0; p.ang += (Px.sinir(p.vx * 1.2, -1.4, 1.4) - p.ang) * .18; } // havada sallanma yok: gittiği yöne doğru yatar
     p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) ;
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = 70; p.th += (hedef - p.th) * .3;
     if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
