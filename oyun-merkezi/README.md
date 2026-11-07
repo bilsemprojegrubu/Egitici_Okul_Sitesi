@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.4** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.5** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -87,6 +87,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 |---|---|
 | 1.9.3 | HAZIRLAN geri sayımı olan tüm oyunlarda (Basket, Futbol, Pong, Voleybol, Zıpla) herhangi bir tuşa basınca ya da dokununca geri sayım atlanır; iki satırlı ipucu |
 | 1.9.4 | Uzay Savaşı: gemi artık araba gibi ileri-geri de gidiyor (▲ ▼ / W S tuşları ya da ▲ İLERİ / ▼ GERİ butonları) |
+| 1.9.5 | Basketbol: sayı ve pota/tahta çarpmalarında belirgin ekran sallanması, daha güçlü file ve pota sallanması |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
