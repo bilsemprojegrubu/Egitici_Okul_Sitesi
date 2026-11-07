@@ -4,44 +4,101 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Oyun Merkezi</title>
+<link rel="stylesheet" href="oyunlar/ortak.css">
 <link rel="stylesheet" href="merkez.css">
 </head>
 <body>
 <header>
-  <h1>🎮 Oyun Merkezi</h1>
+  <h1><span id="logo"></span>OYUN MERKEZİ</h1>
   <p>İnternet olmadan da oynayabilirsin!</p>
   <nav class="menu">
     <!-- Sıralama kapalıysa (config.js boşsa) bu bağlantılar gizli kalır -->
-    <a id="siralamaLink" href="siralama.html" hidden>🏆 Sıralama</a>
-    <button id="adBtn" type="button" hidden>👤 Takma ad: <span id="adYazi"></span></button>
+    <a id="siralamaLink" href="siralama.html" hidden>Sıralama</a>
+    <button id="adBtn" type="button" hidden>Takma ad: <span id="adYazi"></span></button>
   </nav>
 </header>
-<main class="izgara">
-    <a class="kart" href="oyunlar/bilgi-kalesi/index.html"><span class="em">🏰</span><b>Bilgi Kalesi</b><small>Soruları bil, kaleyi koru</small></a>
-    <a class="kart" href="oyunlar/yilan/index.html"><span class="em">🐍</span><b>Yılan</b><small>Elmaları ye, uzayıp git</small></a>
-    <a class="kart" href="oyunlar/2048/index.html"><span class="em">🔢</span><b>2048</b><small>Sayıları birleştir</small></a>
-    <a class="kart" href="oyunlar/hafiza/index.html"><span class="em">🃏</span><b>Hafıza</b><small>Eşleri bul</small></a>
-    <a class="kart" href="oyunlar/balon/index.html"><span class="em">🎈</span><b>Balon</b><small>60 saniyede patlat</small></a>
-    <a class="kart" href="oyunlar/kelime/index.html"><span class="em">🔤</span><b>Kelime</b><small>Harfleri sıraya diz</small></a>
-    <a class="kart" href="oyunlar/futbol/index.html"><span class="em">⚽</span><b>Futbol</b><small>Penaltı atışları maçı</small></a>
-    <a class="kart" href="oyunlar/platform/index.html"><span class="em">🏃</span><b>Platform</b><small>Zıpla, jeton topla</small></a>
-    <a class="kart" href="oyunlar/tetris/index.html"><span class="em">🧱</span><b>Tetris</b><small>Satırları tamamla</small></a>
-    <a class="kart" href="oyunlar/kus/index.html"><span class="em">🐦</span><b>Kuş</b><small>Borulardan geç</small></a>
-    <a class="kart" href="oyunlar/basket/index.html"><span class="em">🏀</span><b>Basket</b><small>30 saniyede sayı yap</small></a>
-    <a class="kart" href="oyunlar/voleybol/index.html"><span class="em">🏐</span><b>Voleybol</b><small>Bilgisayara karşı oyna</small></a>
-</main>
+<main class="izgara" id="izgara"></main>
 <footer>Sıralamada gerçek adını yazma, takma ad kullan.</footer>
 <script src="config.js"></script>
 <script src="skor.js"></script>
+<script src="oyunlar/piksel.js"></script>
 <script>
-// Sıralama açıksa bağlantıyı göster
+// Piksel ikonlar: 12x12, harf = renk
+var K = "#0d0e1a";
+var IK = {
+  kale: { p: { g: "#94b0c2", d: "#566c86", r: "#b13e53", y: "#ffcd75", k: K }, s: [
+    "g.g..gg..g.g", "gggg.gg.gggg", "gddgggggggdg", "gggggrrgggg.", "ggggrrrrgggg", "gdgggrrgggdg",
+    "gggg.yy.gggg", "gggg.yy.gggg", "gddgkkkkgddg", "gggggkkkgggg", "gdggggkkggdg", "kkkkkkkkkkkk"] },
+  yilan: { p: { g: "#38b764", d: "#257179", r: "#b13e53", w: "#f4f4f4", k: K }, s: [
+    "..gggggg....", ".gdddddgg...", ".gd...gdg...", "..g..ggd....", "..gggd......", "...dgg......",
+    "....gggg....", ".....dggg...", ".gg...gdg...", "gwkg..ggg...", "gggggggg....", ".rr........."] },
+  n2048: { p: { y: "#ffcd75", o: "#ef7d57", k: K, w: "#f4f4f4" }, s: [
+    "kkkkkkkkkkkk", "kyyyyyyyyyyk", "kyoooyoooyyk", "kyyyoyoyoyyk", "kyyoooyoyoyk", "kyoyyyyoyoyk",
+    "kyooooyyoyyk", "kyyyyyyyyyyk", "kyyyyyyyyyyk", "kyyyyyyyyyyk", "kyyyyyyyyyyk", "kkkkkkkkkkkk"] },
+  hafiza: { p: { b: "#41a6f6", w: "#f4f4f4", r: "#b13e53", k: K, y: "#ffcd75" }, s: [
+    "kkkkkk......", "kbbbbbk.kkkk", "kbwbwbkkwwwk", "kbbwbbkkwrwk", "kbwbwbkkwwwk", "kbbbbbkkwrwk",
+    "kkkkkkkkkwwk", ".....kwwwwwk", "....kkkkkkkk", "............", "............", "............"] },
+  balon: { p: { r: "#b13e53", l: "#ef7d57", w: "#f4f4f4", k: K }, s: [
+    "...kkkkkk...", "..krrrrllk..", ".krrwwrrllk.", ".krwwrrrrlk.", ".krrrrrrrrk.", ".krrrrrrrrk.",
+    "..krrrrrrk..", "...krrrrk...", "....kkkk....", ".....kk.....", "....k..k....", ".....kk....."] },
+  kelime: { p: { y: "#ffcd75", o: "#ef7d57", k: K, w: "#f4f4f4" }, s: [
+    "............", ".kkkk.kkkk..", ".kyyk.kyyk..", ".kyyk.kyyk..", ".kkkk.kkkk..", "............",
+    "kkkkkkkkkkkk", "kyyyykyyyyyk", "kywwyykwwwyk", "kyyyykyyyyyk", "kkkkkkkkkkkk", "............"] },
+  futbol: { p: { g: "#38b764", d: "#257179", w: "#f4f4f4", k: K }, s: [
+    "............", "....kkkk....", "..kkwwwwkk..", ".kwwwkkwwwk.", ".kwkkwwkkwk.", "kwwkwwwwkwwk",
+    "kwwwwwwwwwwk", ".kwkkwwkkwk.", ".kwwwkkwwwk.", "..kkwwwwkk..", "....kkkk....", "gggggggggggg"] },
+  platform: { p: { r: "#b13e53", s: "#ffcd75", b: "#41a6f6", k: K, g: "#38b764", n: "#73462f" }, s: [
+    "....rrrr....", "...rrrrrrr..", "...kksskk...", "..ksskssss..", "...ssssss...", "..rrbrrbrr..",
+    ".rrrbbbbrrr.", ".ss.bbbb.ss.", "....bbbb....", "...kk..kk...", "gggggggggggg", "nnnnnnnnnnnn"] },
+  tetris: { p: { c: "#41a6f6", o: "#ef7d57", p: "#b13e53", y: "#ffcd75", k: K, g: "#38b764" }, s: [
+    "............", "....yy......", "....yy......", "....yygg....", "..gggg.gg...", "..cc..ggkk..",
+    "oocc.ccppp..", "oocc.cc.pp..", "ooccccccpp..", "oo.cckkkpp..", "kkkkkkkkkkkk", "............"] },
+  kus: { p: { y: "#ffcd75", o: "#ef7d57", w: "#f4f4f4", k: K, g: "#38b764" }, s: [
+    "gg........gg", "gg........gg", "gg..kkkk..gg", "gg.kyyyyk.gg", "gg.kyywkwkgg", "gg.kyyykkkgg",
+    "gg.kooyoook.", "gg..kkkkk.gg", "gg........gg", "gg........gg", "gg........gg", "gg........gg"] },
+  basket: { p: { o: "#ef7d57", l: "#ffcd75", k: K, w: "#f4f4f4", r: "#b13e53" }, s: [
+    "kkkkkkkkkkkk", "kwwwwwwwwwwk", "kwwwrrrrwwwk", "kkkkkrrkkkkk", ".k.k.kk.k.k.", "..k.k..k.k..",
+    "....kkkk....", "...kookook..", "..koookooko.", "..kkkookkko.", "..koookoook.", "...kkkkkk..."] },
+  voleybol: { p: { w: "#f4f4f4", b: "#41a6f6", y: "#ffcd75", k: K, g: "#94b0c2" }, s: [
+    "............", "....kkkk....", "..kkwbbwkk..", ".kwwwbbwwwk.", ".kwbbbbbbwk.", "kwbbwwwwbbwk",
+    "kbbwwkkwwbbk", ".kbwkyywkbk.", ".kwwkyykwwk.", "..kkwwwwkk..", "....kkkk....", "gggggggggggg"] }
+};
+var OYUNLAR = [
+  ["bilgi-kalesi", "Kale Savaşı", "Kaleni koru, düşmanı yık", "kale", "1-2 kişi"],
+  ["yilan", "Yılan", "Elmaları ye, uzayıp git", "yilan", ""],
+  ["2048", "2048", "Sayıları birleştir", "n2048", ""],
+  ["hafiza", "Hafıza", "Eşleri bul", "hafiza", ""],
+  ["balon", "Balon", "60 saniyede patlat", "balon", ""],
+  ["kelime", "Kelime", "Harfleri sıraya diz", "kelime", ""],
+  ["futbol", "Futbol", "Penaltı atışları maçı", "futbol", "1-2 kişi"],
+  ["platform", "Platform", "Zıpla, jeton topla", "platform", ""],
+  ["tetris", "Tetris", "Satırları tamamla", "tetris", ""],
+  ["kus", "Kuş", "Borulardan geç", "kus", ""],
+  ["basket", "Basket", "2'ye 2 basket maçı", "basket", "1-2 kişi"],
+  ["voleybol", "Voleybol", "2'ye 2 voleybol maçı", "voleybol", "1-2 kişi"]
+];
 (function () {
+  try {
+    var ik = function (ad, olcek) { var d = IK[ad]; return Px.sprite(d.s, d.p, olcek); };
+    document.getElementById("logo").appendChild(ik("kale", 4)).parentNode;
+    var iz = document.getElementById("izgara");
+    OYUNLAR.forEach(function (o) {
+      var a = document.createElement("a");
+      a.className = "kart"; a.href = "oyunlar/" + o[0] + "/index.html";
+      a.appendChild(ik(o[3], 6));
+      var b = document.createElement("b"); b.textContent = o[1]; a.appendChild(b);
+      var s = document.createElement("small"); s.textContent = o[2]; a.appendChild(s);
+      if (o[4]) { var e = document.createElement("i"); e.textContent = o[4]; a.appendChild(e); }
+      iz.appendChild(a);
+    });
+  } catch (e) { /* sessizce geç */ }
+  // Sıralama açıksa bağlantıyı göster
   try {
     if (!window.Skor || !Skor.acik()) return;
     document.getElementById("siralamaLink").hidden = false;
     var b = document.getElementById("adBtn"), y = document.getElementById("adYazi");
     b.hidden = false;
-    function guncelle() { y.textContent = Skor.takmaAd() || "yok"; }
+    var guncelle = function () { y.textContent = Skor.takmaAd() || "yok"; };
     guncelle();
     b.addEventListener("click", function () { Skor.adSor(guncelle); });
   } catch (e) { /* sessizce geç */ }

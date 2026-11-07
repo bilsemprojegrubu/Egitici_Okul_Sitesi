@@ -40,18 +40,18 @@ language sql
 immutable
 as $$
   select case p_oyun
-    when 'bilgi-kalesi' then 100
-    when 'yilan'        then 400
+    when 'bilgi-kalesi' then 200000
+    when 'yilan'        then 2000
     when '2048'         then 100000
     when 'hafiza'       then 1000
     when 'balon'        then 5000
     when 'kelime'       then 500
-    when 'futbol'       then 200
+    when 'futbol'       then 1000
     when 'platform'     then 20000
     when 'tetris'       then 100000
-    when 'kus'          then 1000
-    when 'basket'       then 300
-    when 'voleybol'     then 500
+    when 'kus'          then 5000
+    when 'basket'       then 1000
+    when 'voleybol'     then 1000
     else 0
   end
 $$;
