@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.23** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.32** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -106,6 +106,15 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.21 | Basketbol: karakterler iç içe geçmiyor (birbirini itiyor), daha dolgun gövde, küçük göz, botlar takılmıyor |
 | 1.9.22 | Futbol: şut ve pas tuşları yer değiştirdi (Kırmızı E şut / Q pas, Mavi P şut / I pas) |
 | 1.9.23 | Futbol: kaleci topu tutunca oyuncu yerden/havadan atar (otomatik kalecide de); röveşata (Kırmızı V, Mavi /). Basketbol: havada sallanma yok, siyah kenar çizgisi yok |
+| 1.9.24 | Basketbol: havada sallanma yok, karakter gittiği yöne doğru yatar |
+| 1.9.25 | Basketbol: yeni karakter PNG'leri (Basket Random tarzı: siyah kenarlı, ince gövde; kırmızı ve sarı-mor takım) |
+| 1.9.26 | Basketbol: karakterler piksel değil, pürüzsüz (vektör) çiziliyor |
+| 1.9.27 | Basketbol: karakterler köşeli, kare kafa ve kare göz |
+| 1.9.28 | Basketbol: sağdaki oyuncuların ayakları doğru yöne bakıyor |
+| 1.9.29 | Kale Savaşı: golemler nerflendi (can, hasar, zırh azaldı; oyuncu golemi 170 altın) |
+| 1.9.30 | Kale Savaşı: düşmanlar güçlendirildi (can +%20, hasar +%15; taş/demir golem eski güçlerinin üstüne çıktı) |
+| 1.9.31 | Kale Savaşı: askerler arkalarındaki yakın düşmana dönüp vurabiliyor |
+| 1.9.32 | Basketbol: zıplarken basılan yöne yatık kalır, havada sallanmaz/değişmez |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |

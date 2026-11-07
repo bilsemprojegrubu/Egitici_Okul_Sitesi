@@ -74,7 +74,7 @@
   function elUp(p) { // sprite içinde (dik duran) kol: omuz ve el
     var a = (p.th + (p.sw || 0)) * Math.PI / 180, sx = 32 + p.face * 3, sy = 72 - 15 - BOY;
     return { sx: sx, sy: sy, x: sx + p.face * Math.sin(a) * V.L, y: sy + Math.cos(a) * V.L };
-  }  function zipla(p, vx, pw) { if (!p.yer) return; pw = pw === undefined ? .8 : pw; p.pw = pw; p.vy = -(3.0 + 1.9 * pw) * V.jm * .85; p.yer = false; p.av = (p.av || 0) + (vx ? Math.sign(vx) : p.face) * .12; if (vx !== undefined) p.vx = vx; Px.ses("zipla"); }
+  }  function zipla(p, vx, pw) { if (!p.yer) return; pw = pw === undefined ? .8 : pw; p.pw = pw; p.vy = -(3.0 + 1.9 * pw) * V.jm * .85; p.yer = false; p.ja = vx ? Math.sign(vx) * 1.0 : (Math.abs(p.vx) > .3 ? Math.sign(p.vx) * 1.0 : 0); p.av = (p.av || 0) + (vx ? Math.sign(vx) : p.face) * .12; if (vx !== undefined) p.vx = vx; Px.ses("zipla"); }
   function at(p, vx, vy) {
     if (!p.hold) return; p.hold = false; top.h = null; top.vx = vx; top.vy = vy; top.cd = 20; p.cd = 24; Px.ses("sut");
   }
@@ -167,7 +167,7 @@
     p.av = (p.av || 0) - dv * .3;
     var hedefA = Px.sinir(p.vx * .35, -.4, .4);
     p.av += -.04 * ((p.ang || 0) - hedefA); p.av *= .93; p.ang = Px.sinir((p.ang || 0) + p.av, -1.1, 1.1);
-    if (!p.yer) { p.av = 0; p.ang = 0; } // havada sallanma yok
+    if (!p.yer) { p.av = 0; p.ang += ((p.ja || 0) - p.ang) * .18; } // zıplarken basılan yöne yatık kalır, havada değişmez // havada sallanma yok: gittiği yöne doğru yatar
     p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) ;
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = 70; p.th += (hedef - p.th) * .3;
     if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
@@ -309,6 +309,29 @@
   var PNG = {}, PNG_HAZIR = 0, PNG_N = 3 + 2 * 3;
   (function () { var ad = ["bacak0", "bacak1", "bacak2", "govde0", "govde1", "kafa0", "kafa1", "kol0", "kol1"]; PNG_N = ad.length; ad.forEach(function (n) { var im = new Image(); im.onload = function () { PNG_HAZIR++; }; im.src = "karakter/" + n + ".png"; PNG[n] = im; }); })();
   function cizK(n, dx, dy, w, h) { x.drawImage(PNG[n], dx, dy, w, h); }
+  // pürüzsüz (piksel olmayan) karakter: yüksek çözünürlüklü saydam katmana vektör olarak çizilir
+  function cizVek2(p, fr) { return cizVek(p, fr); }
+  function cizVek(p, fr) {
+    var o = C._ov; if (!o || !o.width) return false;
+    var c = o.getContext("2d"), sc = o.width / C.width, hr = V.hr, a = (p.th + (p.sw || 0)) * Math.PI / 180, K = "#15151f";
+    var jer = p.t === 0 ? "#e8303f" : "#ffc125", cizgi = p.t === 0 ? "#fff" : "#8a2be2", ten = p.t === 0 ? "#f5d5b0" : "#c9996b", sac = p.t === 0 ? "#8a4a35" : "#14141a";
+    function yuv(x0, y0, w, h, r, dolgu) { c.beginPath(); c.rect(x0, y0, w, h); c.fillStyle = dolgu; c.fill(); c.lineWidth = .7; c.strokeStyle = K; c.stroke(); }
+    c.save(); c.setTransform(sc, 0, 0, sc, 0, 0); c.imageSmoothingEnabled = true;
+    c.translate(p.x, p.y); c.rotate(p.ang || 0);
+    var bac = fr === 0 ? [[-1.6, 0]] : fr === 1 ? [[-3.4, 0], [.6, 0]] : [[-.4, 0], [-3.6, 0]];
+    for (var i = 0; i < bac.length; i++) { var lx = bac[i][0]; yuv(lx, -20, 3, 17, 1, ten); yuv(lx, -6, 3, 3, 0, "#fff"); yuv(p.face > 0 ? lx - .4 : lx - 2.2, -3.4, 5.6, 3.4, 0, K); }
+    yuv(-3.8, -17 - BOY, 7.6, 12, 1.6, jer);
+    c.fillStyle = cizgi; c.fillRect(-3.8, -13 - BOY, 7.6, 1.2); c.fillRect(-3.8, -9 - BOY, 7.6, 1.2);
+    var hy = -(18 + BOY + hr);
+    var hs = hr + 1; yuv(-hs, hy - hs, hs * 2, hs * 2, 0, ten);
+    c.fillStyle = sac; c.fillRect(-hs + .35, hy - hs + .35, hs * 2 - .7, hs * .75);
+    c.fillStyle = K; c.fillRect(p.face * hr * .5 - .7, hy - .2, 1.4, 1.4);
+    c.translate(p.face * 3, -15 - BOY); c.rotate(-p.face * a);
+    var L = V.L * 14 / 11; c.lineCap = "butt"; c.strokeStyle = K; c.lineWidth = 3.6; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, L); c.stroke();
+    c.strokeStyle = ten; c.lineWidth = 2.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, L); c.stroke();
+    c.strokeStyle = jer; c.lineWidth = 2.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, 3.2); c.stroke();
+    c.restore(); return true;
+  }
   function cizPng(p, fr) {
     var g = p.ang || 0, hr = V.hr, a = (p.th + (p.sw || 0)) * Math.PI / 180, k = (hr + 1) / 4;
     x.save(); x.translate(Math.round(p.x), Math.round(p.y)); x.rotate(g); x.imageSmoothingEnabled = false; x.scale(1.6, 1); // daha dolgun gövde
@@ -324,6 +347,7 @@
     x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px0 - 6, ZEMIN, 12, 2);
     var ana_x = x; x = OX; OX.clearRect(0, 0, 64, 80); // karakter önce dik bir piksel sprite'a çizilir, sonra ayaktan döndürülür
     var fr = p.yer ? (Math.abs(p.vx) > .3 ? Math.floor(p.f) % 2 : 0) : 2;
+    if (cizVek2(p, fr)) { x = ana_x; return; }
     if (PNG_HAZIR >= PNG_N) { x = ana_x; cizPng(p, fr); return; }
     // ince, uzun bacaklar
     var lt = yy - 6 - B, lx = fr === 0 ? [-3, 1] : [-4, 2], ll = fr === 0 ? [6 + B, 6 + B] : fr === 1 ? [6 + B, 5 + B] : [4 + B, 4 + B];
