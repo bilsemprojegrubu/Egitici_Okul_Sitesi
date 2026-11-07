@@ -418,7 +418,7 @@
     if (u.heal) { healAI(u, dr, spm); return; }
     for (i = 0; i < U.length; i++) {
       o = U[i];
-      if (o.s === en && !o.dead) { dd = (o.x - u.x) * dr; if (dd > -4) { scr = u.hunt ? dd - ((o.ok || o.heal) ? 170 : 0) : dd; if (scr < bs) { bs = scr; bd = dd; best = o; } } }
+      if (o.s === en && !o.dead) { dd = (o.x - u.x) * dr; if (dd <= -4 && !u.ok && !u.heal && -dd <= u.r + 2) dd = -dd; if (dd > -4) { scr = u.hunt ? dd - ((o.ok || o.heal) ? 170 : 0) : dd; if (scr < bs) { bs = scr; bd = dd; best = o; } } }
     }
     if (u.twh) best = null; // kule avcısı: askerleri görmezden gelir
     var tg = null, td = 1e9;
@@ -429,6 +429,7 @@
     }
     var dmg = u.d * (rage ? 1.6 : 1) * u.bd; spm *= u.bsp;
     var kacis = z.em === 2 && Math.abs(u.x - (front(u.s) + dr * (8 + (u.id % 5) * 5))) > 6;
+    u.bk = tg && tg !== "c" && !tg.tw && (tg.x - u.x) * dr < -2 ? 1 : 0; // arkadaki düşmana döner
     if (tg && td <= u.r && !kacis) {
       if (u.cd <= 0) {
         u.cd = u.cdm * (u.boss && u.hp < u.mhp * .5 ? .8 : 1); u.at = 8;
@@ -789,7 +790,7 @@
   var HB = [-22, -22, -22, -24, -24, -22, -24, -16, -32, -20], HE = [-20, -22, -22, -30, -32, -26, -18, -24, -22, -26, -24, -24, -34, -34, -44, -30], HBS = [-36, -52, -50, -54, -58, -34, -56, -56, -40, -56];
   function cizUnit(u) {
     var yy;
-    FC = u.s === 0 ? 1 : -1; FLS = u.fl > 0; BX = Math.round(u.x); BY = GY + u.ly;
+    FC = (u.s === 0 ? 1 : -1) * (u.bk ? -1 : 1); FLS = u.fl > 0; BX = Math.round(u.x); BY = GY + u.ly;
     if (u.boss) cizBoss(u); else if (mod === 1 && u.s === 0) cizMon(u); else cizAsker(u);
     FLS = false;
     yy = u.boss ? HBS[u.bi % 10] - 4 : (mod === 1 && u.s === 0 ? HE[u.k] : HB[u.k]);
