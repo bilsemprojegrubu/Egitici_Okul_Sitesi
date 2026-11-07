@@ -102,8 +102,8 @@
     { n: "KURT SÜVARİ", hp: 58, d: 9, r: 10, cd: 30, sp: .8, g: 14, hunt: 1 },
     { n: "GARGOYL", hp: 75, d: 8, r: 9, cd: 34, sp: .5, g: 16, fly: 1, hunt: 1, arm: .3 },
     // kule avcıları: askerlere bakmaz, doğrudan kuleye / kaleye yürür. res: gelen hasarın yalnız bu kadarı işler
-    { n: "TAŞ GOLEM", hp: 380, d: 16, r: 11, cd: 60, sp: .2, g: 28, twh: 1, res: .38 },
-    { n: "DEMİR GOLEM", hp: 680, d: 25, r: 12, cd: 68, sp: .17, g: 50, twh: 1, res: .26, arm: .3 },
+    { n: "TAŞ GOLEM", hp: 380, d: 16, r: 11, cd: 60, sp: .27, g: 28, twh: 1, res: .38 },
+    { n: "DEMİR GOLEM", hp: 680, d: 25, r: 12, cd: 68, sp: .23, g: 50, twh: 1, res: .26, arm: .3 },
     { n: "KULE KARTALI", hp: 44, d: 9, r: 8, cd: 28, sp: .9, g: 12, fly: 1, twh: 1 }
   ];
   // dalgada hangi düşman hangi dalgadan itibaren çıkar; ön saf / baskın / menzilli grupları (tier sırasıyla)
@@ -457,7 +457,7 @@
       if (best && bd < 170) hareket = dr; else if (Math.abs(u.x - rally) > 3) hareket = u.x < rally ? 1 : -1;
     } else hareket = dr;
     if (hareket) {
-      if (z.em !== 2 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && o.ly === u.ly && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
+      if (z.em !== 2 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && o.ly === u.ly && !(o.r > 30 && u.r <= 30) && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
       u.x += hareket * u.sp * spm * (z.em === 2 ? 1.7 : 1); u.w++;
       u.x = Px.sinir(u.x, 6, WW - 6);
     }
@@ -640,10 +640,7 @@
       if (ap) { line(0, -12, 11, -17, "#a47040", 2); R(10, -20, 5, 4, "#94a0b8"); } else { line(0, -12, -9, -17, "#a47040", 2); R(-13, -20, 5, 4, "#94a0b8"); }
       R(-3, -14, 5, 2, c); R(-1, -20, 3, 3, c); R(-1, -22, 3, 2, "#ffcd75");
     } else if (k === 8) { // golem
-      R(-8 + ph, -9, 6, 9, dk); R(2 - ph, -9, 6, 9, dk); R(-9, -22, 18, 14, "#94a0b8"); R(-9, -22, 18, 2, "#b8c4d8"); R(-5, -17, 10, 5, "#566c86");
-      R(-5, -30, 10, 8, "#94a0b8"); R(-5, -30, 10, 2, "#b8c4d8"); R(-3, -27, 2, 2, (t & 1) ? "#73eff7" : "#fff"); R(1, -27, 2, 2, (t & 1) ? "#73eff7" : "#fff");
-      R(9 + a, -22, 5, 14, "#94a0b8"); R(9 + a, -9, 6, 5, "#566c86"); R(-14, -22, 5, 14, "#94a0b8"); R(-14, -9, 6, 5, "#566c86");
-      R(-1, -20, 2, 2, c); R(-8, -20, 1, 6, "#566c86"); R(5, -14, 1, 5, "#566c86");
+      cizGolem(u, "#94a0b8", "#566c86", "#b8c4d8", (t & 1) ? "#73eff7" : "#fff", 0); R(-1, -26, 2, 2, c);
     } else {
       R(-3 + ph, -5, 2, 5, "#0d0e1a"); R(1 - ph, -5, 2, 5, "#0d0e1a");
       var rb = k === 3 ? "#5d275d" : k === 6 ? "#f4f4f4" : c;
@@ -665,6 +662,25 @@
       else if (k === 9) { R(4, -12, 5, 5, "#0d0e1a"); R(5, -11, 1, 1, "#566c86"); R(6, -14, 1, 2, "#a47040"); if (t & 1) R(6, -16, 2, 2, "#ffcd75"); R(-5, -11, 2, 5, "#7a4a2b"); }
     }
     if (S[u.s].rg > 0) { R(-5, -24 - ((tik >> 2) % 3), 2, 2, "#ef7d57"); R(3, -23 - ((tik >> 3) % 3), 2, 2, "#ffcd75"); }
+  }
+  // Iron Golem tarzı: geniş omuz, uzun sarkık kollar; vururken kol havaya kalkar, öne iner. u.at: 8 → 0
+  function cizGolem(u, bd, dk, lt, eye, big) {
+    var ph = (u.w >> 3) & 1, wk = u.w > 0 ? ph : 0, b = Math.floor(Math.sin(tik / 14 + u.id) * 1), at = u.at, pz = at > 6 ? 1 : at > 4 ? 2 : at > 2 ? 3 : at > 0 ? 4 : 0, sw = pz ? 0 : (wk ? 3 : -2);
+    R(-8 + wk, -10, 6, 10, dk); R(2 - wk, -10, 6, 10, dk); R(-9 + wk, -3, 8, 3, "#2a2f3e"); R(1 - wk, -3, 8, 3, "#2a2f3e");
+    R(-7, -22 + b, 14, 12, dk); R(-7, -22 + b, 14, 2, lt);
+    R(-12, -33 + b, 24, 13, bd); R(-12, -33 + b, 24, 3, lt); R(-12, -22 + b, 24, 2, dk);
+    R(-3, -26 + b, 6, 4, dk); R(-1, -25 + b, 2, 2, big ? (tik & 4 ? "#ff5a1a" : "#ffa040") : eye);
+    R(-9, -30 + b, 1, 7, dk); R(6, -29 + b, 1, 5, dk); R(-8, -24 + b, 3, 1, "#38b764"); R(7, -31 + b, 1, 6, "#38b764"); R(5, -23 + b, 3, 1, "#38b764");
+    R(-5, -43 + b, 10, 10, bd); R(-5, -43 + b, 10, 3, lt); R(-4, -39 + b, 3, 2, eye); R(1, -39 + b, 3, 2, eye); R(-1, -37 + b, 3, 5, dk); R(-5, -36 + b, 10, 1, dk);
+    if (big) { R(-14, -37 + b, 4, 5, lt); R(10, -37 + b, 4, 5, lt); R(-6, -46 + b, 3, 4, lt); R(3, -46 + b, 3, 4, lt); }
+    // arka kol: yürürken ters sallanır
+    R(-16 - sw, -32 + b, 5, 20, bd); R(-17 - sw, -13 + b, 7, 6, dk); R(-16 - sw, -32 + b, 5, 3, lt);
+    // ön kol: 0 sarkık, 1-2 yukarı kalkık, 3 öne düz, 4 aşağı çarpar
+    if (pz === 0) { R(11 + sw, -32 + b, 5, 20, bd); R(10 + sw, -13 + b, 7, 6, dk); R(11 + sw, -32 + b, 5, 3, lt); }
+    else if (pz < 3) { R(10, -55 + b, 5, 24, bd); R(9, -58 + b, 7, 6, dk); R(10, -55 + b, 5, 3, lt); }
+    else if (pz === 3) { R(11, -31 + b, 18, 5, bd); R(28, -33 + b, 6, 8, dk); R(11, -31 + b, 18, 2, lt); }
+    else { R(16, -30 + b, 5, 20, bd); R(15, -11, 8, 7, dk); R(21, -6, 4, 2, "rgba(255,205,117,.8)"); }
+    if (u.at === 2) pf(BX + (FC > 0 ? 20 : -20), GY - 4 + u.ly, 2, ["#94a0b8", "#566c86"], 10, 1);
   }
   function cizMon(u) {
     var ph = (u.w >> 3) & 1, a = u.at > 0 ? 2 : 0, p2 = (tik >> 2) & 1, hb = (u.w >> 2) & 1;
@@ -692,15 +708,8 @@
       case 11: R(-10, -10, 16, 6, "#6a6a78"); R(-10, -10, 16, 1, "#94a0b8"); R(-13, -11 + p2, 4, 2, "#6a6a78"); R(5, -14, 5, 6, "#6a6a78"); R(8, -17, 6, 5, "#6a6a78"); R(12, -15, 3, 2, "#3a3a48"); R(10, -16, 1, 1, "#ff3030"); R(8, -19, 2, 3, "#3a3a48");
         R(-9 + hb * 2, -4, 2, 4, "#3a3a48"); R(-5 - hb * 2, -4, 2, 4, "#3a3a48"); R(1 + hb * 2, -4, 2, 4, "#3a3a48"); R(4 - hb * 2, -4, 2, 4, "#3a3a48");
         R(-3, -17, 5, 7, "#5a7a3a"); R(-3, -22, 5, 5, "#6a8a4a"); R(1, -20, 1, 1, "#e0344f"); R(3, -20 + a, 1, 12, "#a47040"); R(3, -21 + a, 3, 2, "#dfe9f5"); break;
-      case 13: // taş golem
-        R(-7 + ph, -9, 6, 9, "#566c86"); R(1 - ph, -9, 6, 9, "#566c86"); R(-9, -24, 18, 15, "#8a8f9c"); R(-9, -24, 18, 2, "#b8c4d8"); R(-6, -17, 5, 3, "#38b764"); R(2, -21, 4, 2, "#38b764");
-        R(-5, -33, 10, 9, "#9aa0b0"); R(-5, -33, 10, 2, "#c8d0e0"); R(-3, -30, 2, 2, p2 ? "#ff9a2a" : "#ffcd75"); R(1, -30, 2, 2, p2 ? "#ff9a2a" : "#ffcd75");
-        R(9 + a, -24, 5, 14, "#8a8f9c"); R(9 + a, -11, 6, 5, "#566c86"); R(-14, -24, 5, 14, "#8a8f9c"); R(-15, -11, 6, 5, "#566c86"); break;
-      case 14: // demir golem
-        R(-8 + ph, -10, 7, 10, "#2a2f3e"); R(1 - ph, -10, 7, 10, "#2a2f3e"); R(-11, -28, 22, 18, "#4a4f5e"); R(-11, -28, 22, 2, "#8a90a0"); R(-3, -22, 6, 6, p2 ? "#ff5a1a" : "#ffa040");
-        for (var ri = 0; ri < 3; ri++) { R(-9 + ri * 8, -26, 1, 1, "#c8d0e0"); R(-9 + ri * 8, -13, 1, 1, "#c8d0e0"); }
-        R(-6, -39, 12, 11, "#5a6070"); R(-8, -42, 3, 5, "#8a90a0"); R(5, -42, 3, 5, "#8a90a0"); R(-4, -35, 3, 2, "#ff3030"); R(2, -35, 3, 2, "#ff3030");
-        R(11 + a, -28, 6, 17, "#4a4f5e"); R(11 + a, -12, 8, 6, "#2a2f3e"); R(-17, -28, 6, 17, "#4a4f5e"); R(-19, -12, 8, 6, "#2a2f3e"); R(-13, -31, 4, 3, "#8a90a0"); R(9, -31, 4, 3, "#8a90a0"); break;
+      case 13: cizGolem(u, "#8a8f9c", "#566c86", "#c8d0e0", p2 ? "#ff9a2a" : "#ffcd75", 0); break;
+      case 14: cizGolem(u, "#4a4f5e", "#2a2f3e", "#8a90a0", "#ff3030", 1); break;
       case 15: // kule kartalı
         BY -= 16 + Math.round(Math.sin(tik / 6 + u.id) * 2);
         R(-4, -8, 9, 7, "#7a4a2b"); R(-1, -12, 6, 5, "#f4f4f4"); R(5, -11, 3, 2, "#ffcd75"); R(2, -11, 1, 1, "#0d0e1a"); R(-7, -5, 3, 2, "#5a3a1a"); R(-2, -2, 1, 3, "#ffcd75"); R(2, -2, 1, 3, "#ffcd75");
