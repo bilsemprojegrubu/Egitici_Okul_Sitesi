@@ -134,7 +134,7 @@
   }
   function rovesata(p) { // havadaki topa röveşata
     var gx = hedefKale(p.t), hy = Px.sinir(CY + Px.rastgele(-14, 14), GT + 4, GB - 4), ax = gx - top.x, ay = hy - top.y, n = Math.sqrt(ax * ax + ay * ay) || 1;
-    top.vx = ax / n * 5; top.vy = ay / n * 5; top.vz = .2; top.z = Math.min(top.z, 3); top.son = p.t; top.kafa = false; top.rv = true; top.sahip = null; p.cd = 30; sars = 9; Px.ses("sut");
+    top.vx = ax / n * 5; top.vy = ay / n * 5; top.vz = .2; top.z = Math.min(top.z, 3); top.son = p.t; top.kafa = false; top.rv = true; top.sahip = null; p.cd = 30; p.rvt = 36; sars = 9; Px.ses("sut");
     mesaj = "RÖVEŞATA!"; msayac = 45;
     for (var i = 0; i < 10; i++) parc.push({ x: top.x, y: top.y - top.z, vx: Px.rastgele(-1.8, 1.8), vy: Px.rastgele(-1.8, 1.8), o: 16, c: "#ffcd75" });
   }
@@ -364,7 +364,7 @@
       else if (!insanlar.some(function (h) { return h.c === p; }) && !(insanlar.some(function (h) { return h.t === p.t; }) && false)) {
         if (!insanlar.some(function (h) { return h.t === p.t; }) || true) { if (!insanlar.some(function (h) { return h.t === p.t && oyunculari(p.t).indexOf(p) >= 0 && h.c !== p && true; })) botGuncelle(p, true); }
       }
-      if (p.cd) p.cd--;
+      if (p.cd) p.cd--; if (p.rvt) p.rvt--;
     });
     pl.forEach(function (p) {
       if (p.rol === "k") return;
@@ -443,6 +443,12 @@
       var set = p.rol === "k" ? KALECI[p.t] : KIT[p.t], fr = (p.vx || p.vy) ? 1 + (Math.floor(p.f) % 2) : 0, im = set[fr];
       if (p.yx < -.1) im = Px.cevir(im);
       x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(Math.round(p.x) - 3, Math.round(p.y) + 5, 7, 2);
+      if (p.rvt > 0) {
+        var ft = 1 - p.rvt / 36, lift = Math.sin(ft * Math.PI) * 9, dn = p.yx < -.1 ? -1 : 1;
+        x.fillStyle = "rgba(0,0,0,.2)"; x.fillRect(Math.round(p.x) - 3, Math.round(p.y) + 5, 7, 2);
+        x.save(); x.translate(Math.round(p.x), Math.round(p.y) - 4 - lift); x.rotate(-dn * ft * Math.PI * 2); x.drawImage(im, -4, -4); x.restore();
+        if (p.rvt % 4 === 0) parc.push({ x: p.x, y: p.y - 4 - lift, vx: Px.rastgele(-.5, .5), vy: Px.rastgele(-.3, .3), o: 10, c: "#ffffff" });
+      } else
       x.drawImage(im, Math.round(p.x) - 4, Math.round(p.y) - 8);
     });
     // kontrol edilen oyuncuya ok
