@@ -203,7 +203,7 @@
     x.fillStyle = "#566c86"; x.fillRect(7, 8, 48, 5);
     x.fillStyle = yakit > 25 ? "#38b764" : "#ef4d5e"; x.fillRect(7, 8, Math.round(48 * yakit / 100), 5);
     Px.yazi(x, "BENZİN", 60, 4, 9, "#f4f4f4", "left");
-    if (geri > 0) { Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 90, 13, "#ffcd75", "center"); Px.yazi(x, "Atlamak için tuşa bas / dokun", W / 2, 112, 8, "#f4f4f4", "center"); }
+    if (geri > 0) { Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 90, 13, "#ffcd75", "center"); Px.yazi(x, "Beklemeden başlamak için", W / 2, 112, 8, "#f4f4f4", "center"); Px.yazi(x, "bir tuşa bas / dokun", W / 2, 124, 8, "#f4f4f4", "center"); }
     if (puan >= SINIR) Px.yazi(x, "MAKS!", W / 2, 30, 12, "#ffcd75", "center");
   }
   // Klavye: capture aşamasında yakala (isim kutusu odakta kalsa da, kare atlasa da çalışır)
