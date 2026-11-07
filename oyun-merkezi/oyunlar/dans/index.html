@@ -100,35 +100,38 @@
   // ---- Spike (Brawl Stars) vektör çizim: açık yeşil kubbe gövde, kırmızı çiçek, koyu gözler/ağız, mor yelek, yumruk, kahverengi şort ----
   var OUT = "#10200a";
   function el(cx, cy, rx, ry, fill, rot) { x.beginPath(); x.ellipse(cx, cy, rx, ry, rot || 0, 0, 6.2832); x.fillStyle = fill; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke(); }
+  var BODY = "M-46 46 C-52 14 -50 -30 -24 -46 C-8 -54 8 -54 24 -46 C50 -30 52 14 46 46 Q0 58 -46 46 Z";
   function govde() {
-    var gr = x.createLinearGradient(-42, 0, 42, 0); gr.addColorStop(0, "#b5e84a"); gr.addColorStop(.45, "#8fd22a"); gr.addColorStop(1, "#5fa31e");
-    x.beginPath(); x.moveTo(-40, 46); x.bezierCurveTo(-46, 10, -44, -44, -10, -50); x.bezierCurveTo(10, -53, 44, -42, 41, 10); x.bezierCurveTo(40, 30, 40, 40, 40, 46);
-    x.quadraticCurveTo(0, 56, -40, 46); x.closePath(); x.fillStyle = gr; x.fill(); x.lineWidth = 3.5; x.strokeStyle = OUT; x.lineJoin = "round"; x.stroke();
-    x.beginPath(); x.moveTo(0, -50); x.quadraticCurveTo(-4, -34, 0, -22); x.strokeStyle = "#6aa81e"; x.lineWidth = 3; x.stroke();
-    // şort
-    x.save(); x.beginPath(); x.moveTo(-40, 46); x.bezierCurveTo(-46, 10, -44, -44, -10, -50); x.bezierCurveTo(10, -53, 44, -42, 41, 10); x.bezierCurveTo(40, 30, 40, 40, 40, 46); x.quadraticCurveTo(0, 56, -40, 46); x.closePath(); x.clip();
-    x.fillStyle = "#9a5c2a"; x.fillRect(-50, 24, 100, 40); x.fillStyle = "#c98a46"; x.fillRect(-50, 22, 100, 6);
-    x.fillStyle = "#6f3a1c"; x.beginPath(); x.moveTo(-5, 28); x.lineTo(5, 28); x.lineTo(3, 36); x.lineTo(-3, 36); x.fill(); x.restore();
-    x.beginPath(); x.moveTo(-42, 26); x.quadraticCurveTo(0, 32, 42, 26); x.lineWidth = 2.5; x.strokeStyle = OUT; x.stroke();
-    // gözler + ağız
-    el(-17, -16, 11, 13, "#1f4a14"); el(17, -16, 11, 13, "#1f4a14");
-    x.beginPath(); x.moveTo(-20, 5); x.bezierCurveTo(-22, -4, 22, -4, 20, 5); x.bezierCurveTo(24, 22, -24, 22, -20, 5); x.closePath(); x.fillStyle = "#1f4a14"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
-    x.beginPath(); x.ellipse(0, 16, 11, 4, 0, 0, 6.2832); x.fillStyle = "#2f6a1c"; x.fill();
-    // çiçek (kırmızı taç)
-    el(-13, -54, 14, 11, "#e8453c", -.3); el(5, -60, 17, 13, "#e8453c", .1); el(18, -52, 12, 10, "#e8453c", .5);
-    x.beginPath(); x.ellipse(2, -64, 8, 4, .1, 0, 6.2832); x.fillStyle = "#f56a55"; x.fill();
-    // yapraklar
-    el(-44, -22, 7, 3.5, "#4f9a2a", -.5); el(30, -42, 7, 3.5, "#4f9a2a", .5);
+    var P = new Path2D(BODY);
+    var gr = x.createLinearGradient(-48, -20, 48, 20); gr.addColorStop(0, "#b8ea4c"); gr.addColorStop(.4, "#92d62a"); gr.addColorStop(1, "#68ab20");
+    x.fillStyle = gr; x.fill(P); x.lineWidth = 3.5; x.strokeStyle = OUT; x.lineJoin = "round"; x.stroke(P);
+    x.save(); x.clip(P);
+    x.beginPath(); x.moveTo(0, -54); x.quadraticCurveTo(-5, -38, 0, -28); x.lineWidth = 3; x.strokeStyle = "#6aa81e"; x.stroke();
+    x.fillStyle = "#9a5c2a"; x.fillRect(-60, 26, 120, 40); x.fillStyle = "#c98a46"; x.fillRect(-60, 24, 120, 6);
+    x.fillStyle = "#6f3a1c"; x.beginPath(); x.moveTo(-7, 30); x.lineTo(7, 30); x.lineTo(4, 40); x.lineTo(-4, 40); x.fill();
+    x.restore();
+    x.beginPath(); x.moveTo(-48, 28); x.quadraticCurveTo(0, 34, 48, 28); x.lineWidth = 2.5; x.strokeStyle = OUT; x.stroke();
+    // gözler: büyük koyu oval
+    el(-18, -14, 13, 17, "#1f4a14"); el(18, -14, 13, 17, "#1f4a14");
+    // büyük açık ağız
+    x.beginPath(); x.moveTo(-23, 8); x.bezierCurveTo(-26, -2, 26, -2, 23, 8); x.bezierCurveTo(30, 28, -30, 28, -23, 8); x.closePath(); x.fillStyle = "#1f4a14"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
+    x.beginPath(); x.ellipse(0, 19, 13, 4.5, 0, 0, 6.2832); x.fillStyle = "#2f6a1c"; x.fill();
+    // çiçek: geniş kırmızı taç
+    el(-17, -52, 16, 12, "#e8453c", -.35); el(1, -60, 20, 14, "#e8453c", 0); el(20, -52, 15, 11, "#e8453c", .4); el(0, -48, 18, 8, "#d63a33", 0);
+    x.beginPath(); x.ellipse(-3, -66, 10, 4, 0, 0, 6.2832); x.fillStyle = "#f56a55"; x.fill();
+    el(-50, -22, 7, 3.5, "#4f9a2a", -.5); el(34, -44, 7, 3.5, "#4f9a2a", .5);
   }
   function yelek(sg) {
-    x.beginPath(); x.moveTo(sg * 30, -10); x.quadraticCurveTo(sg * 50, -4, sg * 50, 20); x.quadraticCurveTo(sg * 50, 40, sg * 34, 42); x.quadraticCurveTo(sg * 28, 20, sg * 30, -10); x.closePath();
+    x.beginPath(); x.moveTo(sg * 32, -12); x.quadraticCurveTo(sg * 58, -6, sg * 56, 22); x.quadraticCurveTo(sg * 54, 42, sg * 38, 44); x.quadraticCurveTo(sg * 30, 20, sg * 32, -12); x.closePath();
     x.fillStyle = "#a43be0"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
+    x.beginPath(); x.moveTo(sg * 38, -4); x.quadraticCurveTo(sg * 46, 8, sg * 42, 30); x.lineWidth = 3; x.strokeStyle = "#c77af0"; x.stroke();
   }
   function kolcuk(sg, a) {
-    x.save(); x.translate(sg * 42, 0); x.rotate(a);
-    x.beginPath(); x.ellipse(0, 4, 9, 14, 0, 0, 6.2832); x.fillStyle = "#a43be0"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
-    el(0, 30, 16, 14, "#8fd22a");
-    x.beginPath(); x.moveTo(-8, 24); x.lineTo(-8, 34); x.moveTo(0, 22); x.lineTo(0, 35); x.moveTo(8, 24); x.lineTo(8, 34); x.lineWidth = 2; x.strokeStyle = "#4f8a1a"; x.stroke();
+    x.save(); x.translate(sg * 48, -2); x.rotate(a);
+    x.beginPath(); x.ellipse(0, 6, 9, 14, 0, 0, 6.2832); x.fillStyle = "#a43be0"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
+    el(0, 32, 17, 15, "#92d62a");
+    x.beginPath(); x.ellipse(-6, 25, 8, 5, 0, 0, 6.2832); x.fillStyle = "#b8ea4c"; x.fill();
+    x.beginPath(); x.moveTo(-9, 31); x.quadraticCurveTo(-9, 38, -6, 42); x.moveTo(0, 30); x.lineTo(0, 44); x.moveTo(9, 31); x.quadraticCurveTo(9, 38, 6, 42); x.lineWidth = 2; x.strokeStyle = "#4f8a1a"; x.stroke();
     x.restore();
   }
   var dnT = 0;
@@ -139,7 +142,7 @@
     var cx = 200, cy = 118 + poz.bob * 1.2, sp = Math.sin(kare / 5) * 4, sx = 1, a1 = poz.a1, a2 = poz.a2, zp = 0, sq = 1 + (Math.floor(kare / 8) % 2) * .02;
     if (dnT > 0) { var ph = (70 - dnT) / 70; sx = Math.cos(ph * Math.PI * 6); a1 = -2.6 + Math.sin(kare / 2) * .5; a2 = 2.6 - Math.sin(kare / 2) * .5; zp = -Math.abs(Math.sin(ph * Math.PI * 6)) * 14; sp = Math.sin(kare / 2) * 6; }
     x.save(); x.translate(cx, cy + zp); x.rotate(dnT > 0 ? 0 : poz.lean); x.scale(sx, sq); x.lineJoin = "round";
-    el(-20 + sp, 54, 17, 9, "#7fc21e"); el(20 - sp, 54, 17, 9, "#7fc21e");
+    el(-22 + sp, 54, 19, 10, "#7fc21e"); el(22 - sp, 54, 19, 10, "#7fc21e");
     govde(); yelek(-1); yelek(1); kolcuk(-1, a1); kolcuk(1, a2);
     x.restore();
   }
