@@ -127,7 +127,7 @@
     }
   }
   function patla(ci, cj) {
-    durum = "patladi"; patX = ci; patY = cj; sure = (performance.now() - t0) / 1000;
+    durum = "patladi"; sonZ = 0; patX = ci; patY = cj; sure = (performance.now() - t0) / 1000;
     var l = [];
     for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) if (g[j][i].m && !g[j][i].f) l.push([i, j, Math.hypot(i - ci, j - cj)]);
     l.sort(function (a, b) { return a[2] - b[2]; });
@@ -176,7 +176,7 @@
     x.setTransform(1, 0, 0, 1, 0, 0);
     if (tebrik > 0) Px.yazi(x, "TEMİZLENDİ!", W / 2, W / 2 - 10, 16, "#ffcd75", "center");
   }
-  var patlayan = {};
+  var patlayan = {}, sonZ = 0;
   function patlayanMi(i, j) { return patlayan[i + "," + j]; }
   function guncelle() {
     par.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += .1; p.o--; });
@@ -195,7 +195,7 @@
           if (!e.ana) { Px.ses("patla"); sarsin = Math.max(sarsin, 6); }
         } else kalanP++;
       });
-      if (!kalanP && zaman > 20 && !par.length) sonDurum();
+      if (!kalanP && !par.length && zaman > 30) { if (!sonZ) sonZ = zaman; if (zaman - sonZ > 40) sonDurum(); }
       else if (zaman > 150) sonDurum();
     }
   }

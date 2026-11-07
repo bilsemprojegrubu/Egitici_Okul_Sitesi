@@ -115,7 +115,7 @@
     x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px, py + PW - 4, PW, 4); x.fillRect(px + PW - 4, py, 4, PW);
     if (a) { x.fillStyle = "rgba(255,255,255,.25)"; x.fillRect(px + 10, py + 10, PW - 20, PW - 20); }
     if (r) { x.fillStyle = "#f4f4f4"; x.fillRect(px + 4, py + 4, 6, 6); }
-    Px.yazi(x, p.ad, px + PW - 8, py + PW - 15, 10, "rgba(255,255,255,.6)", "right");
+    Px.yazi(x, p.ad, i % 2 ? px + PW - 8 : px + 8, i < 2 ? py + 6 : py + PW - 16, 10, "rgba(255,255,255,.6)", i % 2 ? "right" : "left");
   }
   function ciz() {
     x.fillStyle = "#1a1c2c"; x.fillRect(0, 0, W, H);
@@ -125,11 +125,12 @@
     x.fillStyle = "#262b44"; x.fillRect(77, 77, 46, 46);
     x.fillStyle = "#566c86"; x.fillRect(77, 77, 46, 2); x.fillRect(77, 77, 2, 46);
     var m = durum === "goster" ? "İZLE" : durum === "sira" ? "SIRA" : durum === "hata" ? "HATA" : durum === "basla" ? "" : "";
-    Px.yazi(x, durum === "basla" ? "0" : String(dizi.length), 100, 82, 22, "#ffcd75", "center");
+    if (durum !== "basla") Px.yazi(x, String(dizi.length), 100, 82, 22, "#ffcd75", "center");
     Px.yazi(x, m, 100, 108, 9, durum === "sira" ? "#38b764" : durum === "hata" ? "#ef4d5e" : "#f4f4f4", "center");
     if (durum === "basla") {
-      x.fillStyle = "rgba(13,14,26,.75)"; x.fillRect(20, 84, 160, 32);
-      Px.yazi(x, "BAŞLAMAK İÇİN DOKUN / BOŞLUK", 100, 94, 9, "#ffcd75", "center");
+      x.fillStyle = "#0d0e1a"; x.fillRect(30, 84, 140, 32);
+      Px.yazi(x, "BAŞLA", 100, 87, 13, "#ffcd75", "center");
+      Px.yazi(x, "dokun / boşluk", 100, 103, 8, "#f4f4f4", "center");
     }
   }
   function konum(e) {

@@ -46,18 +46,20 @@
       <button class="btn kirmizi" id="gecBtn" type="button">Geç (-1 can)</button>
     </div>
     <div id="mesaj"></div>
-    <div class="ipuc">Tuşlara dokun ya da klavyeyle yaz. Harfler dolunca otomatik denenir.</div>
+    <div class="ipuc" id="ipuc">Tuşlara dokun ya da klavyeyle yaz. Harfler dolunca otomatik denenir.</div>
   </div>
   <div id="bitti" class="kaplama" hidden>
     <h2>Oyun bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
     <button class="btn" id="tekrar">Tekrar oyna</button>
+    <button class="btn ikinci" id="menuBtn">Menü</button>
   </div>
 </main>
 <script src="kelimeler.js"></script>
 <script src="kelimeler2.js"></script>
 <script src="kelimeler3.js"></script>
 <script src="kelimeler4.js"></script>
+<script src="kelimeler5.js"></script>
 <script src="../../config.js"></script>
 <script src="../../skor.js"></script>
 <script src="../piksel.js"></script>
@@ -74,7 +76,8 @@
   try { var g0 = JSON.parse(Px.oku(ANAHTAR) || "[]"); if (Array.isArray(g0)) g0.forEach(function (k) { gorulen[k] = 1; }); } catch (e) { }
   function gorulenKaydet() { var l = Object.keys(gorulen); if (l.length > 2000) { l = l.slice(-1500); gorulen = {}; l.forEach(function (k) { gorulen[k] = 1; }); } Px.yaz(ANAHTAR, JSON.stringify(l)); }
   var H = document.getElementById("harfler"), A = document.getElementById("cevap"), M = document.getElementById("mesaj"), CAN = document.getElementById("can"), SC = document.getElementById("sureCubuk");
-  var hedef, harfler, secim, puan, can, calis, kilit, kalan, toplam, sayac;
+  var hedef, harfler, secim, puan, can, calis, kilit, kalan, toplam, sayac, eksik = false, bos = [], dolu = 0, menu;
+  var ALFA = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("");
   function bag() { var u = puan < 5 ? [3, 5] : puan < 15 ? [4, 7] : puan < 30 ? [5, 9] : [6, 12]; return u; }
   function sec() {
     var u = bag(), aday = TUM.filter(function (k) { return k.length >= u[0] && k.length <= u[1] && !gorulen[k]; });
@@ -90,8 +93,15 @@
   function canCiz() { CAN.textContent = ""; for (var i = 0; i < 3; i++) CAN.textContent += i < can ? "♥" : "♡"; }
   function sonraki() {
     hedef = buyuk(sec()); harfler = hedef.split(""); secim = []; kilit = false;
-    kar(harfler); var d = 0; while (harfler.join("") === hedef && d++ < 20) kar(harfler);
-    toplam = kalan = 25 + hedef.length * 2.5;
+    if (eksik) {
+      var say = hedef.length <= 4 ? 1 : hedef.length <= 7 ? (puan < 10 ? 1 : 2) : (puan < 10 ? 2 : 3), ad = [], i;
+      for (i = 0; i < hedef.length; i++) ad.push(i);
+      kar(ad); bos = ad.slice(0, say).sort(function (a, b) { return a - b; }); dolu = 0;
+      var sec2 = bos.map(function (n) { return hedef.charAt(n); });
+      while (sec2.length < say + 3) { var h = ALFA[Px.tamsayi(0, ALFA.length - 1)]; if (sec2.indexOf(h) < 0) sec2.push(h); }
+      harfler = kar(sec2);
+    } else { kar(harfler); var d = 0; while (harfler.join("") === hedef && d++ < 20) kar(harfler); }
+    toplam = kalan = (eksik ? 15 : 25) + hedef.length * 2.5;
     clearInterval(sayac); sayac = setInterval(zaman, 200);
     canCiz(); ciz();
   }
@@ -102,6 +112,7 @@
     if (kalan <= 0) kaybet("Süre doldu! Doğrusu: " + hedef);
   }
   function ciz() {
+    if (eksik) return cizEksik();
     H.textContent = ""; A.textContent = ""; A.className = "satir"; H.className = "satir";
     harfler.forEach(function (h, i) {
       var b = document.createElement("button"); b.type = "button"; b.className = "tas" + (secim.indexOf(i) >= 0 ? " kullanildi" : "");
@@ -115,15 +126,42 @@
       A.appendChild(y);
     }
   }
+  function cizEksik() {
+    H.textContent = ""; A.textContent = ""; A.className = "satir"; H.className = "satir";
+    harfler.forEach(function (h, i) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "tas";
+      b.style.background = RENK[i % RENK.length]; b.style.animationDelay = i * 0.05 + "s"; b.textContent = h; b.setAttribute("aria-label", h);
+      b.addEventListener("click", function () { eksikSec(h); }); H.appendChild(b);
+    });
+    for (var i = 0; i < hedef.length; i++) {
+      var y = document.createElement("div"), k = bos.indexOf(i);
+      if (k < 0 || k < dolu) { y.className = "yuva dolu"; y.style.cursor = "default"; y.textContent = hedef.charAt(i); y.style.background = k < 0 ? "#566c86" : "#38b764"; y.style.color = "#fff"; }
+      else { y.className = "yuva"; if (k === dolu) y.style.borderColor = "#ffcd75"; }
+      A.appendChild(y);
+    }
+  }
+  function eksikSec(h) {
+    if (!calis || kilit) return;
+    if (hedef.charAt(bos[dolu]) === h) {
+      dolu++; Px.ses("tik"); cizEksik();
+      if (dolu === bos.length) {
+        kilit = true; puan++; document.getElementById("puan").textContent = puan; Px.ses("puan");
+        A.classList.add("dogru"); M.textContent = ["Harika!", "Süper!", "Bravo!", "Muhteşem!", "Tamam!"][puan % 5];
+        setTimeout(function () { M.textContent = ""; sonraki(); }, 650);
+      }
+    } else kaybet("Olmadı! Doğrusu: " + hedef);
+  }
   function ekle(i) {
+    if (eksik) return;
     if (!calis || kilit || secim.indexOf(i) >= 0 || secim.length >= harfler.length) return;
     secim.push(i); Px.ses("tik"); ciz(); if (secim.length === harfler.length) kontrol();
   }
-  function cikar(n) { if (!calis || kilit) return; secim.splice(n, 1); Px.ses("don"); ciz(); }
+  function cikar(n) { if (eksik) return; if (!calis || kilit) return; secim.splice(n, 1); Px.ses("don"); ciz(); }
   function kelimeSecim() { return secim.map(function (i) { return harfler[i]; }).join(""); }
   function ayniHarf(a, b) { return a.split("").sort().join("") === b.split("").sort().join(""); }
   function dogruMu(c) { return c === hedef || (ayniHarf(c, hedef) && !!KUME[c.toLocaleLowerCase("tr")]); }
   function kontrol() {
+    if (eksik) return;
     if (!calis || kilit || secim.length < 2) return;
     var c = kelimeSecim();
     // Aynı harflerle yazılan başka geçerli kelimeler de (anagram) kabul edilir
@@ -144,7 +182,7 @@
     setTimeout(function () { M.textContent = ""; sonraki(); }, 1500);
   }
   document.getElementById("gonderBtn").addEventListener("click", kontrol);
-  document.getElementById("karistir").addEventListener("click", function () { if (!calis || kilit) return; secim = []; kar(harfler); Px.ses("don"); ciz(); });
+  document.getElementById("karistir").addEventListener("click", function () { if (!calis || kilit) return; if (eksik) return; secim = []; kar(harfler); Px.ses("don"); ciz(); });
   document.getElementById("silBtn").addEventListener("click", function () { cikar(secim.length - 1); });
   document.getElementById("gecBtn").addEventListener("click", function () { kaybet("Geçildi. Doğrusu: " + hedef); });
   document.addEventListener("keydown", function (e) {
@@ -153,11 +191,28 @@
     if (e.key === "Enter") { kontrol(); return; }
     if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
     var ch = buyuk(e.key), ix = -1;
+    if (eksik) { if (harfler.indexOf(ch) >= 0) eksikSec(ch); return; }
     for (var i = 0; i < harfler.length; i++) if (harfler[i] === ch && secim.indexOf(i) < 0) { ix = i; break; }
     if (ix >= 0) ekle(ix);
   });
+  function modKur(e) {
+    eksik = e;
+    document.getElementById("karistir").style.display = e ? "none" : "";
+    document.getElementById("silBtn").style.display = e ? "none" : "";
+    document.getElementById("gonderBtn").style.display = e ? "none" : "";
+    document.getElementById("ipuc").textContent = e ? "Eksik harfi bul: doğru harfe dokun ya da klavyeden yaz. Yanlış harf = -1 can." : "Tuşlara dokun ya da klavyeyle yaz. Harfler dolunca otomatik denenir.";
+    yeni();
+  }
+  menu = Px.menu({
+    baslik: "KELİME AVI", not: "Bir oyun türü seç",
+    secenekler: [
+      { ad: "Harfleri diz", alt: "Karışık harflerden kelimeyi bul", fn: function () { modKur(false); } },
+      { ad: "Eksik harf", alt: "Kelimedeki boşlukları doldur", fn: function () { modKur(true); } }
+    ]
+  });
   document.getElementById("tekrar").addEventListener("click", yeni);
-  yeni();
+  document.getElementById("menuBtn").addEventListener("click", function () { clearInterval(sayac); calis = false; menu.ac(); });
+  document.getElementById("puan").textContent = 0;
 })();
 </script>
 </body>

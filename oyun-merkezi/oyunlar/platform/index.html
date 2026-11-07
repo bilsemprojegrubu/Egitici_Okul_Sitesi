@@ -51,6 +51,8 @@
   function yeni() {
     ph = [{ x: -40, w: 380, y: 112 }]; jt = []; dk = []; par = [];
     o = { y: 112, v: 0, z: 0, yer: true }; mes = 0; hiz = 1.7; coin = 0; calis = true; sars = 0; tik = 0; tampon = 0; koyot = 0;
+    // Skor panelindeki isim kutusu odağı tutarsa tuşlar yutulur: odağı bırak
+    try { var ae = document.activeElement; if (ae && ae !== document.body && ae.blur) ae.blur(); } catch (e) { }
     uret(); document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
   }
   function uret() {

@@ -10,7 +10,7 @@
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>ARABA KAÇIŞ</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Jeton <b id="jeton">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
-  <canvas id="c" class="cv" width="160" height="240" style="--mw:340px;touch-action:none"></canvas>
+  <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
   <p class="ipucu">◀ ▶ / A D ile şerit değiştir (dokunmatikte ekranın sol/sağ yarısına dokun). Araba, kamyon, koni ve çukurdan kaç; jeton ve benzin topla!</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Kaza yaptın!</h2><p id="sonuc"></p>
@@ -149,9 +149,9 @@
     x.fillStyle = "#333852"; for (i = 0; i < 24; i++) x.fillRect(YOL0 + ((i * 47) % 116) + 2, (((i * 61 + yol) % H) + H) % H, 3, 2);
     // kenar şeritleri (kırmızı-beyaz)
     var off = Math.floor(yol) % 16;
-    for (i = -1; i < 16; i++) {
-      x.fillStyle = i % 2 ? "#ef4d5e" : "#f4f4f4";
-      var yy = i * 8 + off % 16; // 8px bloklar
+    for (i = -2; i < 32; i++) {
+      x.fillStyle = (i & 1) ? "#ef4d5e" : "#f4f4f4";
+      var yy = i * 8 + off; // 8px bloklar
       x.fillRect(YOL0 - 4 + 1, yy, 2, 8); x.fillRect(W - YOL0 + 1, yy, 2, 8);
     }
     x.fillStyle = "#f4f4f4"; x.fillRect(YOL0 + 2, 0, 1, H); x.fillRect(W - YOL0 - 3, 0, 1, H);
