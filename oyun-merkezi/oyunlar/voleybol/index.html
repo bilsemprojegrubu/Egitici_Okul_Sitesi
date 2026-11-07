@@ -173,7 +173,7 @@
     parc.forEach(function (p) { x.fillStyle = "#fff"; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
     Px.yazi(x, String(sa), 90, 6, 18, "#ffb0b0", "center"); Px.yazi(x, String(sb), 150, 6, 18, "#b0c8ff", "center");
     Px.yazi(x, "-", 120, 6, 18, "#fff", "center");
-    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", 120, 26, 12, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), 120, 40, 30, "#ffcd75", "center"); }
+    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", 120, 40, 11, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), 120, 52, 30, "#ffcd75", "center"); }
     else if (golSayac > 0 && calis) Px.yazi(x, golMesaj, 120, 36, golMesaj === "BAŞLA!" ? 20 : 14, "#ffcd75", "center");
     x.restore();
   }
