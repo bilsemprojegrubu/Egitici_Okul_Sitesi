@@ -185,7 +185,7 @@
   }
   function yapU(s, k, hm, dm) {
     var en = mod === 1 && s === 0, t = en ? EK[k] : UK[k], z = S[s];
-    var u = { id: ++idc, s: s, k: k, x: 0, hp: t.hp * hm * (en ? 1.2 : 1), mhp: t.hp * hm * (en ? 1.2 : 1), d: t.d * dm * (en ? 1.15 : 1), r: t.r, cd: 0, cdm: t.cd, sp: t.sp * (en ? 1 : 1 + .06 * z.us), ok: t.ok || 0, fl: 0, at: 0, w: 0, ly: ((idc * 5) % 7 - 3) * 2, boss: 0, fly: t.fly || 0, g: en ? Math.ceil(t.g * (1 + wv * .04)) : Math.round(t.c * .5), dead: 0, bi: 0, arm: t.arm || 0, hunt: t.hunt || 0, heal: t.heal ? t.heal * hm : 0, bomb: t.bomb || 0, pz: t.psn || 0, pd: 0, psn: 0, slow: 0, slowf: .55, frz: 0, sh: 0, cy: 0, chg: 0, def: null, twh: t.twh || 0, res: t.res || 0, bd: 1, bsp: 1 };
+    var u = { id: ++idc, s: s, k: k, x: 0, hp: t.hp * hm * (en ? 1.2 : 1), mhp: t.hp * hm * (en ? 1.2 : 1), d: t.d * dm * (en ? 1.15 : 1), r: t.r, cd: 0, cdm: t.cd, sp: t.sp * (en ? 1 : 1 + .06 * z.us), ok: t.ok || 0, fl: 0, at: 0, w: 0, ly: (idc % 3 - 1) * 5, boss: 0, fly: t.fly || 0, g: en ? Math.ceil(t.g * (1 + wv * .04)) : Math.round(t.c * .5), dead: 0, bi: 0, arm: t.arm || 0, hunt: t.hunt || 0, heal: t.heal ? t.heal * hm : 0, bomb: t.bomb || 0, pz: t.psn || 0, pd: 0, psn: 0, slow: 0, slowf: .55, frz: 0, sh: 0, cy: 0, chg: 0, def: null, twh: t.twh || 0, res: t.res || 0, bd: 1, bsp: 1 };
     u.x = s === 0 ? (mod === 1 ? 40 + Px.rastgele(0, 12) : front(0) + 4) : front(1) - 4;
     U.push(u); return u;
   }
@@ -452,7 +452,7 @@
       if (best && bd < 170) hareket = dr; else if (Math.abs(u.x - rally) > 3) hareket = u.x < rally ? 1 : -1;
     } else hareket = dr;
     if (hareket) {
-      if (z.em !== 2 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
+      if (z.em !== 2 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && o.ly === u.ly && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; // 3 şeritte yan yana ilerler, 3 kişi aynı anda savaşır }
       u.x += hareket * u.sp * spm * (z.em === 2 ? 1.7 : 1); u.w++;
       u.x = Px.sinir(u.x, 6, WW - 6);
     }

@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.34** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.35** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -117,6 +117,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.32 | Basketbol: zıplarken basılan yöne yatık kalır, havada sallanmaz/değişmez |
 | 1.9.33 | Basketbol: oyuncular artık iç içe girmiyor (daha geniş mesafe, havada da) |
 | 1.9.34 | Basketbol: yerde de sallanma/yaylanma yok (çok tuşlu mod dahil) |
+| 1.9.35 | Kale Savaşı: askerler 3 şeritte yan yana ilerler, sıra beklemez, 3 kişi aynı anda savaşır |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
