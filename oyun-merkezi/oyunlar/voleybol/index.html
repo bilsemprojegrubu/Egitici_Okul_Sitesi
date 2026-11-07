@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voleybol — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style></style>
+</head>
+<body data-oyun="voleybol">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🏐 Voleybol</h1>
+<div class="puanlar">Sen <b id="puan">0</b> - <b id="rakip">0</b> Rakip · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" width="480" height="300" style="width:min(100%,480px)"></canvas>
+  <p class="ipucu">← → / A D ile git, ↑ / boşluk ile zıpla. Topu rakip sahaya düşür! Rakip 5 sayı alınca oyun biter; puanın aldığın sayıdır.</p>
+  <div class="kontrol">
+    <button class="btn" data-v="sol">◀</button><button class="btn" data-v="zipla">⤒</button><button class="btn" data-v="sag">▶</button>
+  </div>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Voleybol: oyuncu (sol) bilgisayara (sağ) karşı. puan = oyuncunun aldığı sayı; rakip 5 sayıya ulaşınca oyun biter
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d");
+  var G = 270, R = 36, BR = 10, NET = { x: 237, y: 200, w: 6 };
+  var ben, cpu, top, sy, sr, son, calis, bekle, tus = {}, dokun = {};
+  function slime(px, sol) { return { x: px, y: G, vx: 0, vy: 0, sol: sol }; }
+  function yeni() {
+    ben = slime(100, true); cpu = slime(380, false); sy = 0; sr = 0; calis = true; son = performance.now();
+    document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0; document.getElementById("rakip").textContent = 0;
+    servis(true); requestAnimationFrame(dongu);
+  }
+  function servis(benMi) { top = { x: benMi ? 100 : 380, y: 120, vx: 0, vy: 0 }; bekle = 0.8; }
+  function hareket(s, yon, zipla, dt, min, max) {
+    s.x = Math.max(min, Math.min(max, s.x + yon * 320 * dt));
+    if (zipla && s.y >= G) s.vy = -620;
+    s.vy += 1900 * dt; s.y += s.vy * dt;
+    if (s.y > G) { s.y = G; s.vy = 0; }
+    s.vx = yon * 320;
+  }
+  function yapayZeka(dt) {
+    var yon = 0, zipla = false;
+    if (top.x > 240 && bekle <= 0) {
+      var hedef = top.x + top.vx * 0.1;
+      if (Math.abs(hedef - cpu.x) > 8) yon = hedef > cpu.x ? 0.8 : -0.8; // oyuncudan biraz yavaş
+      if (Math.abs(top.x - cpu.x) < 55 && top.y < 210 && top.y > 120 && top.vy > -50) zipla = true;
+    } else yon = Math.abs(cpu.x - 370) > 10 ? (370 > cpu.x ? 0.5 : -0.5) : 0;
+    hareket(cpu, yon, zipla, dt, 243 + R, 480 - R);
+  }
+  function carp(s) { // top ile slime (yarım daire) çarpışması
+    var dx = top.x - s.x, dy = top.y - s.y, d = Math.hypot(dx, dy);
+    if (d < R + BR && dy < 8 && d > 0) {
+      var nx = dx / d, ny = dy / d;
+      top.x = s.x + nx * (R + BR); top.y = s.y + ny * (R + BR);
+      var rv = (top.vx - s.vx) * nx + (top.vy - s.vy) * ny;
+      if (rv < 0) { top.vx -= 2 * rv * nx; top.vy -= 2 * rv * ny; }
+      var h = Math.hypot(top.vx, top.vy); if (h > 700) { top.vx *= 700 / h; top.vy *= 700 / h; }
+    }
+  }
+  function puanVer(benAldi) {
+    if (benAldi) { sy++; document.getElementById("puan").textContent = sy; } else { sr++; document.getElementById("rakip").textContent = sr; }
+    if (sr >= 5) { calis = false; ciz(); Skor.oyunBitti("voleybol", sy); return; }
+    servis(benAldi);
+  }
+  function dongu(t) {
+    if (!calis) return;
+    var dt = Math.min(0.03, (t - son) / 1000); son = t;
+    var yon = (tus.ArrowRight || tus.d || dokun.sag ? 1 : 0) - (tus.ArrowLeft || tus.a || dokun.sol ? 1 : 0);
+    hareket(ben, yon, tus.ArrowUp || tus.w || tus[" "] || dokun.zipla, dt, R, 237 - R);
+    yapayZeka(dt);
+    if (bekle > 0) bekle -= dt;
+    else {
+      top.vy += 900 * dt; top.x += top.vx * dt; top.y += top.vy * dt;
+      carp(ben); carp(cpu);
+      // Ağ: dikdörtgene en yakın nokta ile çarpışma
+      var cx = Math.max(NET.x, Math.min(NET.x + NET.w, top.x)), cy = Math.max(NET.y, Math.min(G, top.y));
+      var dx = top.x - cx, dy = top.y - cy, d = Math.hypot(dx, dy);
+      if (d < BR) {
+        var nx = d ? dx / d : 0, ny = d ? dy / d : -1;
+        top.x = cx + nx * BR; top.y = cy + ny * BR;
+        var v = top.vx * nx + top.vy * ny; if (v < 0) { top.vx -= 1.8 * v * nx; top.vy -= 1.8 * v * ny; }
+      }
+      if (top.x < BR) { top.x = BR; top.vx = Math.abs(top.vx); }
+      if (top.x > 480 - BR) { top.x = 480 - BR; top.vx = -Math.abs(top.vx); }
+      if (top.y < BR) { top.y = BR; top.vy = Math.abs(top.vy); }
+      if (top.y >= G - BR) { puanVer(top.x > 240); }
+    }
+    if (calis) { ciz(); requestAnimationFrame(dongu); }
+  }
+  function ciz() {
+    x.fillStyle = "#7dd3fc"; x.fillRect(0, 0, 480, 300);
+    x.fillStyle = "#fde68a"; x.fillRect(0, G, 480, 30);
+    x.fillStyle = "#f1f5f9"; x.fillRect(NET.x, NET.y, NET.w, G - NET.y);
+    [[ben, "#ef4444"], [cpu, "#3b82f6"]].forEach(function (a) {
+      x.fillStyle = a[1]; x.beginPath(); x.arc(a[0].x, a[0].y, R, Math.PI, 0); x.fill();
+      x.fillStyle = "#fff"; x.beginPath(); x.arc(a[0].x + (a[0].sol ? 14 : -14), a[0].y - 18, 6, 0, 7); x.fill();
+      x.fillStyle = "#000"; x.beginPath(); x.arc(a[0].x + (a[0].sol ? 16 : -16), a[0].y - 18, 3, 0, 7); x.fill();
+    });
+    x.font = "20px sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("🏐", top.x, top.y);
+  }
+  document.addEventListener("keydown", function (e) {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", " "].indexOf(e.key) >= 0) e.preventDefault();
+    tus[e.key] = true;
+  });
+  document.addEventListener("keyup", function (e) { tus[e.key] = false; });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-v]"), function (b) {
+    var k = b.getAttribute("data-v");
+    b.addEventListener("pointerdown", function () { dokun[k] = true; });
+    ["pointerup", "pointerleave", "pointercancel"].forEach(function (o) { b.addEventListener(o, function () { dokun[k] = false; }); });
+  });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Oyun Merkezi</title>
+<link rel="stylesheet" href="merkez.css">
+</head>
+<body>
+<header>
+  <h1>🎮 Oyun Merkezi</h1>
+  <p>İnternet olmadan da oynayabilirsin!</p>
+  <nav class="menu">
+    <!-- Sıralama kapalıysa (config.js boşsa) bu bağlantılar gizli kalır -->
+    <a id="siralamaLink" href="siralama.html" hidden>🏆 Sıralama</a>
+    <button id="adBtn" type="button" hidden>👤 Takma ad: <span id="adYazi"></span></button>
+  </nav>
+</header>
+<main class="izgara">
+    <a class="kart" href="oyunlar/bilgi-kalesi/index.html"><span class="em">🏰</span><b>Bilgi Kalesi</b><small>Soruları bil, kaleyi koru</small></a>
+    <a class="kart" href="oyunlar/yilan/index.html"><span class="em">🐍</span><b>Yılan</b><small>Elmaları ye, uzayıp git</small></a>
+    <a class="kart" href="oyunlar/2048/index.html"><span class="em">🔢</span><b>2048</b><small>Sayıları birleştir</small></a>
+    <a class="kart" href="oyunlar/hafiza/index.html"><span class="em">🃏</span><b>Hafıza</b><small>Eşleri bul</small></a>
+    <a class="kart" href="oyunlar/balon/index.html"><span class="em">🎈</span><b>Balon</b><small>60 saniyede patlat</small></a>
+    <a class="kart" href="oyunlar/kelime/index.html"><span class="em">🔤</span><b>Kelime</b><small>Harfleri sıraya diz</small></a>
+    <a class="kart" href="oyunlar/futbol/index.html"><span class="em">⚽</span><b>Futbol</b><small>Penaltı atışları maçı</small></a>
+    <a class="kart" href="oyunlar/platform/index.html"><span class="em">🏃</span><b>Platform</b><small>Zıpla, jeton topla</small></a>
+    <a class="kart" href="oyunlar/tetris/index.html"><span class="em">🧱</span><b>Tetris</b><small>Satırları tamamla</small></a>
+    <a class="kart" href="oyunlar/kus/index.html"><span class="em">🐦</span><b>Kuş</b><small>Borulardan geç</small></a>
+    <a class="kart" href="oyunlar/basket/index.html"><span class="em">🏀</span><b>Basket</b><small>30 saniyede sayı yap</small></a>
+    <a class="kart" href="oyunlar/voleybol/index.html"><span class="em">🏐</span><b>Voleybol</b><small>Bilgisayara karşı oyna</small></a>
+</main>
+<footer>Sıralamada gerçek adını yazma, takma ad kullan.</footer>
+<script src="config.js"></script>
+<script src="skor.js"></script>
+<script>
+// Sıralama açıksa bağlantıyı göster
+(function () {
+  try {
+    if (!window.Skor || !Skor.acik()) return;
+    document.getElementById("siralamaLink").hidden = false;
+    var b = document.getElementById("adBtn"), y = document.getElementById("adYazi");
+    b.hidden = false;
+    function guncelle() { y.textContent = Skor.takmaAd() || "yok"; }
+    guncelle();
+    b.addEventListener("click", function () { Skor.adSor(guncelle); });
+  } catch (e) { /* sessizce geç */ }
+})();
+</script>
+</body>
+</html>

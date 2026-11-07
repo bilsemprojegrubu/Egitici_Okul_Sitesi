@@ -1,0 +1,67 @@
+# 🎮 Oyun Merkezi
+
+İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
+
+## Oyunlar
+
+| Oyun | Puan nedir? |
+|---|---|
+| 🏰 Bilgi Kalesi | Ulaşılan dalga |
+| 🐍 Yılan | Yenen elma |
+| 🔢 2048 | Birleştirme puanı |
+| 🃏 Hafıza | 1000 − hamle×20 − saniye×3 |
+| 🎈 Balon | 60 sn'de patlatılan balonların puanı |
+| 🔤 Kelime | En uzun doğru kelime serisi |
+| ⚽ Futbol | Kazanılan penaltı maçı |
+| 🏃 Platform | Mesafe + jeton |
+| 🧱 Tetris | Satır puanı |
+| 🐦 Kuş | Geçilen boru |
+| 🏀 Basket | 30 sn'de atılan sayı |
+| 🏐 Voleybol | Rakip 5 sayı alana kadar aldığın sayı |
+
+Yerel rekorlar `localStorage`'da tutulur (`oyunMerkezi_<oyun>`; Bilgi Kalesi için `bilgiKalesi_v1`). Sıralama kapalıyken ya da internet yokken oyunlar eskisi gibi çalışır, sadece sıralama gizlenir.
+
+## Gizlilik
+
+- **Gerçek ad ya da e-posta toplanmaz.** Sadece takma ad (2-12 karakter) istenir; her yerde "Gerçek adını yazma, takma ad kullan" uyarısı vardır.
+- Takma adlar basit bir uygunsuz kelime filtresinden geçer (`skor.js` içindeki `YASAK_PARCA` / `YASAK_TAM` listelerine kelime eklenebilir).
+- Sadece Supabase'in **anon public** anahtarı kullanılır. `service_role` anahtarını **hiçbir dosyaya yazmayın**.
+
+## Kurulum (Supabase ortak sıralama)
+
+1. <https://supabase.com> adresinde ücretsiz hesap açın ve **New project** ile proje oluşturun.
+2. Sol menüden **SQL Editor > New query** açın, `supabase/kurulum.sql` dosyasının tamamını yapıştırıp **Run** deyin. (Tablo, güvenlik kuralları, oyun bazlı puan sınırları ve spam koruması kurulur.)
+3. **Project Settings > API** sayfasından iki değeri alın: **Project URL** ve **anon public** anahtarı.
+4. `config.js` dosyasını açıp yer tutucuları değiştirin:
+   ```js
+   window.OYUN_AYAR = { SUPABASE_URL: "https://xxxx.supabase.co", SUPABASE_ANON_KEY: "eyJ..." };
+   ```
+5. Dosyayı kaydedip siteyi yenileyin. Ana sayfada **🏆 Sıralama** bağlantısı görünür.
+
+`config.js` yer tutucu halindeyken sıralama sessizce kapalı kalır.
+
+## Yayınlama (GitHub Pages)
+
+Tüm bağlantılar göreli olduğu için site alt klasörde (`github.io/depo-adi/`) de çalışır.
+
+1. GitHub'da depoyu açın (Public). `oyun-merkezi` klasörünün içeriğini deponun köküne (ya da bu depodaki gibi alt klasöre) yükleyin.
+2. Depoda **Settings > Pages > Build and deployment > Source: Deploy from a branch** seçin, **Branch: main / (root)** yapıp **Save** deyin.
+3. Bir iki dakika sonra adres hazır olur: `https://KULLANICIADI.github.io/DEPO-ADI/`  
+   (Bu depoda site alt klasördedir: `https://KULLANICIADI.github.io/DEPO-ADI/oyun-merkezi/`; kökteki `index.html` oraya yönlendirir.)
+4. `config.js` içindeki gerçek değerleri commit'lemeyi unutmayın (anon anahtar herkese açıktır, güvenlik veritabanı kurallarındadır).
+
+## ⚠️ Supabase ücretsiz paketi hakkında
+
+Ücretsiz paketteki projeler **1 hafta hiç kullanılmazsa duraklatılır**. Sıralama kaybolmuş gibi görünürse Supabase panelinde projeyi açıp **Restore / Resume project** ile tekrar başlatın. Duraklatılmışken oyunlar çalışmaya devam eder, sadece sıralama "yüklenemedi" der. Puanlar internet yokken yerelde bekler ve bağlantı gelince gönderilir (en fazla 20 kayıt).
+
+## Klasör yapısı
+
+```
+index.html, merkez.css      ana sayfa
+siralama.html               oyun sekmeli sıralama sayfası
+config.js                   Supabase ayarı (yer tutucu)
+skor.js                     ortak sıralama kodu (global "Skor")
+supabase/kurulum.sql        veritabanı kurulumu
+oyunlar/ortak.css           oyunların ortak stili
+oyunlar/<oyun>/index.html   her oyun tek dosya (bilgi-kalesi: game.js, sorular.js, style.css ayrı)
+```

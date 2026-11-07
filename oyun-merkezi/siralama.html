@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sıralama — Oyun Merkezi</title>
+<link rel="stylesheet" href="merkez.css">
+<link rel="stylesheet" href="oyunlar/ortak.css">
+<style>body{display:block}</style>
+</head>
+<body>
+<header>
+  <h1>🏆 Sıralama</h1>
+  <nav class="menu"><a href="index.html">← Oyun Merkezi</a></nav>
+</header>
+<div id="kapali" class="kapali-not" hidden>Sıralama şu an kapalı.</div>
+<div id="sekmeler" class="sekmeler" role="tablist" aria-label="Oyun seç"></div>
+<div class="panel-kap"><div id="panel" class="siralama" hidden></div></div>
+<script src="config.js"></script>
+<script src="skor.js"></script>
+<script>
+(function () {
+  try {
+    if (!window.Skor || !Skor.acik()) { document.getElementById("kapali").hidden = false; return; }
+    var kap = document.getElementById("sekmeler"), panel = document.getElementById("panel");
+    var secili = (location.hash || "").slice(1);
+    if (Skor.OYUNLAR.indexOf(secili) < 0) secili = Skor.OYUNLAR[0];
+    function sec(o) {
+      secili = o;
+      try { history.replaceState(null, "", "#" + o); } catch (e) { }
+      Array.prototype.forEach.call(kap.children, function (b) {
+        b.setAttribute("aria-selected", b.getAttribute("data-oyun") === o ? "true" : "false");
+      });
+      Skor.paneliCiz(panel, o);
+    }
+    Skor.OYUNLAR.forEach(function (o) {
+      var b = document.createElement("button");
+      b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("data-oyun", o);
+      b.textContent = Skor.OYUN_ADLARI[o];
+      b.addEventListener("click", function () { sec(o); });
+      kap.appendChild(b);
+    });
+    sec(secili);
+  } catch (e) { /* sessizce geç */ }
+})();
+</script>
+</body>
+</html>

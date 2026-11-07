@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bilgi Kalesi — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-oyun="bilgi-kalesi">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🏰 Bilgi Kalesi</h1>
+<div class="puanlar">En yüksek dalga <b id="rekorBK">0</b></div></header>
+<main class="sahne">
+  <!-- Ana menü -->
+  <section id="menu" class="ekran">
+    <div class="kart-bk">
+      <h2>Kaleni koru!</h2>
+      <p class="ipucu" style="text-align:left">Düşmanlar kaleye yürüyor. Soruyu doğru bilirsen düşman yok olur; bilemezsen kale can kaybeder. 5 canın var.</p>
+    </div>
+    <div class="kart-bk">
+      <h2>Takma adın</h2>
+      <div class="ad-satir"><input id="adKutu" type="text" maxlength="12" autocomplete="off" aria-label="Takma ad" placeholder="Örn: SuperKedi"><button class="btn" id="adKaydetBtn" type="button">Kaydet</button></div>
+      <p class="ad-uyari">⚠️ Gerçek adını yazma, takma ad kullan (2-12 karakter).</p>
+      <div id="adHata" class="ad-hata"></div>
+    </div>
+    <button class="btn" id="baslaBtn" type="button">▶ Oyuna başla</button>
+    <div id="menuSiralama" class="kart-bk menu-liste"></div>
+  </section>
+  <!-- Oyun ekranı -->
+  <section id="oyun" class="ekran" hidden>
+    <div class="hud"><span id="hudCan"></span><span id="hudDalga"></span></div>
+    <div class="yol"><span class="dusman" id="dusman">👹</span><span class="kale">🏰</span></div>
+    <div class="sure"><i id="sureCubuk"></i></div>
+    <div class="soru" id="soru"></div>
+    <div class="siklar" id="siklar"></div>
+    <div class="bildirim" id="bildirim"></div>
+  </section>
+  <!-- Oyun bitti -->
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Kale düştü! 🏚️</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar" type="button">Tekrar oyna</button>
+    <button class="btn ikinci" id="menuBtn" type="button">Ana menü</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="sorular.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kelime — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style>#harfler{font-size:2.4rem;letter-spacing:.3em;font-weight:800;color:#fbbf24;margin:8px 0;text-align:center}
+#cevap{width:min(100%,280px);padding:12px;font-size:1.3rem;text-align:center;border-radius:10px;border:2px solid #475569;background:#0f172a;color:#fff;text-transform:uppercase}
+#mesaj{min-height:1.4em;color:#f87171}</style>
+</head>
+<body data-oyun="kelime">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🔤 Kelime</h1>
+<div class="puanlar">Seri <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <p class="ipucu">Karışık harflerden kelimeyi bul. Yanlış cevapta oyun biter!</p>
+  <div id="harfler" aria-live="polite"></div>
+  <input id="cevap" type="text" autocomplete="off" autocapitalize="characters" maxlength="12" aria-label="Cevabın" placeholder="Cevabını yaz">
+  <div class="kontrol"><button class="btn" id="gonderBtn">Tamam</button><button class="btn ikinci" id="karistir">🔀 Karıştır</button></div>
+  <div id="mesaj"></div>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Kelime: harfleri karışık kelimeyi bul; puan = üst üste doğru bilinen kelime sayısı
+(function () {
+  var KELIMELER = ["ELMA", "KALEM", "OKUL", "KİTAP", "ARABA", "BALIK", "ÇİÇEK", "DENİZ", "GÜNEŞ", "BULUT", "KEDİ", "KÖPEK",
+    "ORMAN", "MASA", "SANDALYE", "PENCERE", "BİLGİSAYAR", "ÖĞRENCİ", "ÖĞRETMEN", "ARKADAŞ", "DEFTER", "SİLGİ", "ÇANTA",
+    "YILDIZ", "GÖKYÜZÜ", "MEVSİM", "KAPI", "TOP", "OYUN", "ŞEKER", "SÜT", "PEYNİR", "ZEYTİN", "DOMATES", "PATATES", "KARPUZ",
+    "ASLAN", "KAPLAN", "ZÜRAFA", "FİL", "TAVŞAN", "KUŞ", "KELEBEK", "ARI", "KARINCA", "DAĞ", "NEHİR", "GÖL", "ADA", "YOL",
+    "UÇAK", "GEMİ", "TREN", "BİSİKLET", "ROBOT", "UZAY", "ROKET", "GEZEGEN", "AY", "DÜNYA", "BAHAR", "YAZ", "KIŞ", "SONBAHAR"];
+  var sira, ix, puan, hedef, calis, goster;
+  var H = document.getElementById("harfler"), G = document.getElementById("cevap"), M = document.getElementById("mesaj");
+  function kar(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function yeni() {
+    sira = kar(KELIMELER.slice()); ix = 0; puan = 0; calis = true; M.textContent = "";
+    document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
+    sonraki();
+  }
+  function sonraki() {
+    if (ix >= sira.length) { sira = kar(KELIMELER.slice()); ix = 0; } // liste bitince baştan karıştır
+    hedef = sira[ix++]; karistir(); G.value = ""; G.focus();
+  }
+  function karistir() {
+    var h; var dene = 0;
+    do { h = kar(hedef.split("")).join(""); dene++; } while (h === hedef && dene < 20);
+    goster = h; H.textContent = goster.split("").join(" ");
+  }
+  function kontrol() {
+    if (!calis) return;
+    var c = G.value.trim().toLocaleUpperCase("tr");
+    if (!c) return;
+    if (c === hedef) { puan++; document.getElementById("puan").textContent = puan; M.textContent = ""; sonraki(); }
+    else { calis = false; M.textContent = "Doğrusu: " + hedef; Skor.oyunBitti("kelime", puan); }
+  }
+  document.getElementById("gonderBtn").addEventListener("click", kontrol);
+  G.addEventListener("keydown", function (e) { if (e.key === "Enter") kontrol(); });
+  document.getElementById("karistir").addEventListener("click", function () { if (calis) karistir(); });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

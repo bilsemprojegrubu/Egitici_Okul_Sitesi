@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hafıza — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style>
+#kartlar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(100%,380px)}
+.k{aspect-ratio:1;border:0;border-radius:10px;background:#334155;color:transparent;font-size:clamp(1.6rem,9vw,2.6rem);cursor:pointer;transition:transform .2s,background .2s}
+.k.acik{background:#f1f5f9;color:#000}
+.k.eslesti{background:#16a34a;color:#fff}
+</style>
+</head>
+<body data-oyun="hafiza">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🃏 Hafıza</h1>
+<div class="puanlar">Hamle <b id="hamle">0</b> · Süre <b id="sure">0</b> sn · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <div id="kartlar"></div>
+  <p class="ipucu">Kartlara dokun, eşleri bul. Az hamle ve kısa süre = yüksek puan.</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Tebrikler! 🎉</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Hafıza: puan = 1000 - hamle*20 - saniye*3 (en az 50)
+(function () {
+  var EMOJI = ["🐶", "🐱", "🦊", "🐼", "🐸", "🦁", "🐵", "🐙"];
+  var K = document.getElementById("kartlar"), acik, bulunan, hamle, bas, sayac, kilit;
+  function yeni() {
+    var d = EMOJI.concat(EMOJI);
+    for (var i = d.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = d[i]; d[i] = d[j]; d[j] = t; }
+    K.textContent = ""; acik = []; bulunan = 0; hamle = 0; bas = 0; kilit = false;
+    clearInterval(sayac); sayac = null;
+    document.getElementById("hamle").textContent = 0; document.getElementById("sure").textContent = 0;
+    document.getElementById("bitti").hidden = true;
+    d.forEach(function (e) {
+      var b = document.createElement("button"); b.className = "k"; b.type = "button"; b.setAttribute("data-e", e);
+      b.setAttribute("aria-label", "Kart"); b.addEventListener("click", function () { cevir(b); }); K.appendChild(b);
+    });
+  }
+  function cevir(b) {
+    if (kilit || b.classList.contains("acik") || b.classList.contains("eslesti")) return;
+    if (!bas) { bas = Date.now(); sayac = setInterval(function () { document.getElementById("sure").textContent = Math.floor((Date.now() - bas) / 1000); }, 500); }
+    b.classList.add("acik"); b.textContent = b.getAttribute("data-e"); acik.push(b);
+    if (acik.length < 2) return;
+    hamle++; document.getElementById("hamle").textContent = hamle;
+    var a = acik[0], c = acik[1]; acik = [];
+    if (a.getAttribute("data-e") === c.getAttribute("data-e")) {
+      a.classList.add("eslesti"); c.classList.add("eslesti"); bulunan++;
+      if (bulunan === EMOJI.length) bitir();
+    } else {
+      kilit = true;
+      setTimeout(function () { [a, c].forEach(function (k) { k.classList.remove("acik"); k.textContent = ""; }); kilit = false; }, 700);
+    }
+  }
+  function bitir() {
+    clearInterval(sayac);
+    var sn = Math.floor((Date.now() - bas) / 1000);
+    var puan = Math.max(50, 1000 - hamle * 20 - sn * 3);
+    setTimeout(function () { Skor.oyunBitti("hafiza", puan); }, 400);
+  }
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>

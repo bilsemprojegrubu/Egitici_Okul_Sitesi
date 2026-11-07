@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tetris — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+<style>#tablo{display:flex;gap:12px;align-items:flex-start;justify-content:center}.yan{font-size:.95rem;display:flex;flex-direction:column;gap:6px}</style>
+</head>
+<body data-oyun="tetris">
+<header class="ust"><a class="geri" href="../../index.html">← Oyun Merkezi</a><h1>🧱 Tetris</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Satır <b id="satir">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" width="240" height="480" style="width:min(100%,240px)"></canvas>
+  <p class="ipucu">← → yan, ↑ döndür, ↓ aşağı, boşluk = hızlı bırak</p>
+  <div class="kontrol">
+    <button class="btn" data-t="sol">◀</button><button class="btn" data-t="don">⟳</button>
+    <button class="btn" data-t="asagi">▼</button><button class="btn" data-t="sag">▶</button>
+    <button class="btn ikinci" data-t="birak">⤓</button>
+  </div>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script>
+// Tetris: standart puanlama (1 satır 40, 2 satır 100, 3 satır 300, 4 satır 1200) x (seviye+1)
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 10, H = 20, S = 24;
+  var SEKIL = {
+    I: [[0, 1], [1, 1], [2, 1], [3, 1]], O: [[1, 0], [2, 0], [1, 1], [2, 1]], T: [[1, 0], [0, 1], [1, 1], [2, 1]],
+    S: [[1, 0], [2, 0], [0, 1], [1, 1]], Z: [[0, 0], [1, 0], [1, 1], [2, 1]], J: [[0, 0], [0, 1], [1, 1], [2, 1]], L: [[2, 0], [0, 1], [1, 1], [2, 1]]
+  };
+  var RENK = { I: "#22d3ee", O: "#facc15", T: "#a855f7", S: "#22c55e", Z: "#ef4444", J: "#3b82f6", L: "#f97316" };
+  var tahta, p, puan, satir, calis, son, birikim, torba;
+  function yeni() {
+    tahta = []; for (var i = 0; i < H; i++) tahta.push(new Array(W).fill(null));
+    puan = 0; satir = 0; calis = true; birikim = 0; torba = []; son = performance.now();
+    document.getElementById("bitti").hidden = true; guncelle(); parca();
+    requestAnimationFrame(dongu);
+  }
+  function parca() { // 7'li torba yöntemi: parçalar adil dağılır
+    if (!torba.length) torba = Object.keys(SEKIL).sort(function () { return Math.random() - .5; });
+    var k = torba.pop(); p = { k: k, b: SEKIL[k].map(function (c) { return [c[0], c[1]]; }), x: 3, y: 0 };
+    if (cakisir(p.b, p.x, p.y)) { calis = false; Skor.oyunBitti("tetris", puan); }
+  }
+  function cakisir(b, ox, oy) {
+    return b.some(function (c) { var X = c[0] + ox, Y = c[1] + oy; return X < 0 || X >= W || Y >= H || (Y >= 0 && tahta[Y][X]); });
+  }
+  function don() {
+    if (p.k === "O") return;
+    var m = p.k === "I" ? 3 : 2;
+    var yb = p.b.map(function (c) { return [m - c[1], c[0]]; });
+    [0, -1, 1, -2, 2].some(function (k) { if (!cakisir(yb, p.x + k, p.y)) { p.b = yb; p.x += k; return true; } return false; });
+  }
+  function git(dx) { if (!cakisir(p.b, p.x + dx, p.y)) p.x += dx; }
+  function asagi() {
+    if (!cakisir(p.b, p.x, p.y + 1)) { p.y++; return true; }
+    kilitle(); return false;
+  }
+  function kilitle() {
+    p.b.forEach(function (c) { var Y = c[1] + p.y; if (Y >= 0) tahta[Y][c[0] + p.x] = p.k; });
+    var n = 0;
+    for (var r = H - 1; r >= 0; r--) if (tahta[r].every(Boolean)) { tahta.splice(r, 1); tahta.unshift(new Array(W).fill(null)); n++; r++; }
+    if (n) { puan += [0, 40, 100, 300, 1200][n] * (Math.floor(satir / 10) + 1); satir += n; guncelle(); }
+    parca();
+  }
+  function birak() { var n = 0; while (cakisir(p.b, p.x, p.y + 1) === false) { p.y++; n++; } puan += n; guncelle(); kilitle(); }
+  function guncelle() { document.getElementById("puan").textContent = puan; document.getElementById("satir").textContent = satir; }
+  function dongu(t) {
+    if (!calis) return;
+    birikim += t - son; son = t;
+    var bekle = Math.max(100, 700 - Math.floor(satir / 10) * 60);
+    while (birikim > bekle && calis) { birikim -= bekle; asagi(); }
+    if (calis) { ciz(); requestAnimationFrame(dongu); }
+  }
+  function ciz() {
+    x.fillStyle = "#0b1220"; x.fillRect(0, 0, 240, 480);
+    x.strokeStyle = "#1e293b"; x.lineWidth = 1;
+    for (var i = 1; i < W; i++) { x.beginPath(); x.moveTo(i * S, 0); x.lineTo(i * S, 480); x.stroke(); }
+    for (var j = 1; j < H; j++) { x.beginPath(); x.moveTo(0, j * S); x.lineTo(240, j * S); x.stroke(); }
+    tahta.forEach(function (sa, r) { sa.forEach(function (k, c) { if (k) { x.fillStyle = RENK[k]; x.fillRect(c * S + 1, r * S + 1, S - 2, S - 2); } }); });
+    if (p) { x.fillStyle = RENK[p.k]; p.b.forEach(function (c) { x.fillRect((c[0] + p.x) * S + 1, (c[1] + p.y) * S + 1, S - 2, S - 2); }); }
+  }
+  var H_ = { sol: function () { git(-1); }, sag: function () { git(1); }, don: don, asagi: function () { if (asagi()) puan++; guncelle(); }, birak: birak };
+  document.addEventListener("keydown", function (e) {
+    if (!calis) return;
+    var k = { ArrowLeft: "sol", ArrowRight: "sag", ArrowUp: "don", ArrowDown: "asagi", " ": "birak" }[e.key];
+    if (k) { e.preventDefault(); H_[k](); ciz(); }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-t]"), function (b) {
+    b.addEventListener("click", function () { if (calis) { H_[b.getAttribute("data-t")](); ciz(); } });
+  });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni();
+})();
+</script>
+</body>
+</html>
