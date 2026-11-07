@@ -304,17 +304,17 @@
     var ip = sahne.querySelector(".ipucu");
     if (ip) { var p = document.createElement("p"); p.className = "ipucu"; p.textContent = ip.textContent; m.appendChild(p); }
     var b = document.createElement("button"); b.type = "button"; b.className = "btn buyuk yesil"; b.textContent = "▶ BAŞLA";
-    m.appendChild(b); sahne.appendChild(m); kapiAcik = true;
+    m.appendChild(b); var ha = document.createElement("p"); ha.className = "ipucu"; ha.textContent = "Başlamak için herhangi bir tuşa bas ya da ekrana dokun"; m.appendChild(ha); sahne.appendChild(m); kapiAcik = true;
     function basla() {
       if (!kapiAcik) return; kapiAcik = false; m.remove(); Px.ses("al");
       window.removeEventListener("keydown", tus, true); window.removeEventListener("keyup", tus, true);
       if (devam) devam();
     }
     function tus(e) {
-      if (e.type === "keydown" && (e.code === "Enter" || e.code === "Space")) { e.preventDefault(); e.stopImmediatePropagation(); basla(); return; }
       e.preventDefault(); e.stopImmediatePropagation(); // bekleyen oyun tuşlara tepki vermesin
+      if (e.type === "keydown" && !e.repeat && ["Shift", "Control", "Alt", "Meta", "CapsLock", "Tab"].indexOf(e.key) < 0) basla(); // herhangi bir tuş
     }
-    b.addEventListener("click", basla);
+    m.addEventListener("click", basla); // ekrana / kaplamaya dokunmak da başlatır
     window.addEventListener("keydown", tus, true); window.addEventListener("keyup", tus, true);
     try { b.focus({ preventScroll: true }); } catch (e) { }
   };
