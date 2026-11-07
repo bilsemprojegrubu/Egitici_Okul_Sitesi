@@ -32,14 +32,14 @@
 (function () {
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, ZEMIN = 132, SURE = 90 * 60;
   var VARYANT = [
-    { n: "NORMAL" }, { n: "UZUN KOLLAR", L: 14 }, { n: "KISA KOLLAR", L: 4 }, { n: "BÜYÜK KAFA", hr: 7 }, { n: "KÜÇÜK KAFA", hr: 3 },
+    { n: "NORMAL" }, { n: "UZUN KOLLAR", L: 17 }, { n: "KISA KOLLAR", L: 5 }, { n: "BÜYÜK KAFA", hr: 5 }, { n: "KÜÇÜK KAFA", hr: 2 },
     { n: "YÜKSEK POTA", hy: 46 }, { n: "ALÇAK POTA", hy: 84 }, { n: "GENİŞ POTA", rw: 30 }, { n: "DAR POTA", rw: 11 },
     { n: "HAFİF TOP", g: .058, r: 3.5, tc: 1 }, { n: "AĞIR TOP", g: .158, r: 5, tc: 2 }, { n: "DEV TOP", r: 7 },
     { n: "KAR YAĞIYOR · KAYGAN ZEMİN", kar: 1, fr: .975 }, { n: "ÇİFT PUAN x2", pts: 2 }, { n: "ÜÇ PUAN x3", pts: 3, hy: 48 },
     { n: "AY YERÇEKİMİ", pg: .1, g: .058, jm: .95 }, { n: "SÜPER ZIPLAMA", jm: 1.28 }, { n: "ZIPLAYAN TOP", bn: .85 },
     { n: "RÜZGAR →", w: .012 }, { n: "RÜZGAR ←", w: -.012 }, { n: "ÇİFT PUAN x2 · AĞIR TOP", pts: 2, g: .158, r: 5, tc: 2 }
   ];
-  var mod = 1, zor = 1, tek = true, V, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, bekle, bitis, vsayac, kar, tHeld, prevDn, prevA, ch, ign, BOY = 5, CH = 45;
+  var mod = 1, zor = 1, tek = true, V, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, bekle, bitis, vsayac, kar, tHeld, prevDn, prevA, ch, ign, BOY = 13, CH = 45;
   // faz: 0 = oyun, 1 = HAZIRLAN geri sayımı (her şey donuk), 2 = sayı sonrası kutlama (yavaş çekim, oyuncular donuk)
   var faz = 0, say = 0, kut = 0, ag = [{ s: 0, sv: 0, r: 0, rv: 0, p: 0 }, { s: 0, sv: 0, r: 0, rv: 0, p: 0 }], sonSayi = null;
   var jm = [0, 0], SAY_N = 54, SAY_B = 42, KUTLAMA = 130;
@@ -49,7 +49,7 @@
   Px.atla(function () { return calis && faz === 1 && say > 1; }, function () { say = 1; });
   function sayimBasla() { faz = 1; say = SAY_N * 3 + SAY_B; mesaj = ""; msayac = 0; Px.ses("tik"); }
   function oyuncu(t, px, id) { return { t: t, id: id, x: px, y: ZEMIN, vx: 0, vy: 0, yer: true, face: t === 0 ? 1 : -1, hold: false, cd: 0, f: 0, ph: id * 2, th: 100, bz: 0, pw: .8, chg: 0, auto: false }; }
-  function varyant(i) { var b = { L: 9, hr: 4, hy: 64, rw: 18, g: .1, r: 4, fr: .82, kar: 0, pg: .15, jm: 1, pts: 1, w: 0, bn: 0, tc: 0, n: "" }, v = VARYANT[i]; for (var k in v) b[k] = v[k]; return b; }
+  function varyant(i) { var b = { L: 11, hr: 3, hy: 64, rw: 18, g: .1, r: 4, fr: .82, kar: 0, pg: .15, jm: 1, pts: 1, w: 0, bn: 0, tc: 0, n: "" }, v = VARYANT[i]; for (var k in v) b[k] = v[k]; return b; }
   function dizil() {
     pl = [oyuncu(0, 50, 0), oyuncu(0, 95, 1), oyuncu(1, 145, 0), oyuncu(1, 190, 1)];
     top = { x: 120, y: 50, vx: 0, vy: 0, h: null, cd: 0, d: 0 };
@@ -74,7 +74,7 @@
   function elUp(p) { // sprite içinde (dik duran) kol: omuz ve el
     var a = (p.th + (p.sw || 0)) * Math.PI / 180, sx = 32 + p.face * 3, sy = 72 - 15 - BOY;
     return { sx: sx, sy: sy, x: sx + p.face * Math.sin(a) * V.L, y: sy + Math.cos(a) * V.L };
-  }  function zipla(p, vx, pw) { if (!p.yer) return; pw = pw === undefined ? .8 : pw; p.pw = pw; p.vy = -(3.0 + 1.9 * pw) * V.jm * .85; p.yer = false; if (vx !== undefined) p.vx = vx; Px.ses("zipla"); }
+  }  function zipla(p, vx, pw) { if (!p.yer) return; pw = pw === undefined ? .8 : pw; p.pw = pw; p.vy = -(3.0 + 1.9 * pw) * V.jm * .85; p.yer = false; p.av = (p.av || 0) + (vx ? Math.sign(vx) : p.face) * .12; if (vx !== undefined) p.vx = vx; Px.ses("zipla"); }
   function at(p, vx, vy) {
     if (!p.hold) return; p.hold = false; top.h = null; top.vx = vx; top.vy = vy; top.cd = 20; p.cd = 24; Px.ses("sut");
   }
@@ -158,11 +158,11 @@
     p.x = Px.sinir(p.x, 8, W - 8);
     // sallanma: karakter AYAKTAN yaylanır (tamamen döner). Koşarken hafif öne yatar, sert inişte biraz savrulur.
     var dv = p.vx - (p.pvx || 0); p.pvx = p.vx;
-    if (p.landed) { p.av = (p.av || 0) + Math.sign(p.vx || p.face) * p.landed * .035; p.landed = 0; }
-    p.av = (p.av || 0) - dv * .12;
-    var hedefA = Px.sinir(p.vx * .18, -.25, .25);
-    p.av += -.11 * ((p.ang || 0) - hedefA); p.av *= .85; p.ang = Px.sinir((p.ang || 0) + p.av, -.9, .9);
-    p.sw = p.ang * -18 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 2.2) * 24 : 0) + (p.yer ? 0 : Math.sin(tik / 4 + p.id) * 14);
+    if (p.landed) { p.av = (p.av || 0) + Math.sign(p.vx || p.face) * p.landed * .06; p.landed = 0; }
+    p.av = (p.av || 0) - dv * .3;
+    var hedefA = Px.sinir(p.vx * .35, -.4, .4);
+    p.av += -.04 * ((p.ang || 0) - hedefA); p.av *= .93; p.ang = Px.sinir((p.ang || 0) + p.av, -1.1, 1.1);
+    p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) + (p.yer ? 0 : Math.sin(tik / 9 + p.id) * 16);
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = 70; p.th += (hedef - p.th) * .3;
     if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
     if (p.cd) p.cd--;
@@ -198,7 +198,7 @@
     // oyuncu vücudu / kafa ile çarpışma
     pl.forEach(function (p) {
       if (yakalanabilir(p)) return; // top alınabiliyorsa vücut çarpışması topu itmesin, doğrudan alınsın
-      [[p.x, p.y - 6, 5.5], [p.x, p.y - 15 - BOY / 2, 6.5], [p.x, p.y - 21 - BOY, V.hr]].forEach(function (c) {
+      [[p.x, p.y - 6, 4], [p.x, p.y - 9 - BOY, 4.5], [p.x, p.y - 15 - BOY, 4.5], [p.x, p.y - 18 - BOY - V.hr, V.hr + 1]].forEach(function (c) {
         var dx = top.x - c[0], dy = top.y - c[1], d = Math.sqrt(dx * dx + dy * dy), m = c[2] + r;
         if (d < m && d > 0) { var nx = dx / d, ny = dy / d; top.x = c[0] + nx * m; top.y = c[1] + ny * m; var vn = top.vx * nx + top.vy * ny; if (vn < 0) { top.vx -= 1.5 * vn * nx; top.vy -= 1.5 * vn * ny; } top.vx += p.vx * .4; top.vy += p.vy * .2; Px.ses("tik"); }
       });
@@ -305,27 +305,25 @@
     x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px0 - 6, ZEMIN, 12, 2);
     var ana_x = x; x = OX; OX.clearRect(0, 0, 64, 80); // karakter önce dik bir piksel sprite'a çizilir, sonra ayaktan döndürülür
     var fr = p.yer ? (Math.abs(p.vx) > .3 ? Math.floor(p.f) % 2 : 0) : 2;
-    // bacaklar (uzun)
-    x.fillStyle = "#0d0e1a";
-    if (fr === 0) { x.fillRect(yx - 3, yy - 6 - B, 3, 6 + B); x.fillRect(yx + 1, yy - 6 - B, 3, 6 + B); }
-    else if (fr === 1) { x.fillRect(yx - 4, yy - 6 - B, 3, 6 + B); x.fillRect(yx + 2, yy - 6 - B, 3, 5 + B); }
-    else { x.fillRect(yx - 4, yy - 5 - B, 3, 4 + B); x.fillRect(yx + 2, yy - 5 - B, 3, 4 + B); }
-    x.fillStyle = "#ffcd75"; if (fr === 0) { x.fillRect(yx - 2, yy - 5 - B, 2, 4 + B); x.fillRect(yx + 1, yy - 5 - B, 2, 4 + B); } else if (fr === 1) { x.fillRect(yx - 3, yy - 5 - B, 2, 4 + B); x.fillRect(yx + 2, yy - 5 - B, 2, 3 + B); } else { x.fillRect(yx - 3, yy - 4 - B, 2, 2 + B); x.fillRect(yx + 2, yy - 4 - B, 2, 2 + B); }
-    x.fillStyle = "#fff"; x.fillRect(yx - 3, yy - 1, 3, 1); x.fillRect(yx + 1, yy - 1, 3, 1);
-    // gövde (sallanırken yana yatar)
-    x.fillStyle = "#0d0e1a"; x.fillRect(yx - 5, yy - 17 - B, 10, 12); x.fillStyle = ana; x.fillRect(yx - 4, yy - 16 - B, 8, 10); x.fillStyle = koyu; x.fillRect(yx - 4, yy - 8 - B, 8, 2);
-    x.fillStyle = "#fff"; x.fillRect(yx - 1, yy - 14 - B, 2, 4); x.fillRect(yx - 2, yy - 13 - B, 4, 1);
-    // kafa
-    var hr = V.hr, hy = yy - 20 - B - (hr > 4 ? hr - 4 : 0) + (hr < 4 ? 1 : 0); daire(yx, hy, hr + 1, "#0d0e1a"); daire(yx, hy, hr, "#ffcd75");
-    x.fillStyle = ana; x.fillRect(yx - hr + 1, hy - hr + 1, hr * 2 - 1, 2); // takım rengi bandı
-    var ex = yx + p.face * Math.max(2, Math.floor(hr * .45));
-    x.fillStyle = "#fff"; x.fillRect(ex - 2, hy - 1, 4, 4); x.fillStyle = "#0d0e1a"; x.fillRect(ex - 1 + (p.face > 0 ? 1 : 0), hy, 2, 2);
-    x.fillRect(yx + p.face * Math.max(1, Math.floor(hr * .3)) - 1, hy + Math.floor(hr * .55), 3, 1);
+    // ince, uzun bacaklar
+    var lt = yy - 6 - B, lx = fr === 0 ? [-3, 1] : [-4, 2], ll = fr === 0 ? [6 + B, 6 + B] : fr === 1 ? [6 + B, 5 + B] : [4 + B, 4 + B];
+    for (var q = 0; q < 2; q++) {
+      x.fillStyle = "#0d0e1a"; x.fillRect(yx + lx[q], yy - ll[q], 3, ll[q]);
+      x.fillStyle = "#ffcd75"; x.fillRect(yx + lx[q] + 1, yy - ll[q] + 1, 1, ll[q] - 2);
+      if (fr < 2 || q === 0) { x.fillStyle = "#fff"; x.fillRect(yx + lx[q], yy - 1, 3, 1); }
+    }
+    // ince gövde
+    x.fillStyle = "#0d0e1a"; x.fillRect(yx - 3, yy - 17 - B, 6, 12); x.fillStyle = ana; x.fillRect(yx - 2, yy - 16 - B, 4, 10); x.fillStyle = koyu; x.fillRect(yx - 2, yy - 8 - B, 4, 2);
+    x.fillStyle = "#fff"; x.fillRect(yx - 1, yy - 14 - B, 2, 3);
+    // küçük kafa
+    var hr = V.hr, hy = yy - 18 - B - hr; daire(yx, hy, hr + 1, "#0d0e1a"); daire(yx, hy, hr, "#ffcd75");
+    x.fillStyle = ana; x.fillRect(yx - hr + 1, hy - hr + 1, hr * 2 - 1, 1); // takım rengi bandı
+    var ex = yx + p.face; x.fillStyle = "#fff"; x.fillRect(ex - 1, hy, 2, 2); x.fillStyle = "#0d0e1a"; x.fillRect(ex - (p.face > 0 ? 0 : 1) + (p.face > 0 ? 0 : 0), hy + 1, 1, 1);
     // kol
     var e = elUp(p), sx = e.sx, sy = e.sy, steps = Math.max(2, Math.round(V.L));
-    for (var i = 0; i <= steps; i++) { var px = sx + (e.x - sx) * i / steps, py = sy + (e.y - sy) * i / steps; x.fillStyle = "#0d0e1a"; x.fillRect(Math.round(px) - 2, Math.round(py) - 2, 4, 4); }
-    for (i = 0; i <= steps; i++) { px = sx + (e.x - sx) * i / steps; py = sy + (e.y - sy) * i / steps; x.fillStyle = i < 3 ? ana : "#ffcd75"; x.fillRect(Math.round(px) - 1, Math.round(py) - 1, 2, 2); }
-    x.fillStyle = "#ffcd75"; x.fillRect(Math.round(e.x) - 1, Math.round(e.y) - 1, 3, 3);
+    for (var i2 = 0; i2 <= steps; i2++) { var px = sx + (e.x - sx) * i2 / steps, py = sy + (e.y - sy) * i2 / steps; x.fillStyle = "#0d0e1a"; x.fillRect(Math.round(px) - 1, Math.round(py) - 1, 3, 3); }
+    for (i2 = 0; i2 <= steps; i2++) { px = sx + (e.x - sx) * i2 / steps; py = sy + (e.y - sy) * i2 / steps; x.fillStyle = i2 < 3 ? ana : "#ffcd75"; x.fillRect(Math.round(px), Math.round(py), 1, 1); }
+    x.fillStyle = "#ffcd75"; x.fillRect(Math.round(e.x) - 1, Math.round(e.y) - 1, 2, 2);
     x = ana_x; x.save(); x.translate(px0, py0); x.rotate(p.ang || 0); x.imageSmoothingEnabled = false; x.drawImage(OC, -32, -72); x.restore();
   }
   function ciz() {

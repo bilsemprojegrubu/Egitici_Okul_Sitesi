@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.10** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.11** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -93,6 +93,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.8 | Basketbol: karakter oranları düzeltildi (küçük kafa, uzun bacak); karakterler Basket Random gibi sallanıyor (gövde yaylanıyor, kollar savruluyor) |
 | 1.9.9 | Basketbol: sallanma momentuma göre (koşarken öne yatar, sert inişte/çarpmada yere yatacak kadar savrulur); karakterler iç içe girmez |
 | 1.9.10 | Basketbol: 2'ye 2 geri geldi; karakter piksel sprite olarak ayaktan dönüyor, sallanma yumuşatıldı; karakterler daha uzak durur |
+| 1.9.11 | Basketbol: karakterler uzun ve ince, kafa küçük; sallanma yavaş ve daha belirgin |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
