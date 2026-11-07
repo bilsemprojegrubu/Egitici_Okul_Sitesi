@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.15** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.16** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -98,6 +98,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.13 | Basketbol: karakterler ayrı PNG dosyaları; ayaktan dönerken pikseller çapraz yumuşak döner |
 | 1.9.14 | Basketbol: PNG karakterler net (bulanıklık giderildi) |
 | 1.9.15 | Futbol: 5 dk maç, 1 dk uzatma, penaltı atışları (sol/orta/sağ + kaleci uçuşu), zayıflatılmış kaleciler; Basketbol: karakterler iç içe geçebilir |
+| 1.9.16 | Futbol: önden görünümlü penaltı, korner / taç / kale vuruşu, K yerden-H havadan pas, I ile kafa golü, telefon düğmeleri |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
