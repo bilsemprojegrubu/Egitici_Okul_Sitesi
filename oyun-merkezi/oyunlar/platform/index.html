@@ -149,13 +149,15 @@
   }
   // Girdi doğrudan olayda yakalanır (Px.p kareler arasında kaçabiliyordu)
   document.addEventListener("keydown", function (e) {
-    var c = e.code;
-    if (c === "Space" || c === "ArrowUp") e.preventDefault();
-    if ((c === "Space" || c === "ArrowUp" || c === "KeyW") && !e.repeat) istek();
-  });
+    var c = e.code, t = e.target;
+    if (!(c === "Space" || c === "ArrowUp" || c === "KeyW")) return;
+    // Oyun sürerken isim kutusu odakta kalmışsa tuşu yutmasın
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) { if (!calis) return; t.blur(); }
+    if (c !== "KeyW") e.preventDefault();
+    if (!e.repeat) istek();
+  }, true);
   C.addEventListener("pointerdown", function (e) { e.preventDefault(); istek(); });
   document.getElementById("tekrar").addEventListener("click", yeni);
-  window.__dbg = function () { return JSON.stringify({ o: o, koyot: koyot, tampon: tampon, calis: calis }); }; //DBG
   yeni(); Px.dongu(guncelle, ciz);
 })();
 </script>

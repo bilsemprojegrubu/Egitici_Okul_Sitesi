@@ -174,26 +174,59 @@
     g.dispatchEvent(new Event("resize"));
   }
   // Tam ekranda oyun alanını boş yer kalmayacak şekilde büyüt (tuval: genişlik, diğerleri: zoom)
+  // Her şey tek ekrana sığar: tuval (varsa) kalan alana en-boy oranıyla küçülür/büyür; tuvalsiz oyunlarda sahne zoom ile ölçeklenir.
+  // Normal modda yalnızca taşma varsa küçültür; tam ekranda boşluğu doldurur. Kaplamalar (position:fixed) kendi içinde kayar.
+  var sigBusy = false;
   function sigdir() {
+    if (sigBusy) return; sigBusy = true;
+    try { sigdirIs(); } catch (e) { } sigBusy = false;
+  }
+  function sigdirIs() {
     var tam = tamMi(), sahne = document.querySelector(".sahne"), cv = document.querySelectorAll("canvas.cv");
-    for (var i = 0; i < cv.length; i++) cv[i].style.width = "";
-    if (sahne) sahne.style.zoom = "";
-    if (!tam || !sahne) return;
-    var ust = document.querySelector(".ust"), uh = ust ? ust.getBoundingClientRect().height : 0;
+    var de = document.documentElement, i, kap = sahne ? sahne.querySelectorAll(".kaplama") : [];
+    for (i = 0; i < cv.length; i++) cv[i].style.width = "";
+    if (sahne) { sahne.style.zoom = ""; sahne.style.width = ""; }
+    for (i = 0; i < kap.length; i++) kap[i].style.zoom = "";
+    var ust = document.querySelector(".ust"), ih = g.innerHeight, iw = g.innerWidth;
+    if (ust) de.style.setProperty("--ust-h", Math.ceil(ust.getBoundingClientRect().bottom) + "px");
+    if (!sahne) return;
+    var ye = g.pageYOffset || 0;
+    if (!tam && de.scrollHeight <= ih && de.scrollWidth <= iw) return; // zaten sığıyor
+    var ek = tam ? 2 : 0;
     if (cv.length === 1) {
-      var c = cv[0]; c.style.width = "1px";
-      var diger = sahne.getBoundingClientRect().height - c.getBoundingClientRect().height;
-      var yuk = g.innerHeight - uh - diger - 12, en = g.innerWidth - 24;
-      var w = Math.max(100, Math.min(en, yuk * c.width / c.height));
-      c.style.width = Math.floor(w) + "px";
-    } else if (!cv.length) {
-      var wm = 1, ch = sahne.children;
-      for (var j = 0; j < ch.length; j++) { var cr = ch[j].getBoundingClientRect(); if (cr.width > wm && getComputedStyle(ch[j]).position !== "absolute") wm = cr.width; }
-      var z = Math.min((g.innerWidth - 24) / wm, (g.innerHeight - uh - 16) / sahne.getBoundingClientRect().height);
-      z = Math.max(1, Math.min(3, z)); sahne.style.zoom = z;
+      var c = cv[0], cw = c.width, chh = c.height, dogal = c.getBoundingClientRect().width;
+      c.style.width = "1px";
+      var diger = sahne.getBoundingClientRect().bottom + ye - c.getBoundingClientRect().height;
+      var w = (ih - diger - ek - 8) * cw / chh + 8; // kenarlık 2x4px
+      var en = iw - (tam ? 8 : 24);
+      w = Math.min(w, en); if (!tam) w = Math.min(w, dogal);
+      c.style.width = Math.floor(Math.max(90, w)) + "px";
+    } else {
+      var ch = sahne.children, wm = 1, j, cr, st;
+      for (j = 0; j < ch.length; j++) { st = getComputedStyle(ch[j]).position; if (st === "fixed" || st === "absolute") continue; cr = ch[j].getBoundingClientRect(); if (cr.width > wm) wm = cr.width; }
+      var uh = ust ? ust.getBoundingClientRect().bottom : 0, z = 1, k;
+      var yuk0 = sahne.getBoundingClientRect().bottom + ye - uh;
+      z = Math.min((iw - 16) / wm, (ih - uh - ek - 4) / Math.max(1, yuk0));
+      z = tam ? Math.min(3, z) : Math.min(1, z);
+      for (k = 0; k < 4; k++) { // yeniden akış sonrası hâlâ taşıyorsa biraz daha küçült
+        z = Math.max(.3, z);
+        sahne.style.zoom = z; sahne.style.width = (100 / z) + "%";
+        for (j = 0; j < kap.length; j++) kap[j].style.zoom = 1 / z;
+        var alt = sahne.getBoundingClientRect().bottom + ye;
+        if (alt <= ih - ek || z <= .3) break;
+        z *= (ih - ek - uh - 2) / Math.max(1, alt - uh);
+      }
     }
   }
-  g.addEventListener("resize", function () { if (tamMi()) sigdir(); });
+  g.addEventListener("resize", function () { sigdir(); });
+  g.addEventListener("orientationchange", function () { setTimeout(sigdir, 250); });
+  g.addEventListener("load", function () { sigdir(); setTimeout(sigdir, 300); });
+  var sigZ = 0;
+  function sigIste() { if (sigZ) return; sigZ = g.requestAnimationFrame(function () { sigZ = 0; sigdir(); }); }
+  function sigIzle() {
+    var s = document.querySelector(".sahne"); if (!s || !g.MutationObserver) return;
+    new MutationObserver(sigIste).observe(s, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["hidden"] });
+  }
   Px.tamEkran = function () {
     try {
       var el = document.documentElement;
@@ -213,7 +246,7 @@
     sesBtn.addEventListener("click", function () { sessiz = !sessiz; yaz("px_ses", sessiz ? "0" : "1"); sesGuncelle(); Px.ses("tik"); });
     tamBtn.addEventListener("click", Px.tamEkran);
     d.appendChild(sesBtn); d.appendChild(tamBtn); document.body.appendChild(d); aracDiv = d; if (Px.hizGerek) hizEkle();
-    sesGuncelle(); tamGuncelle();
+    sesGuncelle(); tamGuncelle(); sigIzle();
     document.addEventListener("fullscreenchange", tamGuncelle);
     document.addEventListener("webkitfullscreenchange", tamGuncelle);
   }
