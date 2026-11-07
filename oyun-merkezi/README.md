@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.58** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.59** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -139,8 +139,9 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.54 | Basketbol: başkasının üstünden atlayan oyuncu yan yatar |
 | 1.9.55 | Kale Savaşı: arkadaki düşmana daha uzaktan dönülür; hücumda arkada düşman bırakılmaz |
 | 1.9.56 | Futbol: gol olunca röveşata animasyonu biter |
-| 1.9.57 | Yeni oyun: Robot Dansı (ritim: oklar düşünce ok/WASD tuşuna bas; Supabase için supabase/dans-ekle.sql) |
+| 1.9.57 | Yeni oyun: Kaktüs Dansı (ritim: oklar düşünce ok/WASD tuşuna bas; Supabase için supabase/dans-ekle.sql) |
 | 1.9.58 | Dans oyunu: tema robot dansı oldu (neon ızgara, robot dansçı) |
+| 1.9.59 | Dans oyunu: tema Kaktüs Dansı (çöl gün batımı, dikenli kaktüs dansçı) |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |

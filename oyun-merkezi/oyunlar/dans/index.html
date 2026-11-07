@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Robot Dansı — Oyun Merkezi</title>
+<title>Kaktüs Dansı — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
 </head>
 <body data-oyun="dans">
-<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>ROBOT DANSI</h1>
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>KAKTÜS DANSI</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <canvas id="c" class="cv" width="400" height="520" style="--mw:400px"></canvas>
@@ -19,7 +19,7 @@
     <button class="btn" data-k="3" aria-label="Sağ">▶</button>
   </div>
   <div id="bitti" class="kaplama" hidden>
-    <h2>Robot yoruldu!</h2><p id="sonuc"></p>
+    <h2>Kaktüs yoruldu!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
     <button class="btn" id="tekrar">Tekrar oyna</button>
   </div>
@@ -100,29 +100,33 @@
   function dansci() {
     var cx = 200, cy = 118 + poz.bob * 1.5, sp = Math.sin(kare / 5) * 3, nb = Math.floor(kare / 8) % 2;
     x.save(); x.translate(cx, cy); x.scale(1.5, 1.5); x.rotate(poz.lean);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-9 + sp, 0, 8, 25); x.fillRect(1 - sp, 0, 8, 25);
-    x.fillStyle = "#94a0b8"; x.fillRect(-8 + sp, 1, 6, 22); x.fillRect(2 - sp, 1, 6, 22); x.fillStyle = "#00e5ff"; x.fillRect(-7 + sp, 14, 4, 2); x.fillRect(3 - sp, 14, 4, 2);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-11 + sp, 23, 11, 6); x.fillRect(0 - sp, 23, 11, 6); x.fillStyle = "#566c86"; x.fillRect(-10 + sp, 24, 9, 4); x.fillRect(1 - sp, 24, 9, 4);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-12, -30, 24, 32); x.fillStyle = "#b8c4d8"; x.fillRect(-11, -29, 22, 30); x.fillStyle = "#e8eef8"; x.fillRect(-11, -29, 22, 3);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-6, -22, 12, 12); x.fillStyle = nb ? "#ff4fd8" : "#00e5ff"; x.fillRect(-5, -21, 10, 10); x.fillStyle = "#fff"; x.fillRect(-3, -19, 3, 3);
-    x.fillStyle = "#566c86"; x.fillRect(-11, -6, 22, 3);
-    function kol(sx, a) { x.save(); x.translate(sx, -26); x.rotate(a); x.fillStyle = "#0d0e1a"; x.fillRect(-4, -1, 8, 27); x.fillStyle = "#94a0b8"; x.fillRect(-3, 0, 6, 24); x.fillStyle = "#00e5ff"; x.fillRect(-3, 10, 6, 2); x.fillStyle = "#ffe14d"; x.fillRect(-4, 22, 8, 5); x.restore(); }
+    x.fillStyle = "#0d0e1a"; x.fillRect(-9 + sp, 0, 8, 24); x.fillRect(1 - sp, 0, 8, 24);
+    x.fillStyle = "#38b764"; x.fillRect(-8 + sp, 1, 6, 20); x.fillRect(2 - sp, 1, 6, 20);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-11 + sp, 21, 11, 7); x.fillRect(0 - sp, 21, 11, 7); x.fillStyle = "#a05a2c"; x.fillRect(-10 + sp, 22, 9, 5); x.fillRect(1 - sp, 22, 9, 5);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-12, -32, 24, 34); x.fillStyle = "#38b764"; x.fillRect(-11, -31, 22, 32); x.fillStyle = "#a7f070"; x.fillRect(-11, -31, 5, 32); x.fillStyle = "#257179"; x.fillRect(8, -31, 3, 32);
+    x.fillStyle = "#fff8d0"; for (var q = 0; q < 5; q++) { x.fillRect(-4 + (q % 2) * 7, -26 + q * 6, 2, 2); }
+    x.fillStyle = "#a05a2c"; x.fillRect(-12, -8, 24, 3);
+    function kol(sx, a) { x.save(); x.translate(sx, -26); x.rotate(a); x.fillStyle = "#0d0e1a"; x.fillRect(-4, -1, 8, 27); x.fillStyle = "#38b764"; x.fillRect(-3, 0, 6, 25); x.fillStyle = "#a7f070"; x.fillRect(-3, 0, 2, 25); x.fillStyle = "#fff8d0"; x.fillRect(2, 8, 3, 2); x.fillRect(2, 16, 3, 2); x.fillStyle = "#0d0e1a"; x.fillRect(-5, 22, 10, 7); x.fillStyle = "#38b764"; x.fillRect(-4, 23, 8, 5); x.restore(); }
     kol(-14, poz.a1); kol(14, poz.a2);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-1, -58, 2, 8); x.fillStyle = nb ? "#00e5ff" : "#ff4fd8"; x.fillRect(-2, -61, 4, 4);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-11, -51, 22, 21); x.fillStyle = "#b8c4d8"; x.fillRect(-10, -50, 20, 19);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-8, -46, 16, 8); x.fillStyle = "#00e5ff"; x.fillRect(-7, -45, 5, 6); x.fillRect(2, -45, 5, 6); x.fillStyle = "#fff"; x.fillRect(-6, -44, 2, 2); x.fillRect(3, -44, 2, 2);
-    x.fillStyle = "#566c86"; x.fillRect(-5, -35, 10, 2);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-12, -53, 24, 23); x.fillStyle = "#38b764"; x.fillRect(-11, -52, 22, 21); x.fillStyle = "#a7f070"; x.fillRect(-11, -52, 5, 21);
+    x.fillStyle = "#fff"; x.fillRect(-8, -46, 7, 8); x.fillRect(1, -46, 7, 8); x.fillStyle = "#0d0e1a"; x.fillRect(-5, -44, 4, 5); x.fillRect(4, -44, 4, 5);
+    x.fillRect(-4, -35, 8, 2); x.fillStyle = "#fff"; x.fillRect(-3, -35, 2, 2); x.fillRect(1, -35, 2, 2);
+    x.fillStyle = "#fff8d0"; x.fillRect(-14, -50, 3, 2); x.fillRect(11, -50, 3, 2); x.fillRect(-14, -40, 3, 2); x.fillRect(11, -40, 3, 2);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-5, -60, 10, 9); x.fillStyle = nb ? "#ff4fd8" : "#ff8ae8"; x.fillRect(-4, -59, 3, 3); x.fillRect(1, -59, 3, 3); x.fillRect(-4, -54, 3, 3); x.fillRect(1, -54, 3, 3); x.fillStyle = "#ffe14d"; x.fillRect(-1, -57, 2, 3);
     x.restore();
   }
   function ciz() {
     var i, l;
     // sahne zemini
-    var bt = bf / (3600 / bpm()), pals = ["#ff4fd8", "#00e5ff", "#7a4fff", "#a7f070"];
+    var bt = bf / (3600 / bpm()), pals = ["#ff4fd8", "#ffe14d", "#ffffff", "#a7f070"];
     x.fillStyle = "#0d0e1a"; x.fillRect(0, 0, W, H);
-    x.fillStyle = "#0b0f2a"; x.fillRect(0, 0, W, 190);
-    for (i = 0; i < 40; i++) { x.fillStyle = "#fff"; x.globalAlpha = .3 + ((i * 7 + beat) % 5) * .12; x.fillRect((i * 97) % W, (i * 53) % 120, 2, 2); } x.globalAlpha = 1;
-    x.fillStyle = pals[beat % 4]; x.globalAlpha = .25 - bt * .15; x.fillRect(0, 150, W, 44); x.globalAlpha = 1;
-    x.fillStyle = pals[(beat + 1) % 4]; x.globalAlpha = .55; for (i = 0; i <= 10; i++) x.fillRect(200 + (i - 5) * 44 - 1, 150, 2, 44); for (i = 0; i < 4; i++) x.fillRect(0, 152 + i * 12, W, 2); x.globalAlpha = 1;
+    var gk = ["#3a1f5d", "#7a2f6a", "#c24a5a", "#ef7d57", "#ffcd75"];
+    for (i = 0; i < 5; i++) { x.fillStyle = gk[i]; x.fillRect(0, i * 28, W, 28); }
+    x.fillStyle = "#fff4b0"; x.fillRect(300, 70 + bt * 2, 36, 36); x.fillStyle = "#ffe14d"; x.fillRect(304, 74 + bt * 2, 28, 28);
+    x.fillStyle = "#5d275d"; x.fillRect(20, 96, 90, 44); x.fillRect(34, 80, 40, 16); x.fillRect(250, 110, 120, 30); x.fillRect(280, 92, 50, 18);
+    x.fillStyle = "#e0a060"; x.fillRect(0, 140, W, 56); x.fillStyle = "#c78848"; for (i = 0; i < 8; i++) x.fillRect((i * 61 + beat * 0) % W, 150 + (i % 3) * 14, 26, 3);
+    x.fillStyle = "#257179"; x.fillRect(46, 112, 8, 30); x.fillRect(40, 120, 6, 4); x.fillRect(54, 124, 6, 4); x.fillRect(340, 118, 8, 24); x.fillRect(334, 126, 6, 4);
+    x.fillStyle = pals[beat % 4]; x.globalAlpha = .2 - bt * .12; x.fillRect(0, 140, W, 56); x.globalAlpha = 1;
     dansci();
     // şeritler
     x.fillStyle = "#12142a"; x.fillRect(LX - 4, SY - 6, LW * 4 + 8, H - SY + 6);
