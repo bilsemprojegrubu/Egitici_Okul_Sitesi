@@ -97,22 +97,39 @@
     x.fillStyle = "rgba(255,255,255,.5)"; x.fillRect(-4, 1, 3, 12);
     x.restore();
   }
+  // ---- Spike benzeri piksel kaktüs (24x24 gövde, kol, bot) kodla çizilir ----
+  var SP = (function () {
+    var N = 24, g = []; for (var r = 0; r < N; r++) { g.push([]); for (var c = 0; c < N; c++) g[r].push("."); }
+    function put(c, r, ch) { if (r >= 0 && r < N && c >= 0 && c < N) g[r][c] = ch; }
+    var L = { 5: [5, 18], 6: [3, 20], 21: [3, 20], 22: [5, 18] }, r, c;
+    for (r = 5; r <= 22; r++) { var a = L[r] || [2, 21]; for (c = a[0]; c <= a[1]; c++) put(c, r, "g"); }
+    for (r = 6; r <= 21; r++) { for (c = 3; c <= 5; c++) if (g[r][c] === "g") g[r][c] = "G"; for (c = 17; c <= 20; c++) if (g[r][c] === "g") g[r][c] = "d"; }
+    for (r = 8; r <= 21; r++) { put(9, r, "d"); put(14, r, "d"); }
+    [[3, 9], [20, 8], [3, 15], [20, 14], [8, 6], [16, 6], [11, 20], [5, 20], [18, 19]].forEach(function (t) { put(t[0], t[1], "w"); });
+    // gözler
+    for (r = 9; r <= 14; r++) for (c = 5; c <= 10; c++) { put(c, r, "e"); put(c + 8, r, "e"); }
+    for (r = 11; r <= 14; r++) for (c = 8; c <= 9; c++) { put(c, r, "k"); put(c + 6, r, "k"); }
+    for (c = 5; c <= 10; c++) { put(c, 8, "k"); put(c + 8, 8, "k"); }
+    // gülen ağız
+    for (c = 8; c <= 15; c++) { put(c, 16, "k"); put(c, 19, "k"); } for (r = 17; r <= 18; r++) { put(7, r, "k"); put(16, r, "k"); for (c = 8; c <= 15; c++) put(c, r, r === 17 ? "t" : "m"); }
+    // çiçek (sol üst)
+    [[4, 0], [5, 0], [3, 1], [4, 1], [5, 1], [6, 1], [2, 2], [3, 2], [6, 2], [7, 2], [3, 3], [4, 3], [5, 3], [6, 3], [4, 4], [5, 4]].forEach(function (t) { put(t[0], t[1], "p"); });
+    put(4, 2, "y"); put(5, 2, "y"); put(4, 3, "y"); put(5, 3, "y"); put(3, 1, "P"); put(4, 0, "P"); put(2, 2, "P");
+    put(5, 5, "g"); put(6, 5, "g");
+    var cp = g.map(function (row) { return row.slice(); });
+    for (r = 0; r < N; r++) for (c = 0; c < N; c++) if (g[r][c] === ".") { var nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(function (d) { var rr = r + d[1], cc = c + d[0]; return rr >= 0 && rr < N && cc >= 0 && cc < N && g[rr][cc] !== "." && g[rr][cc] !== "k"; }); if (nb) cp[r][c] = "k"; }
+    var pal = { k: "#0d0e1a", g: "#38b764", G: "#a7f070", d: "#257179", w: "#fff8d0", e: "#ffffff", p: "#ff4fd8", P: "#ff9aee", y: "#ffe14d", t: "#ffffff", m: "#8a1f3a", o: "#a05a2c", O: "#6f3a1c" };
+    var kol = ["kkkkkkk", "kGggggk", "kGgggdk", "kGgggdk", "kGgggdk", "kGgggdk", "kGgggdk", "kGgggdk", "kGwgdwk", "kGggggk", "kkgggkk", ".kkkkk."];
+    var bot = [".kkkkkkkkk.", "kooooooooOk", "kooooooOOOk", "kkkkkkkkkkk"];
+    return { b: Px.sprite(cp.map(function (r) { return r.join(""); }), pal, 3), a: Px.sprite(kol, pal, 3), f: Px.sprite(bot, pal, 3) };
+  })();
   function dansci() {
-    var cx = 200, cy = 118 + poz.bob * 1.5, sp = Math.sin(kare / 5) * 3, nb = Math.floor(kare / 8) % 2;
-    x.save(); x.translate(cx, cy); x.scale(1.5, 1.5); x.rotate(poz.lean);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-9 + sp, 0, 8, 24); x.fillRect(1 - sp, 0, 8, 24);
-    x.fillStyle = "#38b764"; x.fillRect(-8 + sp, 1, 6, 20); x.fillRect(2 - sp, 1, 6, 20);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-11 + sp, 21, 11, 7); x.fillRect(0 - sp, 21, 11, 7); x.fillStyle = "#a05a2c"; x.fillRect(-10 + sp, 22, 9, 5); x.fillRect(1 - sp, 22, 9, 5);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-12, -32, 24, 34); x.fillStyle = "#38b764"; x.fillRect(-11, -31, 22, 32); x.fillStyle = "#a7f070"; x.fillRect(-11, -31, 5, 32); x.fillStyle = "#257179"; x.fillRect(8, -31, 3, 32);
-    x.fillStyle = "#fff8d0"; for (var q = 0; q < 5; q++) { x.fillRect(-4 + (q % 2) * 7, -26 + q * 6, 2, 2); }
-    x.fillStyle = "#a05a2c"; x.fillRect(-12, -8, 24, 3);
-    function kol(sx, a) { x.save(); x.translate(sx, -26); x.rotate(a); x.fillStyle = "#0d0e1a"; x.fillRect(-4, -1, 8, 27); x.fillStyle = "#38b764"; x.fillRect(-3, 0, 6, 25); x.fillStyle = "#a7f070"; x.fillRect(-3, 0, 2, 25); x.fillStyle = "#fff8d0"; x.fillRect(2, 8, 3, 2); x.fillRect(2, 16, 3, 2); x.fillStyle = "#0d0e1a"; x.fillRect(-5, 22, 10, 7); x.fillStyle = "#38b764"; x.fillRect(-4, 23, 8, 5); x.restore(); }
-    kol(-14, poz.a1); kol(14, poz.a2);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-12, -53, 24, 23); x.fillStyle = "#38b764"; x.fillRect(-11, -52, 22, 21); x.fillStyle = "#a7f070"; x.fillRect(-11, -52, 5, 21);
-    x.fillStyle = "#fff"; x.fillRect(-8, -46, 7, 8); x.fillRect(1, -46, 7, 8); x.fillStyle = "#0d0e1a"; x.fillRect(-5, -44, 4, 5); x.fillRect(4, -44, 4, 5);
-    x.fillRect(-4, -35, 8, 2); x.fillStyle = "#fff"; x.fillRect(-3, -35, 2, 2); x.fillRect(1, -35, 2, 2);
-    x.fillStyle = "#fff8d0"; x.fillRect(-14, -50, 3, 2); x.fillRect(11, -50, 3, 2); x.fillRect(-14, -40, 3, 2); x.fillRect(11, -40, 3, 2);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-5, -60, 10, 9); x.fillStyle = nb ? "#ff4fd8" : "#ff8ae8"; x.fillRect(-4, -59, 3, 3); x.fillRect(1, -59, 3, 3); x.fillRect(-4, -54, 3, 3); x.fillRect(1, -54, 3, 3); x.fillStyle = "#ffe14d"; x.fillRect(-1, -57, 2, 3);
+    var cx = 200, cy = 112 + poz.bob * 1.2, sp = Math.round(Math.sin(kare / 5) * 4);
+    x.save(); x.imageSmoothingEnabled = false; x.translate(cx, cy); x.rotate(poz.lean);
+    x.drawImage(SP.f, -34 + sp, 34); x.drawImage(SP.f, 1 - sp, 34);
+    function kol(sx, a) { x.save(); x.translate(sx, -4); x.rotate(a); x.drawImage(SP.a, -10, -3); x.restore(); }
+    kol(-37, poz.a1); kol(37, poz.a2);
+    x.drawImage(SP.b, -36, -42 + (Math.floor(kare / 8) % 2));
     x.restore();
   }
   function ciz() {
