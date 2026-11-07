@@ -10,6 +10,7 @@
 .pn{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
 .pn .btn{font-size:.62rem;padding:4px 2px;min-height:44px;line-height:1.15;white-space:pre-line}
 .pn .btn.yok{opacity:.45}
+.pn .btn.sec{background:#ffcd75;color:#0d0e1a}
 .pn .baslik{grid-column:1/-1;font-size:.7rem;text-align:center;opacity:.9}
 </style>
 </head>
@@ -54,8 +55,8 @@
   var BN = ["ORMAN CANAVARI", "TAŞ DEV", "KEMİK KRAL", "ATEŞ EJDERİ", "BUZ ŞÖVALYESİ", "ZEHİR ÖRÜMCEĞİ", "GÖLGE LORDU", "ALTIN GOLEM"];
   var BP = [["#38b764", "#257179", "#ffcd75"], ["#94a0b8", "#566c86", "#73eff7"], ["#dfe9f5", "#94a0b8", "#b13e53"], ["#e0344f", "#b13e53", "#ffcd75"],
     ["#73c7f9", "#3b5dc9", "#fff"], ["#5d275d", "#1a1c2c", "#a7f070"], ["#333c57", "#1a1c2c", "#b55ee0"], ["#ffcd75", "#c98a4b", "#fff"]];
-  var KS = [["Digit1", "Digit2", "Digit3", "Digit4", "KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY"], ["Digit7", "Digit8", "Digit9", "Digit0", "KeyU", "KeyI", "KeyO", "KeyP", "BracketLeft", "BracketRight"]];
-  var KL = [["1", "2", "3", "4", "Q", "W", "E", "R", "T", "Y"], ["7", "8", "9", "0", "U", "I", "O", "P", "[", "]"]];
+  var KS = [["Digit1", "Digit2", "Digit3", "Digit4", "KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY", "KeyF", "KeyG"], ["Digit7", "Digit8", "Digit9", "Digit0", "KeyU", "KeyI", "KeyO", "KeyP", "BracketLeft", "BracketRight", "KeyJ", "KeyK"]];
+  var KL = [["1", "2", "3", "4", "Q", "W", "E", "R", "T", "Y", "F", "G"], ["7", "8", "9", "0", "U", "I", "O", "P", "[", "]", "J", "K"]];
   var btn = [[], []];
 
   function hasC(s) { return mod === 2 || s === 1; }
@@ -65,7 +66,7 @@
   function chh(s) { return 30 + Math.min(S[s].lv, 12) * 3; }
   function mhp(s) { return 200 + S[s].lv * 170; }
   function front(s) { return s === 0 ? S[0].cx + cw(0) / 2 : S[1].cx - cw(1) / 2; }
-  function mkS(cx) { return { cx: cx, g: 80, lv: 0, hp: 200, mines: 1, ml: 0, rg: 0, cr: 0, cs: 0, ch: 0, it: 0, tc: 30, cf: 0 }; }
+  function mkS(cx) { return { cx: cx, g: 80, lv: 0, hp: 200, mines: 1, ml: 0, em: 0, rg: 0, cr: 0, cs: 0, ch: 0, it: 0, tc: 30, cf: 0 }; }
   function sc(n) { return (1 + .08 * ((n - 1) % 200)) * (1 + 1.5 * Math.floor((n - 1) / 200)); }
   function puan() { return mod === 1 ? Math.max(0, (wv - 1)) * 50 + kills : 0; }
   function yaz() { var p = puan(); if (p !== sonPuan) { sonPuan = p; document.getElementById("puan").textContent = p; } }
@@ -96,7 +97,7 @@
     if (id === 4) return Math.round(60 * Math.pow(mod === 1 ? 1.5 : 1.6, z.mines - 1));
     if (id === 5) return Math.round(80 * Math.pow(1.5, z.ml));
     if (id === 6) return Math.round(100 * Math.pow(1.45, z.lv));
-    return [0, 0, 0, 0, 0, 0, 0, 60, 120, 80][id];
+    return [0, 0, 0, 0, 0, 0, 0, 60, 120, 80, 0, 0][id];
   }
   function kul(s, id) {
     var z = S[s], c = maliyet(s, id);
@@ -106,6 +107,7 @@
     if (id === 6) return z.lv < maxL() && z.g >= c;
     if (id === 7) return z.cr <= 0 && z.g >= c;
     if (id === 8) return z.cs <= 0 && z.g >= c;
+    if (id > 9) return true;
     return z.ch <= 0 && z.g >= c && z.hp < mhp(s);
   }
   function act(s, id) {
@@ -119,6 +121,7 @@
     else if (id === 6) { z.lv++; z.hp += 170; Px.ses("birles"); sars = 6; for (var i = 0; i < 16; i++) F.push({ x: front(s) + Px.rastgele(-20, 20) * (s ? -1 : 1), y: GY - Px.rastgele(0, 40), vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1.5, 0), l: 30, c: "#ffcd75" }); }
     else if (id === 7) { z.rg = 480; z.cr = 1500; Px.ses("boss"); mesaj = "ÖFKE!"; msayac = 60; }
     else if (id === 8) { z.cs = 2100; Px.ses("patlama"); sars = 10; var d = 40 + z.lv * 25; U.forEach(function (o) { if (o.s !== s && !o.dead) { vur(o, d, s); for (var j = 0; j < 4; j++) F.push({ x: o.x + Px.rastgele(-4, 4), y: GY - 40 - j * 12, vx: 0, vy: 3, l: 14, c: "#ffcd75" }); } }); }
+    else if (id > 9) { z.em = z.em === id - 9 ? 0 : id - 9; Px.ses("tik"); mesaj = z.em === 1 ? "HÜCUM!" : z.em === 2 ? "GERİ ÇEKİL!" : (mod === 1 ? "SAVUNMA" : "İLERLE"); if (hasC(s) && (mod === 2 || s === 1)) msayac = 50; }
     else if (id === 9) { z.ch = 1500; z.hp = Math.min(mhp(s), z.hp + mhp(s) * .3); Px.ses("al"); }
     paneliGuncelle(true);
   }
@@ -146,7 +149,8 @@
     var cd = hasC(en) ? (front(en) - u.x) * dr : 1e9, tg = null, td = 1e9;
     if (best && bd <= cd) { tg = best; td = bd; } else if (hasC(en)) { tg = "c"; td = cd; }
     var rage = z.rg > 0 && !(mod === 1 && u.s === 0), dmg = u.d * (rage ? 1.6 : 1);
-    if (tg && td <= u.r) {
+    var kacis = z.em === 2 && !u.ok && Math.abs(u.x - (front(u.s) + dr * (8 + (u.id % 5) * 5))) > 6;
+    if (tg && td <= u.r && !kacis) {
       if (u.cd <= 0) {
         u.cd = u.cdm; u.at = 8;
         if (u.ok) { P.push({ x: u.x + dr * 4, y: GY - 12 + (u.fly ? -10 : 0), vx: dr * (u.ok === 2 ? 2 : 2.6), s: u.s, d: dmg, k: u.ok, l: 120 }); Px.ses(u.ok === 2 ? "ok" : "ok"); }
@@ -155,7 +159,9 @@
       return;
     }
     var hareket = 0;
-    if (mod === 1 && u.s === 1) {
+    if (z.em === 1) hareket = dr;
+    else if (z.em === 2) { var ev = front(u.s) + dr * (8 + (u.id % 5) * 5); if (Math.abs(u.x - ev) > 2.5) hareket = u.x < ev ? 1 : -1; }
+    else if (mod === 1 && u.s === 1) {
       var rally = front(1) - 70 - (u.id % 5) * 7;
       if (best && bd < 170) hareket = dr; else if (Math.abs(u.x - rally) > 3) hareket = u.x < rally ? 1 : -1;
     } else hareket = dr;
@@ -233,7 +239,7 @@
     // tuşlar
     [0, 1].forEach(function (s) {
       if (mod === 1 && s === 0) return;
-      var ks = KS[mod === 1 ? 0 : s]; for (var j = 0; j < 10; j++) if (Px.p[ks[j]]) act(s, j);
+      var ks = KS[mod === 1 ? 0 : s]; for (var j = 0; j < 12; j++) if (Px.p[ks[j]]) act(s, j);
     });
     // ekonomi
     [0, 1].forEach(function (s) {
@@ -387,14 +393,14 @@
   }
 
   // ---- panel ----
-  var ETK = ["KILIÇ", "MIZRAK", "OKÇU", "BÜYÜCÜ", "MADEN", "MADEN+", "KALE+", "ÖFKE", "OK YAĞMURU", "ONAR"];
+  var ETK = ["KILIÇ", "MIZRAK", "OKÇU", "BÜYÜCÜ", "MADEN", "MADEN+", "KALE+", "ÖFKE", "OK YAĞMURU", "ONAR", "HÜCUM", "GERİ ÇEK"];
   function kurPanel() {
     var pn = document.getElementById("paneller"), py = document.getElementById("padyer"); pn.innerHTML = ""; py.innerHTML = ""; btn = [[], []];
     if (mod === 1) Px.pad(py, [{ t: "◀", k: "ArrowLeft" }, { t: "▶", k: "ArrowRight" }]);
     (mod === 1 ? [1] : [0, 1]).forEach(function (s) {
       var d = document.createElement("div"); d.className = "pn"; pn.appendChild(d);
       var h = document.createElement("div"); h.className = "baslik"; h.textContent = mod === 1 ? "KALENİ GÜÇLENDİR" : (s ? "MAVİ OYUNCU" : "KIRMIZI OYUNCU"); h.style.color = mod === 1 ? "#ffcd75" : (s ? "#73c7f9" : "#ff8a9a"); d.appendChild(h);
-      for (var i = 0; i < 10; i++) (function (i) {
+      for (var i = 0; i < 12; i++) (function (i) {
         var b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.addEventListener("click", function () { act(s, i); b.blur(); }); d.appendChild(b); btn[s][i] = b;
       })(i);
     });
@@ -403,11 +409,12 @@
   function paneliGuncelle() {
     (mod === 1 ? [1] : [0, 1]).forEach(function (s) {
       var z = S[s];
-      for (var i = 0; i < 10; i++) {
+      for (var i = 0; i < 12; i++) {
         var b = btn[s][i], c = maliyet(s, i), ek = "", kl = KL[mod === 1 ? 0 : s][i];
         if (i === 4) ek = " " + z.mines + "/" + maxM(); if (i === 5) ek = " S" + (z.ml + 1); if (i === 6) ek = " S" + (z.lv + 1);
         if (i === 7 && z.cr > 0) c = Math.ceil(z.cr / 60) + "sn"; if (i === 8 && z.cs > 0) c = Math.ceil(z.cs / 60) + "sn"; if (i === 9 && z.ch > 0) c = Math.ceil(z.ch / 60) + "sn";
         if ((i === 4 && z.mines >= maxM()) || (i === 5 && z.ml >= 9) || (i === 6 && z.lv >= maxL())) c = "MAX";
+        if (i > 9) { c = z.em === i - 9 ? "AÇIK" : ""; b.classList.toggle("sec", z.em === i - 9); }
         var t = ETK[i] + ek + "\n" + (i < 7 || c === "MAX" || typeof c === "string" ? c : c) + " [" + kl + "]";
         if (b.textContent !== t) b.textContent = t;
         b.classList.toggle("yok", !kul(s, i));
@@ -419,8 +426,8 @@
   function basla(m) {
     son = m;
     document.getElementById("ipucu").textContent = m === 1
-      ? "Kale sağda, düşmanlar soldaki mağaradan gelir. Asker al, maden aç, kaleni büyüt, yeteneklerini kullan! Haritayı ◀ ▶ / A D veya sürükleyerek kaydır. Her 10. dalga boss. Sonsuz dalga!"
-      : "Kırmızı: 1-4 asker, Q maden, W maden+, E kale+, R öfke, T ok yağmuru, Y onar. Mavi: 7 8 9 0 asker, U I O P [ ]. Düşman kaleyi yık! (Sıralamaya yazılmaz)";
+      ? "Kale sağda, düşmanlar soldaki mağaradan gelir. Asker al, maden aç, kaleni büyüt, yeteneklerini kullan! Haritayı ◀ ▶ / A D veya sürükleyerek kaydır. HÜCUM (F) askerleri ileri yollar, GERİ ÇEK (G) kaleye döndürür. Her 10. dalga boss. Sonsuz dalga!"
+      : "Kırmızı: 1-4 asker, Q maden, W maden+, E kale+, R öfke, T ok yağmuru, Y onar, F hücum, G geri çek. Mavi: 7 8 9 0 asker, U I O P [ ] , J hücum, K geri çek. Düşman kaleyi yık! (Sıralamaya yazılmaz)";
     yeni(m);
   }
   var menu = Px.menu({ baslik: "KALE SAVAŞI", not: "Kaleni savun, madenlerle büyü, askerlerle saldır", secenekler: [
@@ -439,7 +446,7 @@
   document.getElementById("menuBtn").addEventListener("click", function () { calis = false; menu.ac(); });
   // başlangıç görünümü (menü arkasında)
   mod = 1; S = [mkS(0), mkS(800)]; U = []; P = []; F = []; wv = 0; kills = 0; cam = WW - VW; over = 0; wq = [];
-  window.__kale = { git: function (n) { wv = n - 1; wq = []; wt = 1; S[1].g += 9999; S[1].lv = Math.max(S[1].lv, 5); }, boss: function (i, px) { var u = yapU(0, 0, 1, i); u.x = px; }, S: function () { return S; } };
+  window.__kale = { git: function (n) { wv = n - 1; wq = []; wt = 1; S[1].g += 9999; S[1].lv = Math.max(S[1].lv, 5); }, boss: function (i, px) { var u = yapU(0, 0, 1, i); u.x = px; }, S: function () { return S; }, U: function () { return U; } };
   Px.dongu(guncelle, ciz);
 })();
 </script>
