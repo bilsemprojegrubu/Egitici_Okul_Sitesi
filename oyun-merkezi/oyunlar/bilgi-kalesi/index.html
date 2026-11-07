@@ -9,6 +9,7 @@
 .pnl{display:flex;gap:10px;width:min(100%,860px);justify-content:space-between;align-items:flex-start}
 .pn{flex:1;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
 .pn .btn{font-size:.62rem;padding:4px 2px;min-height:44px;line-height:1.15;white-space:pre-line}
+.btn[hidden]{display:none}
 .pn .btn.yok{opacity:.45}
 .pn .btn.sec{background:#ffcd75;color:#0d0e1a}
 .pn .baslik{grid-column:1/-1;font-size:.7rem;text-align:center;opacity:.9}
@@ -203,6 +204,7 @@
     wq = q; wi = Math.max(16, 70 - n); wsp = 0; wf = 0; wt = 300;
     mesaj = boss ? "BOSS DALGASI " + n : "DALGA " + n; msayac = 110; if (boss) Px.ses("boss"); else Px.ses("don");
     S[1].hp = Math.min(mhp(1), S[1].hp + mhp(1) * .04); yaz();
+    if (mod === 1) kaydet();
   }
   function dalgaGuncelle() {
     if (wq.length) {
@@ -225,7 +227,7 @@
     over = 100; S[k].dead = 1;
   }
   function bitir() {
-    calis = false;
+    calis = false; if (mod === 1) Px.yaz("kale_kayit", "");
     if (mod === 1) { Skor.oyunBitti("bilgi-kalesi", puan()); }
     else Px.sonuc2((S[0].hp <= 0 ? "Mavi" : "Kırmızı") + " kale kazandı!");
   }
@@ -430,10 +432,34 @@
       : "Kırmızı: 1-4 asker, Q maden, W maden+, E kale+, R öfke, T ok yağmuru, Y onar, F hücum, G geri çek. Mavi: 7 8 9 0 asker, U I O P [ ] , J hücum, K geri çek. Düşman kaleyi yık! (Sıralamaya yazılmaz)";
     yeni(m);
   }
+  // ---- kayıt: her dalga başında otomatik, menüde DEVAM ET ----
+  function kaydet() {
+    var z = S[1];
+    Px.yaz("kale_kayit", JSON.stringify({ w: wv, g: Math.floor(z.g), lv: z.lv, mines: z.mines, ml: z.ml, hp: Math.round(z.hp), kills: kills }));
+  }
+  function kayitOku() {
+    try { var k = JSON.parse(Px.oku("kale_kayit") || "null"); return k && k.w > 1 ? k : null; } catch (e) { return null; }
+  }
+  var devamBtn = null;
+  function devamGuncelle() {
+    if (!devamBtn) return; var k = kayitOku(); devamBtn.hidden = !k;
+    if (k) devamBtn.firstChild.nodeValue = "Devam Et (Dalga " + k.w + ")";
+  }
+  function devam() {
+    var k = kayitOku(); if (!k) { basla(1); return; }
+    basla(1); var z = S[1];
+    wv = k.w - 1; z.g = k.g; z.lv = k.lv; z.mines = k.mines; z.ml = k.ml; z.hp = Math.min(mhp(1), Math.max(k.hp, 1)); kills = k.kills; wt = 90;
+    mesaj = "DALGA " + k.w + " BAŞLIYOR"; msayac = 90; yaz(); paneliGuncelle(true);
+  }
   var menu = Px.menu({ baslik: "KALE SAVAŞI", not: "Kaleni savun, madenlerle büyü, askerlerle saldır", secenekler: [
     { ad: "1 Oyuncu", alt: "Sonsuz dalgalar · bosslar · sıralamaya yazılır", fn: function () { basla(1); } },
     { ad: "2 Oyuncu", alt: "İki kale karşı karşıya · sıralamasız", fn: function () { basla(2); } }
-  ] });
+  ], ek: function (m) {
+    devamBtn = document.createElement("button"); devamBtn.type = "button"; devamBtn.className = "btn buyuk yesil"; devamBtn.hidden = true;
+    devamBtn.appendChild(document.createTextNode("Devam Et")); var kk = document.createElement("small"); kk.textContent = "Kaldığın dalgadan sürdür"; devamBtn.appendChild(kk);
+    devamBtn.addEventListener("click", function () { Px.ses("tik"); m.hidden = true; devam(); });
+    m.insertBefore(devamBtn, m.querySelector(".btn")); devamGuncelle();
+  } });
   var sur = null;
   C.addEventListener("pointerdown", function (e) {
     if (mod !== 1 || !calis) return; var r = C.getBoundingClientRect(), ly = (e.clientY - r.top) / r.height * 150, lx = (e.clientX - r.left) / r.width * VW;
@@ -443,7 +469,7 @@
   C.addEventListener("pointermove", function (e) { if (sur === null) return; var r = C.getBoundingClientRect(); cam = Px.sinir(cam - (e.clientX - sur) * VW / r.width, 0, WW - VW); sur = e.clientX; });
   C.addEventListener("pointerup", function () { sur = null; }); C.addEventListener("pointercancel", function () { sur = null; });
   document.getElementById("tekrar").addEventListener("click", function () { basla(son); });
-  document.getElementById("menuBtn").addEventListener("click", function () { calis = false; menu.ac(); });
+  document.getElementById("menuBtn").addEventListener("click", function () { calis = false; devamGuncelle(); menu.ac(); });
   // başlangıç görünümü (menü arkasında)
   mod = 1; S = [mkS(0), mkS(800)]; U = []; P = []; F = []; wv = 0; kills = 0; cam = WW - VW; over = 0; wq = [];
   window.__kale = { git: function (n) { wv = n - 1; wq = []; wt = 1; S[1].g += 9999; S[1].lv = Math.max(S[1].lv, 5); }, boss: function (i, px) { var u = yapU(0, 0, 1, i); u.x = px; }, S: function () { return S; }, U: function () { return U; } };
