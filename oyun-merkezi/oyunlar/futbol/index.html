@@ -328,7 +328,7 @@
     skor[t]++; yazBaslik(); mesaj = "GOL! " + (t === 0 ? "KIRMIZI" : "MAVİ") + (top.kafa ? " (KAFA)" : top.rv ? " (RÖVEŞATA)" : ""); msayac = 130; sars = 14; Px.ses("gol");
     top.gol = 1; top.sahip = null; top.vx = top.vy = 0; top.z = top.vz = 0; top.x = Px.sinir(top.x, PL - 4, PR + 4);
     for (var i = 0; i < 40; i++) parc.push({ x: t === 0 ? PR + 4 : PL - 4, y: CY, vx: Px.rastgele(-2.5, 2.5), vy: Px.rastgele(-3, 1), o: 50, c: ["#ffcd75", "#fff", "#e0344f", "#41a6f6", "#a7f070"][i % 5] });
-    pl.forEach(function (p) { p.vx = p.vy = 0; });
+    pl.forEach(function (p) { p.vx = p.vy = 0; p.rvt = 0; });
     if (altin) { bitir(); return; }
     gw = 120; rpBekle = tekrarAcik;
   }
