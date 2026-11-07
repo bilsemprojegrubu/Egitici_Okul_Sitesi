@@ -11,7 +11,7 @@
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
-  <p class="ipucu">Uzaylı hep zıplar! ◀ ▶ / A D ile yön ver (dokunmatikte ekranın sol/sağ yarısına bas). Gri platformlar sağlam, mavi olanlar kayar, kahverengi göktaşı seni bir kere zıplatır sonra parçalanır. Yay ve roket seni uçurur. Yeşil canavara üstten bas!</p>
+  <p class="ipucu">Astronot hep zıplar! ◀ ▶ / A D ile yön ver (dokunmatikte ekranın sol/sağ yarısına bas). Gri platformlar sağlam, mavi olanlar kayar, kahverengi göktaşı seni bir kere zıplatır sonra parçalanır. Yay ve roket seni uçurur. Yeşil uzaylı canavara üstten bas!</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Düştün!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -28,14 +28,14 @@
   var SINIR = 20000, ESIK = 100;
   var K = "#0d0e1a";
   var OYUNCU = Px.sprite([
-    "..y......y..", "...k....k...", "..kkkkkkkk..", ".kcccccccck.", "kckkkcckkkck", "kckwkcckwkck",
-    ".kcccckccck.", "..kcccccck..", "..kddddddk..", "..kckkkkck..", "..kk....kk..", ".kkk....kkk."],
-    { k: K, c: "#c58cf0", d: "#8a5fc0", w: "#f4f4f4", y: "#ffcd75" }, 1);
+    "...kkkkkk...", "..kwwwwwwk..", ".kwkkkkkkwk.", ".kwkvvhvkwk.", ".kwkvvvvkwk.", "..kwkkkkwk..",
+    ".kkwwoowwkk.", "kgkwwwwwwkgk", "kgkwwwwwwkgk", ".kkwwkkwwkk.", "..kwwk.kwwk.", "..kokk.kkok."],
+    { k: K, w: "#f4f4f4", g: "#94a0b8", v: "#2a5fb0", h: "#a8e8ff", o: "#ef7d57" }, 1);
   var OYUNCU_S = Px.cevir(OYUNCU);
   var CANAVAR = Px.sprite([
-    "..k......k..", "...k....k...", "..kkkkkkkk..", ".kppppppppk.", "kppwkppwkppk", "kppppppppppk",
+    "..y......y..", "..k......k..", "..kkkkkkkk..", ".kpdppppdpk.", "kpwwkppkwwpk", "kppppppppppk",
     "kpkkkkkkkkpk", ".kpwpwpwpk..", "..kkkkkkkk..", ".k..k..k..k."],
-    { k: K, p: "#38b764", w: "#f4f4f4" }, 1);
+    { k: K, p: "#38b764", d: "#2a9d58", y: "#c8ff70", w: "#f4f4f4" }, 1);
   var ROKET = Px.sprite([
     "..kk..", ".krrk.", ".kwwk.", ".kwbk.", ".kwwk.", "kkwwkk", "kr.kkr", "ky..yk"],
     { k: K, r: "#ef4d5e", w: "#f4f4f4", b: "#41a6f6", y: "#ffcd75" }, 1);
