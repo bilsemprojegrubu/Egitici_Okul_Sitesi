@@ -68,7 +68,10 @@
     if (p.k === "O") return;
     var m = p.k === "I" ? 3 : 2;
     var yb = p.b.map(function (c) { return [m - c[1], c[0]]; });
-    [0, -1, 1, -2, 2].some(function (k) { if (!cakisir(yb, p.x + k, p.y)) { p.b = yb; p.x += k; Px.ses("don"); return true; } return false; });
+    // önce yana, sonra yukarı kaydırarak dene (zemine yakın taşlar da dönebilsin)
+    [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [0, -1], [-1, -1], [1, -1], [0, -2], [-1, -2], [1, -2]].some(function (k) {
+      if (!cakisir(yb, p.x + k[0], p.y + k[1])) { p.b = yb; p.x += k[0]; p.y += k[1]; Px.ses("don"); return true; } return false;
+    });
   }
   function git(dx) { if (!cakisir(p.b, p.x + dx, p.y)) { p.x += dx; Px.ses("tik"); } }
   function asagi() {

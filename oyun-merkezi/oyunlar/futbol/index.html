@@ -268,8 +268,8 @@
   function basla(m, z) {
     mod = m; zor = z;
     document.getElementById("ipucu").textContent = m === 1
-      ? "Hareket: WASD / ok tuşları. ŞUT: F veya boşluk (basılı tut = güçlü). PAS: G veya X." + (elle ? " Kaleci: Q/E ya da çubuk." : "")
-      : "Kırmızı: WASD, F=şut, G=pas" + (elle ? ", Q/E kaleci" : "") + " · Mavi: oklar, Enter=şut, Sağ Shift=pas" + (elle ? ", O/L kaleci" : "") + ". (Sıralamaya yazılmaz)";
+      ? "★ ŞUT TUŞU: F veya BOŞLUK (basılı tut = daha güçlü, bırakınca vurur) · PAS: G veya X · Hareket: WASD / ok tuşları." + (elle ? " Kaleci: Q/E ya da çubuk." : "")
+      : "★ Kırmızı: WASD yürü, F = ŞUT (basılı tut = güçlü), G = pas" + (elle ? ", Q/E kaleci" : "") + " · Mavi: oklar yürü, ENTER = ŞUT, Sağ Shift = pas" + (elle ? ", O/L kaleci" : "") + ". (Sıralamaya yazılmaz)";
     kurPad(); yeni();
   }
   var son = { m: 1, z: 1 };

@@ -49,7 +49,7 @@ canvas.cv{width:100%;max-width:var(--mw,720px)}
 body.tam{justify-content:flex-start}
 body.tam .ust{padding-top:4px;padding-bottom:2px}
 body.tam .ipucu{display:none}
-body.tam canvas.cv{width:auto;max-width:100%;max-height:calc(100vh - 118px);margin:0 auto}
+body.tam canvas.cv{max-width:none;margin:0 auto}
 body.tam .sahne{max-width:none}
 body.tam .ust{max-width:none}
 @media (max-width:520px){.ust h1{font-size:1rem}}

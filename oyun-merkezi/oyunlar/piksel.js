@@ -170,8 +170,30 @@
     var a = tamMi();
     if (a) document.body.classList.add("tam"); else document.body.classList.remove("tam");
     if (tamBtn) tamBtn.style.backgroundImage = "url(" + ikonYap(a ? "kucul" : "tam") + ")";
+    sigdir();
     g.dispatchEvent(new Event("resize"));
   }
+  // Tam ekranda oyun alanını boş yer kalmayacak şekilde büyüt (tuval: genişlik, diğerleri: zoom)
+  function sigdir() {
+    var tam = tamMi(), sahne = document.querySelector(".sahne"), cv = document.querySelectorAll("canvas.cv");
+    for (var i = 0; i < cv.length; i++) cv[i].style.width = "";
+    if (sahne) sahne.style.zoom = "";
+    if (!tam || !sahne) return;
+    var ust = document.querySelector(".ust"), uh = ust ? ust.getBoundingClientRect().height : 0;
+    if (cv.length === 1) {
+      var c = cv[0]; c.style.width = "1px";
+      var diger = sahne.getBoundingClientRect().height - c.getBoundingClientRect().height;
+      var yuk = g.innerHeight - uh - diger - 12, en = g.innerWidth - 24;
+      var w = Math.max(100, Math.min(en, yuk * c.width / c.height));
+      c.style.width = Math.floor(w) + "px";
+    } else if (!cv.length) {
+      var wm = 1, ch = sahne.children;
+      for (var j = 0; j < ch.length; j++) { var cr = ch[j].getBoundingClientRect(); if (cr.width > wm && getComputedStyle(ch[j]).position !== "absolute") wm = cr.width; }
+      var z = Math.min((g.innerWidth - 24) / wm, (g.innerHeight - uh - 16) / sahne.getBoundingClientRect().height);
+      z = Math.max(1, Math.min(3, z)); sahne.style.zoom = z;
+    }
+  }
+  g.addEventListener("resize", function () { if (tamMi()) sigdir(); });
   Px.tamEkran = function () {
     try {
       var el = document.documentElement;
