@@ -113,8 +113,8 @@
     }
     for (var k = pz.length - 1; k >= 1; k--) {
       var a = pz[k], w = Math.sin(zm / 170 - k * 0.8);
-      var bo = 7 + (w > 0.55 ? 1 : 0) - (w < -0.55 ? 1 : 0);
-      if (k === pz.length - 1) bo = Math.min(bo, 6);
+      var bo = 9 + (w > 0.55 ? 1 : 0) - (w < -0.55 ? 1 : 0);
+      if (k === pz.length - 1) bo = Math.min(bo, 7);
       var acik = w > 0.55;
       if (k % 2) kup(a.x, a.y, bo, acik ? "#d4f78a" : "#6fe06a", "#2f9a48", "#0f3f22");
       else kup(a.x, a.y, bo, acik ? "#b6f070" : "#1f7a3a", "#165c2c", "#0a2e16");
@@ -123,7 +123,7 @@
     var h = pz[0], d = yon || { x: 1, y: 0 };
     var px = -d.y, py = d.x;
     var hz = Math.round(Math.sin(zm / 140));
-    kup(h.x, h.y, 9 + (hz > 0 ? 0 : 0), "#a7f070", "#38b764", "#14532d");
+    kup(h.x, h.y, 10, "#a7f070", "#38b764", "#14532d");
     var gz = (Math.floor(zm / 200) % 12 === 0);
     x.fillStyle = "#fff"; x.fillRect(h.x + d.x * 3 + px * 5 - 2, h.y + d.y * 3 + py * 5 - 2, 4, gz ? 2 : 4); x.fillRect(h.x + d.x * 3 - px * 5 - 2, h.y + d.y * 3 - py * 5 - 2, 4, gz ? 2 : 4);
     x.fillStyle = "#0d0e1a"; x.fillRect(h.x + d.x * 4 + px * 5 - 1, h.y + d.y * 4 + py * 5 - 1, 2, 2); x.fillRect(h.x + d.x * 4 - px * 5 - 1, h.y + d.y * 4 - py * 5 - 1, 2, 2);
