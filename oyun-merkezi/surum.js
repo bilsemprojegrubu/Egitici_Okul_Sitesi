@@ -1,2 +1,2 @@
-// Sürüm numarası (tek yer). Her yayında burayı ve README.md'deki "Sürüm geçmişi" tablosunu güncelle.
-self.OYUN_SURUM = "1.9";
+// Sürüm numarası. Her yayında burayı, sw.js içindeki SURUM değerini ve README.md sürüm geçmişini birlikte güncelle.
+self.OYUN_SURUM = "1.9.1";

@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.1** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -85,6 +85,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 
 | Sürüm | Neler değişti |
 |---|---|
+| 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
 | 1.8 | Uygulama olarak yükleme (PWA): ana ekranda "Uygulama olarak yükle" düğmesi, çevrimdışı çalışma, uygulama simgesi |
 | 1.7 | Arayüz boyutu artık ayar çubuğu: %50 - %150 arası (büyütme de var), %100'e sıfırla düğmesi |
@@ -98,4 +99,4 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 
 ## Uygulama olarak yükleme
 
-Ana ekrandaki **📲 Uygulama olarak yükle** düğmesi (Chrome/Edge/Android) siteyi telefona, tablete ya da bilgisayara uygulama gibi kurar; bir kez açıldıktan sonra internetsiz de çalışır. iPhone/iPad'de: Paylaş → "Ana Ekrana Ekle". Sürüm numarası (`surum.js`) değişince önbellek kendiliğinden yenilenir. Yeni dosya eklenirse `sw.js` içindeki `DOSYALAR` listesine de ekle.
+Ana ekrandaki **📲 Uygulama olarak yükle** düğmesi (Chrome/Edge/Android) siteyi telefona, tablete ya da bilgisayara uygulama gibi kurar; bir kez açıldıktan sonra internetsiz de çalışır. iPhone/iPad'de: Paylaş → "Ana Ekrana Ekle". Sürüm numarası (`surum.js`) değişince önbellek kendiliğinden yenilenir. Sürüm değişince `surum.js` ile `sw.js` içindeki `SURUM` değerini birlikte değiştir. Yeni dosya eklenirse `sw.js` içindeki `DOSYALAR` listesine de ekle.

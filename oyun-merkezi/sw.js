@@ -1,6 +1,7 @@
 // Çevrimdışı çalışma + uygulama olarak yükleme. Sürüm numarası değişince önbellek yenilenir.
-importScripts("surum.js");
-var AD = "oyun-merkezi-" + self.OYUN_SURUM;
+// DİKKAT: sürüm değişince surum.js ile BİRLİKTE burayı da değiştir (tarayıcı güncellemeyi bu dosyadaki değişiklikten anlar).
+var SURUM = "1.9.1";
+var AD = "oyun-merkezi-" + SURUM;
 var DOSYALAR = [
   "config.js",
   "ikon/ikon-192.png",
@@ -42,7 +43,7 @@ var DOSYALAR = [
   "./"
 ];
 self.addEventListener("install", function (e) {
-  e.waitUntil(caches.open(AD).then(function (c) { return c.addAll(DOSYALAR); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(AD).then(function (c) { return c.addAll(DOSYALAR.map(function (d) { return new Request(d, { cache: "reload" }); })); }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener("activate", function (e) {
   e.waitUntil(caches.keys().then(function (k) {
@@ -55,7 +56,7 @@ self.addEventListener("fetch", function (e) {
   if (r.method !== "GET" || new URL(r.url).origin !== self.location.origin) return;
   e.respondWith(caches.open(AD).then(function (c) {
     return c.match(r, { ignoreSearch: true }).then(function (h) {
-      var ag = fetch(r).then(function (y) { if (y && y.ok) c.put(r, y.clone()); return y; }).catch(function () { return h; });
+      var ag = fetch(r, { cache: "no-cache" }).then(function (y) { if (y && y.ok) c.put(r, y.clone()); return y; }).catch(function () { return h; });
       return h || ag;
     });
   }));
