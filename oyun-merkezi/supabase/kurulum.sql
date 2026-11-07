@@ -14,7 +14,8 @@ create table if not exists public.skorlar (
   olusturma timestamptz not null default now(),
   constraint oyun_gecerli check (oyun in (
     'bilgi-kalesi','yilan','2048','hafiza','balon','kelime',
-    'futbol','platform','tetris','kus','basket','voleybol'))
+    'futbol','platform','tetris','kus','basket','voleybol',
+    'tugla','kostebek','uzay'))
 );
 
 create index if not exists skorlar_oyun_puan on public.skorlar (oyun, puan desc);
@@ -52,6 +53,9 @@ as $$
     when 'kus'          then 5000
     when 'basket'       then 1000
     when 'voleybol'     then 1000
+    when 'tugla'        then 20000
+    when 'kostebek'     then 1000
+    when 'uzay'         then 50000
     else 0
   end
 $$;

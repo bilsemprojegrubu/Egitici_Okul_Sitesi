@@ -59,6 +59,12 @@ var IK = {
   basket: { p: { o: "#ef7d57", l: "#ffcd75", k: K, w: "#f4f4f4", r: "#b13e53" }, s: [
     "kkkkkkkkkkkk", "kwwwwwwwwwwk", "kwwwrrrrwwwk", "kkkkkrrkkkkk", ".k.k.kk.k.k.", "..k.k..k.k..",
     "....kkkk....", "...kookook..", "..koookooko.", "..kkkookkko.", "..koookoook.", "...kkkkkk..."] },
+  tugla: { p: { k: K, r: "#ef4d5e", o: "#ffcd75", g: "#38b764", b: "#41a6f6", w: "#f4f4f4" }, s: [
+    "kkkkkkkkkkkk", "krrkrrkrrkrr", "kkkkkkkkkkkk", "kookookookoo", "kkkkkkkkkkkk", "kggkggkggkgg", "kkkkkkkkkkkk", "............", ".....ww.....", ".....ww.....", "............", "bbbbbbbbbbbb"] },
+  kostebek: { p: { k: K, b: "#a05b53", w: "#f4f4f4", p: "#ef7d57", d: "#3b2a1e", g: "#5a9e3a" }, s: [
+    "............", "...kkkkkk...", "..kbbbbbbk..", ".kbwkbbkwbk.", ".kbkkbbkkbk.", ".kbbbppbbbk.", ".kbbbbbbbbk.", "kkkkkkkkkkkk", "kddddddddddk", "kddddddddddk", ".kkkkkkkkkk.", "gggggggggggg"] },
+  uzay: { p: { k: K, b: "#41a6f6", w: "#f4f4f4", r: "#ef4d5e", y: "#ffcd75", g: "#38b764" }, s: [
+    "..g......g..", "...gkggkg...", "..gwgggwgg..", "...gggggg...", "............", ".....kk.....", ".....bb.....", "....kbwbk...", "...kbbwbbk..", "..kbrbbbrbk.", ".kbbkbbkbbk.", "....y..y...."] },
   voleybol: { p: { w: "#f4f4f4", b: "#41a6f6", y: "#ffcd75", k: K, g: "#94b0c2" }, s: [
     "............", "....kkkk....", "..kkwbbwkk..", ".kwwwbbwwwk.", ".kwbbbbbbwk.", "kwbbwwwwbbwk",
     "kbbwwkkwwbbk", ".kbwkyywkbk.", ".kwwkyykwwk.", "..kkwwwwkk..", "....kkkk....", "gggggggggggg"] }
@@ -75,7 +81,10 @@ var OYUNLAR = [
   ["tetris", "Tetris", "Satırları tamamla", "tetris", ""],
   ["kus", "Kuş", "Borulardan geç", "kus", ""],
   ["basket", "Basket", "2'ye 2 basket maçı", "basket", "1-2 kişi"],
-  ["voleybol", "Voleybol", "2'ye 2 voleybol maçı", "voleybol", "1-2 kişi"]
+  ["voleybol", "Voleybol", "2'ye 2 voleybol maçı", "voleybol", "1-2 kişi"],
+  ["tugla", "Tuğla Kır", "Topu düşürmeden kır", "tugla", ""],
+  ["kostebek", "Köstebek Vur", "Çıkanları yakala", "kostebek", ""],
+  ["uzay", "Uzay Savaşı", "Uzaylıları vur", "uzay", ""]
 ];
 (function () {
   try {

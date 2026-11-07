@@ -17,6 +17,9 @@
 | Tetris | Satır puanı |
 | Kuş | Geçilen boru |
 | Basket | 90 sn'lik maçta attığın sayı (2'ye 2) |
+| Tuğla Kır | Kırdığın tuğlalardan toplanan puan |
+| Köstebek Vur | 45 sn'de vurduğun köstebeklerin puanı |
+| Uzay Savaşı | Vurduğun uzaylılardan toplanan puan |
 | Voleybol (2'ye 2) | Rakip 5 sayı alana kadar aldığın sayı |
 
 Tüm arayüz piksel sanatı tarzındadır (emoji yok, sprite'lar kodla çizilir); her oyunda ses açma/kapama ve sağ üstte tam ekran düğmesi vardır. **Sıralamaya yalnızca tek kişilik modlar yazılır**; 2 kişilik maçlar sıralamaya gitmez.
