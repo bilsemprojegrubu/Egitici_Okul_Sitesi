@@ -16,7 +16,7 @@
   <div id="bitti" class="kaplama" hidden>
     <h2>Kaza yaptın!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
-    <button class="btn" id="tekrar">Tekrar oyna</button>
+    <button class="btn" id="tekrar">Tekrar oyna</button> <button class="btn" id="modBtn" type="button">Mod değiştir</button>
   </div>
 </main>
 <script src="../../config.js"></script>
@@ -62,8 +62,12 @@
     "...kkkk...", "..kggggk..", ".kgGgggGk.", "kggggGgggk", "kgGggggggk", ".kgggGggk.", "..kkkkkk..", "....kbk...", "....kbk..."],
     { k: K, g: "#38b764", G: "#a7f070", b: "#a05b53" }, 1);
 
-  var tus = { u: 0, d: 0 }, o, ol, v, mesafe, jeton, puan, yakit, calis, geri, patla, nesne, agac, yazi, par, ser, hedef, sars, dist, bolge, ptrSon, sure;
-  try { document.getElementById("rekor").textContent = Skor.rekor("araba"); } catch (e) { }
+  var engelli = true, modSecildi = false, tus = { u: 0, d: 0 }, o, ol, v, mesafe, jeton, puan, yakit, calis, geri, patla, nesne, agac, yazi, par, ser, hedef, sars, dist, bolge, ptrSon, sure;
+  // Engelsiz mod sıralamaya girmez; rekoru bu cihazda ayrı tutulur
+  var REKOR_E = "px_araba_engelsiz_rekor";
+  function rekorOku() { try { return parseInt(localStorage.getItem(REKOR_E), 10) || 0; } catch (e) { return 0; } }
+  function rekorGoster() { var el = document.getElementById("rekor"); try { el.textContent = engelli ? Skor.rekor("araba") : rekorOku(); } catch (e) { } }
+  rekorGoster();
   function ya() { document.getElementById("puan").textContent = puan; document.getElementById("jeton").textContent = jeton; }
   function yeni() {
     ser = 1; hedef = 1; o = { x: MER[1], y: OY0, tilt: 0 }; tus.u = tus.d = 0;
@@ -74,7 +78,7 @@
     try { if (document.activeElement && document.activeElement.tagName === "INPUT") document.activeElement.blur(); } catch (e) { }
   }
   // Geri sayımı beklemek istemeyen herhangi bir tuşa basar ya da ekrana dokunur
-  function atla() { if (geri > 0 && !document.getElementById("baslaKapi")) { geri = 0; calis = true; Px.ses("puan"); } }
+  function atla() { if (modSecildi && geri > 0 && !document.getElementById("baslaKapi")) { geri = 0; calis = true; Px.ses("puan"); } }
   document.addEventListener("pointerdown", atla, true);
   document.addEventListener("keydown", function (e) { if (["Shift", "Control", "Alt", "Meta", "CapsLock", "Tab"].indexOf(e.key) < 0) atla(); }, true);
   function lane(d) { var n = Px.sinir(hedef + d, 0, 3); if (n !== hedef) { hedef = n; Px.ses("tik"); } }
@@ -86,7 +90,8 @@
     var L = n === 2 ? cift[Px.tamsayi(0, 3)] : [Px.tamsayi(0, 3)];
     L.forEach(function (ln) {
       var q = Math.random(), t;
-      if (q < .30) t = "araba"; else if (q < .50) t = "yavas"; else if (q < .60 + d * .1) t = "kamyon";
+      if (!engelli) { t = q < .42 ? "araba" : q < .78 ? "yavas" : "kamyon"; } // dubasız, çukursuz
+      else if (q < .30) t = "araba"; else if (q < .50) t = "yavas"; else if (q < .60 + d * .1) t = "kamyon";
       else if (q < .82) t = "koni"; else t = "cukur";
       var ob = { ln: ln, x: MER[ln], y: -40, t: t };
       if (t === "araba") { ob.s = DUSMAN[Px.tamsayi(0, 3)]; ob.ev = 1.2 + d * 1.2; ob.w = 14; ob.h = 22; }
@@ -113,7 +118,15 @@
     par.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.o--; }); par = par.filter(function (q) { return q.o > 0; });
     yazi.forEach(function (t) { t.y -= .6; t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
     if (sars) sars--;
-    if (patla) { patla++; if (patla === 50) { Skor.oyunBitti("araba", puan); } return; }
+    if (patla) { patla++; if (patla === 50) {
+        if (engelli) Skor.oyunBitti("araba", puan);
+        else {
+          var yeniRekor = puan > rekorOku();
+          if (yeniRekor) { try { localStorage.setItem(REKOR_E, String(puan)); } catch (e) { } rekorGoster(); }
+          Px.sonuc2("Engelsiz mod · Puan: " + puan + (yeniRekor ? " · YENİ REKOR!" : ""));
+        }
+      } return; }
+    if (!modSecildi) return;
     if (geri > 0) { geri--; if (geri % 60 === 59) Px.ses("tik"); if (geri === 0) { calis = true; Px.ses("puan"); } }
     var h = geri > 0 ? 1.2 : v;
     // şerit değiştirme (tuş basma anı) ve akıcı kayma
@@ -235,6 +248,11 @@
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (n) { el.addEventListener(n, function () { tus[p[1]] = 0; }); });
   });
   document.getElementById("tekrar").addEventListener("click", yeni);
+  var menu = Px.menu({ baslik: "ARABA KAÇIŞ", not: "Hangi yolda yarışmak istersin?", secenekler: [
+    { ad: "Engelli", alt: "Dubalar ve çukurlar var · sıralamaya girer", fn: function () { engelli = true; modSecildi = true; rekorGoster(); yeni(); } },
+    { ad: "Engelsiz", alt: "Dubasız, çukursuz, sadece trafik · sıralamaya girmez", fn: function () { engelli = false; modSecildi = true; rekorGoster(); yeni(); } }
+  ] });
+  document.getElementById("modBtn").addEventListener("click", function () { modSecildi = false; yeni(); menu.ac(); });
   yeni(); Px.dongu(guncelle, ciz);
 })();
 </script>
