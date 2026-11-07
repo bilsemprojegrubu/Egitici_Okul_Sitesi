@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.6** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.7** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -85,6 +85,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 
 | Sürüm | Neler değişti |
 |---|---|
+| 1.7 | Arayüz boyutu artık ayar çubuğu: %50 - %150 arası (büyütme de var), %100'e sıfırla düğmesi |
 | 1.6 | Ana ekranda sürüm numarası; README'de sürüm geçmişi |
 | 1.5 | Araba: "HAZIRLAN 3-2-1" geri sayımı tuşa basınca / dokununca atlanır (iki satırlı yazı) |
 | 1.4 | Tam ekrandan çıkınca oyunun büyük kalması düzeltildi; sağ üstte UI boyutu düğmesi (%100 / %90 / %75 / %60); "herhangi bir tuşa bas ya da dokun" ile başlama |
