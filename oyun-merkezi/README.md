@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.42** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.48** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -125,6 +125,12 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.40 | Kale Savaşı: kısa menzilli askerler ve golem, mancınık durunca durmaz; menzillerine gelene kadar ilerler |
 | 1.9.41 | Basketbol: yakına girip zıplayarak top çalınır, nişan çizgisi yalnızca şut çekerken görünür, güç daha yavaş dolar |
 | 1.9.42 | Basketbol: oyuncular birbirinin üstünden atlayabilir; top çalma düzeltildi (top eldeyken hiç çalışmıyordu) |
+| 1.9.43 | Basketbol: SMAÇ (Q / P) ve TOP ÇAL (E / I) tuşları + ekran butonları, sayıdan sonra oyuncular yerinde kalır |
+| 1.9.44 | Futbol: oyun biraz yavaşladı, golden sonra yavaş çekim GOL TEKRARI (bir tuşla atlanır, menüden açılıp kapanır) |
+| 1.9.45 | Futbol: pas yürürken de verilir; JOYSTICK/gamepad desteği (çubuk/yön tuşu + düğmeler; Futbol, Basket, Voleybol, Pong 2 kolla; diğer oyunlar ok tuşları + A=Boşluk, Start=Boşluk) |
+| 1.9.46 | Futbol: yavaşlatma yüzünden kaçan tek basışlı tuşlar (havadan pas, kafa, röveşata, pas) düzeltildi |
+| 1.9.47 | Futbol: röveşata animasyonu (oyuncu havaya sıçrayıp takla atar) |
+| 1.9.48 | Futbol: ekranda dokunmatik JOYSTICK (yön butonları yerine) |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |

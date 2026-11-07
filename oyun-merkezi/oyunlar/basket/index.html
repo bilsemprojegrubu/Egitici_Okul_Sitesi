@@ -61,9 +61,9 @@
   }
   function yaz() { document.getElementById("puan").textContent = skor[0]; }
   function keys(h) {
-    if (h === 1) return { l: ["ArrowLeft"], r: ["ArrowRight"], z: ["ArrowUp"], a: ["Enter"] };
-    if (mod === 1) return { l: ["KeyA", "ArrowLeft"], r: ["KeyD", "ArrowRight"], z: ["Space", "KeyW", "ArrowUp"], a: ["KeyF"] };
-    return { l: ["KeyA"], r: ["KeyD"], z: ["KeyW"], a: ["KeyF"] };
+    if (h === 1) return { l: ["ArrowLeft"], r: ["ArrowRight"], z: ["ArrowUp"], a: ["Enter"], s: ["KeyP"], c: ["KeyI"] };
+    if (mod === 1) return { l: ["KeyA", "ArrowLeft"], r: ["KeyD", "ArrowRight"], z: ["Space", "KeyW", "ArrowUp"], a: ["KeyF"], s: ["KeyQ", "KeyP"], c: ["KeyE", "KeyI"] };
+    return { l: ["KeyA"], r: ["KeyD"], z: ["KeyW"], a: ["KeyF"], s: ["KeyQ"], c: ["KeyE"] };
   }
   function bas(h, ad) { var a = keys(h)[ad]; for (var i = 0; i < a.length; i++) if (Px.k[a[i]]) return true; return false; }
   function el(p) { // el konumu: kol ayaktan (p.x, p.y) dönen gövdeyle birlikte p.ang kadar döner
@@ -128,11 +128,37 @@
     if (tutan) return h.sol ? -1 : 1;
     var dx = top.x - q.x; return Math.abs(dx) < 8 ? 0 : (dx > 0 ? 1 : -1);
   }
+  var pS = [0, 0], pC = [0, 0];
+  function smac(tak, h) { // SMAÇ: topu tutan oyuncu potaya doğru sıçrar, elini çembere ulaştırırsa topu içeri bastırır
+    var hv = tak.filter(function (q) { return q.hold; })[0]; if (!hv) return;
+    hv.dunk = 1; hv.chg = 0; hv.auto = false;
+    if (hv.yer) zipla(hv, (h.sol ? -1 : 1) * 1.1, 1);
+  }
+  function calAl(tak) { // TOP ÇALMA: kolu savurur; rakipte top ve elimiz yeterince yakınsa top bize geçer
+    tak.forEach(function (p) {
+      if (p.stl > 0) return; p.stl = 36; p.swp = 8;
+      if (top.h && top.h.t !== p.t && yakinlik(p) < V.r + 26) { top.h.hold = false; top.h.cd = 30; top.h.dunk = 0; top.h = p; p.hold = true; top.pro = 40; Px.ses("al"); }
+    });
+  }
+  function dunkGuncelle(p) {
+    if (!p.dunk) return;
+    if (!p.hold || (p.yer && p.vy >= 0)) { p.dunk = 0; return; }
+    var h = hoop(p.t), cx = (h.ix + h.tipx) / 2, e = el(p);
+    p.vx = Px.sinir(p.vx + (cx > p.x ? .12 : -.12), -1.2, 1.2);
+    if (Math.abs(e.x - cx) < 14 && e.y < h.y + 6) {
+      p.hold = false; p.dunk = 0; p.cd = 24; top.h = null; top.x = cx; top.y = h.y - 5; top.vx = 0; top.vy = 2.6; top.cd = 20;
+      var a = ag[p.t]; a.sv += 6; a.rv += 5; Px.ses("sut");
+    }
+  }
   function insan(hi) { // takımın İKİ oyuncusu birlikte, aynı tuşlarla yönetilir
     var tak = pl.filter(function (q) { return q.t === hi; }), h = hoop(hi);
     var d = tek ? 0 : (bas(hi, "r") ? 1 : 0) - (bas(hi, "l") ? 1 : 0);
     var dn = bas(hi, "z") || (tek && (bas(hi, "a") || tHeld[hi]));
     var ad = bas(hi, "a"), basA = ad && !prevA[hi]; prevA[hi] = ad;
+    var sm = bas(hi, "s"), ck = bas(hi, "c");
+    if (sm && !pS[hi]) smac(tak, h);
+    if (ck && !pC[hi]) calAl(tak);
+    pS[hi] = sm; pC[hi] = ck;
     var basil = dn && !prevDn[hi], birak = !dn && prevDn[hi]; prevDn[hi] = dn;
     if (!tek) {
       if (basil) { var hv = tak.filter(function (q) { return q.hold && !q.yer; })[0]; if (hv) { atGuc(hv); ign[hi] = 1; } }
@@ -166,6 +192,7 @@
     p.ang = Px.sinir((p.ang || 0) + (hedefA - (p.ang || 0)) * .25, -1.1, 1.1);
     if (!p.yer) { p.av = 0; p.ang += ((p.ja || 0) - p.ang) * .18; } // zıplarken basılan yöne yatık kalır, havada değişmez // havada sallanma yok: gittiği yöne doğru yatar
     p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) ;
+    if (p.stl > 0) p.stl--; if (p.swp > 0) { p.sw += Math.sin(p.swp / 8 * Math.PI) * 90; p.swp--; }
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = 70; p.th += (hedef - p.th) * .3;
     if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
     if (p.cd) p.cd--;
@@ -238,9 +265,13 @@
     faz = 2; kut = KUTLAMA; msayac = KUTLAMA + 10; top.vx *= .3;
     if (altin) bitir();
   }
+  function topuBirak() { // sayıdan sonra oyuncular yerinde kalır, top ortadan bırakılır
+    top = { x: W / 2, y: 30, vx: 0, vy: 0, h: null, cd: 0, d: 0 };
+    pl.forEach(function (p) { p.hold = false; p.cd = 0; p.dunk = 0; p.chg = 0; p.auto = false; p.stl = 0; });
+  }
   function kutlamaBitti() { // kutlama sonrası: yeni değişiklik seç, pozisyonları sıfırla, geri sayım
     var vi = Px.tamsayi(1, VARYANT.length - 1); V = varyant(vi); Px.ses("boss");
-    if (V.kar) kar = []; dizil(); top.y = 30; agSifirla(); sonSayi = null; sayimBasla();
+    if (V.kar) kar = []; topuBirak(); agSifirla(); sonSayi = null; sayimBasla();
   }
   function bitir() {
     if (bitis) return; bitis = true;
@@ -279,7 +310,7 @@
     if (bitis) return;
     insan(0); if (mod === 2) insan(1); else pl.forEach(function (p) { if (p.t === 1) botGuncelle(p, zor === 0 ? .42 : (zor === 2 ? .8 : .58)); });
     pl.forEach(function (p) { if (p.auto && p.hold && !p.yer && p.vy > -.8) { atGuc(p); p.auto = false; } });
-    pl.forEach(oyuncuFizik); ayrisma(); // karakterler iç içe geçmez, birbirini iter
+    pl.forEach(dunkGuncelle); pl.forEach(oyuncuFizik); ayrisma(); // karakterler iç içe geçmez, birbirini iter
     topFizik();
   }
   function daire(cx, cy, r, renk) { x.fillStyle = renk; for (var j = -r; j <= r; j++) { var w = Math.floor(Math.sqrt(r * r - j * j)); x.fillRect(Math.round(cx - w), Math.round(cy + j), w * 2 + 1, 1); } }
@@ -434,6 +465,7 @@
       if (!tek) dz.push({ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] });
       dz.push({ t: tek ? "BASILI TUT" : "ZIPLA", k: K.z[0], a: "Zıpla" });
       if (!tek) dz.push({ t: "ŞUT", k: K.a[0] });
+      dz.push({ t: "SMAÇ", k: K.s[0] }, { t: "ÇAL", k: K.c[0] });
       Px.pad(d, dz);
     });
   }
@@ -444,7 +476,7 @@
       ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır."
         : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): bas = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
       : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). İki adam birlikte hareket eder."
-        : "Kırmızı: A D yürü, W zıpla (havada tekrar W veya F = ŞUT) · Mavi: ← → yürü, ↑ zıpla (havada tekrar ↑ veya Enter = ŞUT). Basılı tutup bırakmak = daha güçlü zıplama.")) + ek;
+        : "Kırmızı: A D yürü, W zıpla (havada tekrar W veya F = ŞUT) · Mavi: ← → yürü, ↑ zıpla (havada tekrar ↑ veya Enter = ŞUT). Basılı tutup bırakmak = daha güçlü zıplama.")) + " SMAÇ: Q (mavi: P) = topla pota sıçra, çembere ulaşırsan basarsın · TOP ÇAL: E (mavi: I) = rakibin topunu kap." + ek;
     kurPad(); yeni();
   }
   var son = { m: 1, z: 1 };
