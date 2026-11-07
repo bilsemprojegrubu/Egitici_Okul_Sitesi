@@ -90,7 +90,11 @@
     var kontrol = typeof AbortController === "function" ? new AbortController() : null;
     var sayac = setTimeout(function () { try { if (kontrol) kontrol.abort(); } catch (e) { } }, ZAMAN_ASIMI);
     var a = global.OYUN_AYAR, s = secenek || {};
-    s.headers = Object.assign({ apikey: a.SUPABASE_ANON_KEY, Authorization: "Bearer " + a.SUPABASE_ANON_KEY }, s.headers || {});
+    // Eski tip anahtarlar (eyJ...) JWT'dir ve Bearer olarak da gönderilir.
+    // Yeni tip "sb_publishable_..." anahtarlar JWT değildir: sadece apikey başlığı gönderilir.
+    var baslik = { apikey: a.SUPABASE_ANON_KEY };
+    if (String(a.SUPABASE_ANON_KEY).indexOf("eyJ") === 0) baslik.Authorization = "Bearer " + a.SUPABASE_ANON_KEY;
+    s.headers = Object.assign(baslik, s.headers || {});
     if (kontrol) s.signal = kontrol.signal;
     return global.fetch(adres() + yol, s).then(function (r) { clearTimeout(sayac); return r; },
       function (e) { clearTimeout(sayac); throw e; });

@@ -1,4 +1,3 @@
-// Supabase ayarları. Gerçek değerleri Supabase panelinden (Project Settings > API) alıp yazın.
-// Yer tutucu ("BURAYA...") kalırsa sıralama özelliği sessizce kapalı olur; oyunlar yine çalışır.
-// DİKKAT: Buraya sadece "anon public" anahtarını yazın. "service_role" anahtarını ASLA yazmayın.
-window.OYUN_AYAR = { SUPABASE_URL: "BURAYA_PROJE_URL", SUPABASE_ANON_KEY: "BURAYA_ANON_ANAHTAR" };
+// Supabase ayarları. Yer tutucu ("BURAYA...") kalırsa sıralama özelliği sessizce kapalı olur; oyunlar yine çalışır.
+// DİKKAT: Buraya sadece herkese açık (anon / publishable) anahtar yazılır. "service_role" ya da "secret" anahtarı ASLA yazmayın.
+window.OYUN_AYAR = { SUPABASE_URL: "https://lasijiknfchnqbmvwbaf.supabase.co", SUPABASE_ANON_KEY: "sb_publishable_kuckjKZNKwFM5OdkuhwZBw_eFtakW79" };
