@@ -73,6 +73,10 @@
     geri = 180; document.getElementById("bitti").hidden = true; ya();
     try { if (document.activeElement && document.activeElement.tagName === "INPUT") document.activeElement.blur(); } catch (e) { }
   }
+  // Geri sayımı beklemek istemeyen herhangi bir tuşa basar ya da ekrana dokunur
+  function atla() { if (geri > 0 && !document.getElementById("baslaKapi")) { geri = 0; calis = true; Px.ses("puan"); } }
+  document.addEventListener("pointerdown", atla, true);
+  document.addEventListener("keydown", function (e) { if (["Shift", "Control", "Alt", "Meta", "CapsLock", "Tab"].indexOf(e.key) < 0) atla(); }, true);
   function lane(d) { var n = Px.sinir(hedef + d, 0, 3); if (n !== hedef) { hedef = n; Px.ses("tik"); } }
   function sayi(n) { var m = 0, k; for (k = 0; k < 4; k++) if (n[k]) m++; return m; }
   function satir() {
@@ -199,7 +203,7 @@
     x.fillStyle = "#566c86"; x.fillRect(7, 8, 48, 5);
     x.fillStyle = yakit > 25 ? "#38b764" : "#ef4d5e"; x.fillRect(7, 8, Math.round(48 * yakit / 100), 5);
     Px.yazi(x, "BENZİN", 60, 4, 9, "#f4f4f4", "left");
-    if (geri > 0) Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 90, 13, "#ffcd75", "center");
+    if (geri > 0) { Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 90, 13, "#ffcd75", "center"); Px.yazi(x, "Beklemeden başlamak için", W / 2, 112, 8, "#f4f4f4", "center"); Px.yazi(x, "bir tuşa bas / dokun", W / 2, 124, 8, "#f4f4f4", "center"); }
     if (puan >= SINIR) Px.yazi(x, "MAKS!", W / 2, 30, 12, "#ffcd75", "center");
   }
   // Klavye: capture aşamasında yakala (isim kutusu odakta kalsa da, kare atlasa da çalışır)
