@@ -149,11 +149,14 @@
     // zemin
     x.fillStyle = "#c98a4b"; x.fillRect(0, ZEMIN, W, 22); x.fillStyle = "#e0a96b"; for (i = 0; i < W; i += 16) x.fillRect(i, ZEMIN + 6, 14, 2);
     x.fillStyle = "#fff"; x.fillRect(0, ZEMIN, W, 2); x.fillRect(NX - 1, ZEMIN, 2, 4);
-    // file
-    x.fillStyle = "#0d0e1a"; x.fillRect(NX - 3, NY - 2, 6, ZEMIN - NY + 2); x.fillStyle = "#94a0b8"; x.fillRect(NX - 2, NY, 4, ZEMIN - NY);
-    x.fillStyle = "#fff"; x.fillRect(NX - 20, NY, 18, 2); x.fillRect(NX + 2, NY, 18, 2);
-    // ağ (iki yana taşan hafif)
-    x.fillStyle = "rgba(255,255,255,.55)"; for (i = 0; i < 6; i++) { x.fillRect(NX - 2, NY + 4 + i * 6, 4, 1); }
+    // file: dikey ağ (ince direk + örgü + üst bant)
+    var nh = ZEMIN - NY;
+    x.fillStyle = "#0d0e1a"; x.fillRect(NX - 4, NY - 1, 8, nh + 1);
+    x.fillStyle = "#566c86"; x.fillRect(NX - 3, NY + 2, 6, nh - 2);
+    x.fillStyle = "#dfe9f5"; for (i = NY + 4; i < ZEMIN; i += 4) x.fillRect(NX - 3, i, 6, 1);
+    for (i = 0; i < 3; i++) x.fillRect(NX - 3 + i * 2 + 1, NY + 2, 1, nh - 2);
+    x.fillStyle = "#fff"; x.fillRect(NX - 4, NY - 1, 8, 3); x.fillStyle = "#e0344f"; x.fillRect(NX - 4, NY + 2, 8, 1);
+    x.fillStyle = "#94a0b8"; x.fillRect(NX - 1, NY - 3, 2, 3);
     // gölge
     x.fillStyle = "rgba(0,0,0,.28)"; var gh = Math.max(2, 10 - (ZEMIN - top.y) / 12); x.fillRect(Math.round(top.x - gh), ZEMIN + 1, Math.round(gh * 2), 2);
     pl.forEach(function (o) { x.fillRect(Math.round(o.x - 7), ZEMIN, 14, 2); });
@@ -188,7 +191,10 @@
   }
   function kur() {
     var py = document.getElementById("padyer"); py.innerHTML = "";
-    if (mod === 1) { var k = document.createElement("div"); k.style.cssText = "display:flex;justify-content:center;width:100%"; py.appendChild(k); Px.pad(k, [{ t: "◀", k: "KeyA" }, { t: "⤒", k: "KeyW" }, { t: "▶", k: "KeyD" }]); }
+    if (mod === 1) {
+      var l1 = document.createElement("div"), r1 = document.createElement("div"); py.appendChild(l1); py.appendChild(r1);
+      Px.pad(l1, [{ t: "◀", k: "KeyA" }, { t: "▶", k: "KeyD" }]); Px.pad(r1, [{ t: "⤒", k: "KeyW" }]);
+    }
     else {
       var l = document.createElement("div"), r = document.createElement("div"); py.appendChild(l); py.appendChild(r);
       Px.pad(l, [{ t: "◀", k: "KeyA" }, { t: "⤒", k: "KeyW" }, { t: "▶", k: "KeyD" }]);
