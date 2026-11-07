@@ -11,7 +11,8 @@
 <div class="puanlar">Puan <b id="puan">0</b> · Can <b id="can">3</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <canvas id="c" class="cv" width="200" height="260" style="--mw:400px;touch-action:none"></canvas>
-  <p class="ipucu">Gemi otomatik ateş eder. Sağa-sola kaydır (veya ◀ ▶ / A D) ve uzaylıları vur! Üstteki büyük patron dalgası zorludur. Çarpışırsan can gider.</p>
+  <div class="pad"><button class="btn" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn" id="asagi" type="button" aria-label="Geri">▼ GERİ</button></div>
+  <p class="ipucu">Gemi otomatik ateş eder. Sağa-sola kaydır (veya ◀ ▶ / A D), ileri-geri git (▲ ▼ / W S ya da butonlar) ve uzaylıları vur! Üstteki büyük patron dalgası zorludur. Çarpışırsan can gider.</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Oyun bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -35,12 +36,13 @@
   var PATRON = Px.sprite([
     "....kkkkkkkk....", "..kkrrrrrrrrkk..", ".krrrwrrrrwrrrk.", "krrrrrrrrrrrrrrk", "krrkkkrrrrkkkrrk", "krrrrrrkkrrrrrrk", ".kkrrrrrrrrrrkk.", "..k.kk.kk.kk.k..", "..k..k....k..k.."],
     { k: "#0d0e1a", r: "#b13e53", w: "#ffcd75" }, 2);
+  var YMIN = 120, YMAX = H - 14, tus = { u: 0, d: 0 };
   var gm, ok, du, par, yazi, yil = [], puan, can, dalga, calis, hedef, ates, yan, sars, bekle;
   try { document.getElementById("rekor").textContent = Skor.rekor("uzay"); } catch (e) { }
   for (var i = 0; i < 40; i++) yil.push({ x: Px.rastgele(0, W), y: Px.rastgele(0, H), v: Px.rastgele(.2, 1.2) });
   function ya() { document.getElementById("puan").textContent = puan; document.getElementById("can").textContent = can; }
   function yeni() {
-    gm = { x: W / 2, y: H - 26 }; ok = []; du = []; par = []; yazi = []; puan = 0; can = 3; dalga = 0; calis = true; hedef = null; ates = 0; yan = 0; sars = 0; bekle = 40;
+    gm = { x: W / 2, y: H - 26 }; tus.u = tus.d = 0; ok = []; du = []; par = []; yazi = []; puan = 0; can = 3; dalga = 0; calis = true; hedef = null; ates = 0; yan = 0; sars = 0; bekle = 40;
     document.getElementById("bitti").hidden = true; ya(); dalgaYap();
   }
   function dalgaYap() {
@@ -58,6 +60,8 @@
     if (k.ArrowRight || k.KeyD) { gm.x += 2.8; hedef = null; }
     if (hedef !== null) gm.x += Px.sinir(hedef - gm.x, -4, 4);
     gm.x = Px.sinir(gm.x, 7, W - 7);
+    var yu = k.ArrowUp || k.KeyW || tus.u, as = k.ArrowDown || k.KeyS || tus.d; // ileri / geri
+    gm.y = Px.sinir(gm.y + ((as ? 1 : 0) - (yu ? 1 : 0)) * 2.4, YMIN, YMAX);
     if (yan) yan--; if (sars) sars--;
     ates--; if (ates <= 0) { ok.push({ x: gm.x - 3, y: gm.y - 6, v: -4, d: 0 }, { x: gm.x + 3, y: gm.y - 6, v: -4, d: 0 }); ates = 14; Px.ses("ok"); }
     yil.forEach(function (s) { s.y += s.v; if (s.y > H) { s.y = 0; s.x = Px.rastgele(0, W); } });
@@ -94,7 +98,7 @@
     if (!yan) {
       var vurdu = false;
       ok.forEach(function (o) { if (o.d === 1 && Math.abs(o.x - gm.x) < 8 && Math.abs(o.y - gm.y) < 9) { o.y = H + 99; vurdu = true; } });
-      du.forEach(function (a) { if (!a.patron && Math.abs(a.x - gm.x) < 13 && Math.abs(a.y - gm.y) < 12) { vurdu = true; } else if (a.patron && a.y > H - 60 && Math.abs(a.x - gm.x) < 22) vurdu = true; });
+      du.forEach(function (a) { if (!a.patron && Math.abs(a.x - gm.x) < 13 && Math.abs(a.y - gm.y) < 12) { vurdu = true; } else if (a.patron && a.y > gm.y - 34 && Math.abs(a.x - gm.x) < 22) vurdu = true; });
       if (vurdu) {
         can--; yan = 100; sars = 12; patla(gm, "#41a6f6"); Px.ses("patlama"); ya();
         if (can <= 0) { calis = false; Px.ses("kaybet"); Skor.oyunBitti("uzay", puan); return; }
@@ -127,6 +131,12 @@
   function konum(e) { var k = C.getBoundingClientRect(); return (e.clientX - k.left) * W / k.width; }
   C.addEventListener("pointerdown", function (e) { e.preventDefault(); hedef = konum(e); });
   C.addEventListener("pointermove", function (e) { if (e.buttons || e.pointerType === "mouse") hedef = konum(e); });
+  [["yukari", "u"], ["asagi", "d"]].forEach(function (p) {
+    var el = document.getElementById(p[0]);
+    el.addEventListener("pointerdown", function (e) { e.preventDefault(); tus[p[1]] = 1; });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function (n) { el.addEventListener(n, function () { tus[p[1]] = 0; }); });
+  });
+  window.addEventListener("blur", function () { tus.u = tus.d = 0; });
   document.getElementById("tekrar").addEventListener("click", yeni);
   yeni(); Px.dongu(guncelle, ciz);
 })();
