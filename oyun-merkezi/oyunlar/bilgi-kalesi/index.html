@@ -454,7 +454,7 @@
     else if (z.em === 2) { var ev = front(u.s) + dr * (8 + (u.id % 5) * 5); if (Math.abs(u.x - ev) > 2.5) hareket = u.x < ev ? 1 : -1; }
     else if (mod === 1 && u.s === 1) {
       var rally = front(1) - 70 - (u.id % 5) * 7;
-      if (best && bd < 170) hareket = dr; else if (Math.abs(u.x - rally) > 3) hareket = u.x < rally ? 1 : -1;
+      if (best && bd < (u.r <= 30 ? 320 : 170)) hareket = dr; else if (Math.abs(u.x - rally) > 3) hareket = u.x < rally ? 1 : -1;
     } else hareket = dr;
     if (hareket) {
       if (z.em === 0 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && o.ly === u.ly && !(o.r > 30 && u.r <= 30) && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
