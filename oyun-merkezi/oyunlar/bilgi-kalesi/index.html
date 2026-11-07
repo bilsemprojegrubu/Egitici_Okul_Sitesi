@@ -428,7 +428,7 @@
       if (hasC(en)) { var cdd = (front(en) - u.x) * dr; if (cdd < td) { tg = "c"; td = cdd; } }
     }
     var dmg = u.d * (rage ? 1.6 : 1) * u.bd; spm *= u.bsp;
-    var kacis = z.em === 2 && !u.ok && Math.abs(u.x - (front(u.s) + dr * (8 + (u.id % 5) * 5))) > 6;
+    var kacis = z.em === 2 && Math.abs(u.x - (front(u.s) + dr * (8 + (u.id % 5) * 5))) > 6;
     if (tg && td <= u.r && !kacis) {
       if (u.cd <= 0) {
         u.cd = u.cdm * (u.boss && u.hp < u.mhp * .5 ? .8 : 1); u.at = 8;
@@ -451,8 +451,8 @@
       if (best && bd < 170) hareket = dr; else if (Math.abs(u.x - rally) > 3) hareket = u.x < rally ? 1 : -1;
     } else hareket = dr;
     if (hareket) {
-      if (!u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
-      u.x += hareket * u.sp * spm; u.w++;
+      if (z.em !== 2 && !u.fly && !u.hunt && !u.twh) for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
+      u.x += hareket * u.sp * spm * (z.em === 2 ? 1.7 : 1); u.w++;
       u.x = Px.sinir(u.x, 6, WW - 6);
     }
   }
