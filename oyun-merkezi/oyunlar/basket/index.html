@@ -32,14 +32,14 @@
 (function () {
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, ZEMIN = 132, SURE = 90 * 60;
   var VARYANT = [
-    { n: "NORMAL" }, { n: "UZUN KOLLAR", L: 20 }, { n: "KISA KOLLAR", L: 6 }, { n: "BÜYÜK KAFA", hr: 11 }, { n: "KÜÇÜK KAFA", hr: 4 },
+    { n: "NORMAL" }, { n: "UZUN KOLLAR", L: 14 }, { n: "KISA KOLLAR", L: 4 }, { n: "BÜYÜK KAFA", hr: 8 }, { n: "KÜÇÜK KAFA", hr: 3 },
     { n: "YÜKSEK POTA", hy: 46 }, { n: "ALÇAK POTA", hy: 84 }, { n: "GENİŞ POTA", rw: 30 }, { n: "DAR POTA", rw: 11 },
     { n: "HAFİF TOP", g: .058, r: 3.5, tc: 1 }, { n: "AĞIR TOP", g: .158, r: 5, tc: 2 }, { n: "DEV TOP", r: 7 },
     { n: "KAR YAĞIYOR · KAYGAN ZEMİN", kar: 1, fr: .975 }, { n: "ÇİFT PUAN x2", pts: 2 }, { n: "ÜÇ PUAN x3", pts: 3, hy: 48 },
     { n: "AY YERÇEKİMİ", pg: .1, g: .058, jm: .95 }, { n: "SÜPER ZIPLAMA", jm: 1.28 }, { n: "ZIPLAYAN TOP", bn: .85 },
     { n: "RÜZGAR →", w: .012 }, { n: "RÜZGAR ←", w: -.012 }, { n: "ÇİFT PUAN x2 · AĞIR TOP", pts: 2, g: .158, r: 5, tc: 2 }
   ];
-  var mod = 1, zor = 1, tek = true, V, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, bekle, bitis, vsayac, kar, tHeld, prevDn, prevA, ch, ign, BOY = 6, CH = 45;
+  var mod = 1, zor = 1, tek = true, V, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, bekle, bitis, vsayac, kar, tHeld, prevDn, prevA, ch, ign, BOY = 0, CH = 45;
   // faz: 0 = oyun, 1 = HAZIRLAN geri sayımı (her şey donuk), 2 = sayı sonrası kutlama (yavaş çekim, oyuncular donuk)
   var faz = 0, say = 0, kut = 0, ag = [{ s: 0, sv: 0, r: 0, rv: 0, p: 0 }, { s: 0, sv: 0, r: 0, rv: 0, p: 0 }], sonSayi = null;
   var jm = [0, 0], SAY_N = 54, SAY_B = 42, KUTLAMA = 130;
@@ -49,9 +49,9 @@
   Px.atla(function () { return calis && faz === 1 && say > 1; }, function () { say = 1; });
   function sayimBasla() { faz = 1; say = SAY_N * 3 + SAY_B; mesaj = ""; msayac = 0; Px.ses("tik"); }
   function oyuncu(t, px, id) { return { t: t, id: id, x: px, y: ZEMIN, vx: 0, vy: 0, yer: true, face: t === 0 ? 1 : -1, hold: false, cd: 0, f: 0, ph: id * 2, th: 100, bz: 0, pw: .8, chg: 0, auto: false }; }
-  function varyant(i) { var b = { L: 12, hr: 7, hy: 64, rw: 18, g: .1, r: 4, fr: .82, kar: 0, pg: .15, jm: 1, pts: 1, w: 0, bn: 0, tc: 0, n: "" }, v = VARYANT[i]; for (var k in v) b[k] = v[k]; return b; }
+  function varyant(i) { var b = { L: 9, hr: 5, hy: 64, rw: 18, g: .1, r: 4, fr: .82, kar: 0, pg: .15, jm: 1, pts: 1, w: 0, bn: 0, tc: 0, n: "" }, v = VARYANT[i]; for (var k in v) b[k] = v[k]; return b; }
   function dizil() {
-    pl = [oyuncu(0, 50, 0), oyuncu(0, 95, 1), oyuncu(1, 145, 0), oyuncu(1, 190, 1)];
+    pl = [oyuncu(0, 70, 0), oyuncu(1, 170, 0)];
     top = { x: 120, y: 50, vx: 0, vy: 0, h: null, cd: 0, d: 0 };
   }
   function yeni() {
@@ -91,7 +91,7 @@
     var tak = pl.filter(function (q) { return q.t === p.t; }), es = tak[0] === p ? tak[1] : tak[0], dus = pl.filter(function (q) { return q.t !== p.t; });
     var h = hoop(p.t), kendi = hoop(1 - p.t), hedefx = p.x;
     var topSahipTakim = top.h ? top.h.t : -1;
-    var enYakin = function (a, b) { return Math.abs(a.x - top.x) <= Math.abs(b.x - top.x); };
+    var enYakin = function (a, b) { return !b || Math.abs(a.x - top.x) <= Math.abs(b.x - top.x); };
     if (p.hold) {
       hedefx = h.sol ? 60 : W - 60; if (Math.abs(p.x - (h.sol ? 60 : W - 60)) < 18 || Math.abs(p.x - h.ix) < 75) hedefx = p.x;
       p.bz = (p.bz || 0) + 1;
@@ -154,7 +154,7 @@
     if (p.cd) p.cd--;
   }
   function ayrisma() {
-    for (var i = 0; i < 4; i++) for (var j = i + 1; j < 4; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 8 && Math.abs(a.y - b.y) < 24) { var m = (8 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x -= m; b.x += m; } }
+    for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 8 && Math.abs(a.y - b.y) < 24) { var m = (8 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x -= m; b.x += m; } }
   }
   // Otomatik top alma: oyuncunun eli, gövdesi, kafası ve ayakları (yerdeki top için) topa yeterince yakınsa top alınır.
   function yakalanabilir(p) { return faz === 0 && !top.h && !p.cd && !top.cd; }
@@ -377,21 +377,21 @@
     mod = m; zor = z;
     var ek = " Her sayıdan sonra komik bir değişiklik gelir (2x puan, kar, ağır top...)! 90 saniye." + (m === 2 ? " (Sıralamaya yazılmaz)" : "");
     document.getElementById("ipucu").textContent = (tek
-      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır."
+      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca adam zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır."
         : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): bas = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
-      : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). İki adam birlikte hareket eder."
+      : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). "
         : "Kırmızı: A D yürü, W zıpla (havada tekrar W veya F = ŞUT) · Mavi: ← → yürü, ↑ zıpla (havada tekrar ↑ veya Enter = ŞUT). Basılı tutup bırakmak = daha güçlü zıplama.")) + ek;
     kurPad(); yeni();
   }
   var son = { m: 1, z: 1 };
-  var menu = Px.menu({ baslik: "BASKET", not: "2'ye 2 · iki potalı · komik değişiklikler", secenekler: [
+  var menu = Px.menu({ baslik: "BASKET", not: "1'e 1 · iki potalı · komik değişiklikler", secenekler: [
     { ad: "1 Oyuncu · Kolay", alt: "Bota karşı", fn: function () { son = { m: 1, z: 0 }; basla(1, 0); } },
     { ad: "1 Oyuncu · Normal", alt: "Sıralamaya yazılır", fn: function () { son = { m: 1, z: 1 }; basla(1, 1); } },
     { ad: "1 Oyuncu · Zor", alt: "Hızlı botlar", fn: function () { son = { m: 1, z: 2 }; basla(1, 2); } },
     { ad: "2 Oyuncu", alt: "Aynı ekranda · sıralamasız", fn: function () { son = { m: 2, z: 1 }; basla(2, 1); } }
   ], ek: function (m) {
-    var b = document.createElement("button"); b.type = "button"; b.className = "btn ikinci"; b.textContent = "Kontrol: " + (tek ? "TEK TUŞ" : "ÇOK TUŞ");
-    b.addEventListener("click", function () { tek = !tek; b.textContent = "Kontrol: " + (tek ? "TEK TUŞ" : "ÇOK TUŞ"); Px.ses("tik"); });
+    var b = document.createElement("button"); b.type = "button"; b.className = "btn ikinci"; b.textContent = "Kontrol: " + (tek ? "TEK TUŞ" : "İLERİ-GERİ + ZIPLA");
+    b.addEventListener("click", function () { tek = !tek; b.textContent = "Kontrol: " + (tek ? "TEK TUŞ" : "İLERİ-GERİ + ZIPLA"); Px.ses("tik"); });
     m.appendChild(b);
   } });
   function yan(e) { var r = C.getBoundingClientRect(); return mod === 2 && e.clientX - r.left > r.width / 2 ? 1 : 0; }
