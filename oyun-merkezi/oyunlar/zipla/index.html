@@ -11,7 +11,7 @@
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
-  <p class="ipucu">Hep zıplarsın! ◀ ▶ / A D ile yön ver (dokunmatikte ekranın sol/sağ yarısına bas). Kırılan platforma güvenme, yay seni uçurur. Canavara üstten bas!</p>
+  <p class="ipucu">Hep zıplarsın! ◀ ▶ / A D ile yön ver (dokunmatikte ekranın sol/sağ yarısına bas). Kahverengi kırılan tahta seni bir kere zıplatır, sonra parçalanır. Yay seni uçurur. Canavara üstten bas!</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Düştün!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -28,9 +28,9 @@
   var SINIR = 20000, ESIK = 100;
   var K = "#0d0e1a";
   var OYUNCU = Px.sprite([
-    "...kkkkkk...", "..kyyyyyyk..", ".kyywwyywwyk", ".kyykwyykwyk", ".kyyyyyyyyk.", "kkyyyoooyykk",
-    ".kyyyyyyyyk.", "..kyyyyyyk..", "..kyyyyyyk..", "..kkyyyykk..", "..koo..ook..", ".kkkk..kkkk."],
-    { k: K, y: "#ffcd75", w: "#f4f4f4", o: "#ef7d57" }, 1);
+    "...kkkkkk...", "..kwwwwwwk..", ".kwkkkkkkwk.", ".kwkbcbbkwk.", ".kwkbbbbkwk.", ".kwkkkkkkwk.",
+    "..kwwwwwwk..", ".kwwwrrwwwk.", ".kwwwwwwwwk.", "..kwwkkwwk..", "..kgk..kgk..", ".kkgk..kgkk."],
+    { k: K, w: "#f4f4f4", b: "#41a6f6", c: "#73eff7", r: "#ef4d5e", g: "#94b0c2" }, 1);
   var OYUNCU_S = Px.cevir(OYUNCU);
   var CANAVAR = Px.sprite([
     "..k......k..", "...k....k...", "..kkkkkkkk..", ".kppppppppk.", "kppwkppwkppk", "kppppppppppk",
@@ -120,7 +120,7 @@
       if (p.tip === 1) { p.x += p.dx; if (p.x < 0 || p.x + p.w > W) { p.dx = -p.dx; p.x = Px.sinir(p.x, 0, W - p.w); } }
       if (p.kir) { p.kir++; p.vy += .3; p.y += p.vy; return; }
       if (P.vy > 0 && P.roket <= 0 && onceki <= p.y + 1 && P.y >= p.y && P.x + 4 > p.x && P.x - 4 < p.x + p.w) {
-        if (p.tip === 2) { p.kir = 1; p.vy = 0; Px.ses("patla"); patlat(P.x, p.y, "#a05b53", 6); }
+        if (p.tip === 2) { p.kir = 1; p.vy = 0; P.y = p.y; P.vy = -7.6; Px.ses("patla"); patlat(P.x, p.y, "#a05b53", 6); } // kırılan tahta: bir kere zıplatır, sonra kırılır
         else {
           P.y = p.y;
           if (p.yay) { P.vy = -12.4; Px.ses("al"); patlat(P.x, p.y, "#f4f4f4", 6); yazi.push({ t: "YAY!", x: P.x, y: P.y - 18, r: "#f4f4f4", o: 30 }); }
