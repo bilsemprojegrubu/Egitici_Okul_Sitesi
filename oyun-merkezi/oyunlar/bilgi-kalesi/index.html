@@ -122,7 +122,7 @@
     else if (id === 6) { z.lv++; z.hp += 170; Px.ses("birles"); sars = 6; for (var i = 0; i < 16; i++) F.push({ x: front(s) + Px.rastgele(-20, 20) * (s ? -1 : 1), y: GY - Px.rastgele(0, 40), vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1.5, 0), l: 30, c: "#ffcd75" }); }
     else if (id === 7) { z.rg = 480; z.cr = 1500; Px.ses("boss"); mesaj = "ÖFKE!"; msayac = 60; }
     else if (id === 8) { z.cs = 2100; Px.ses("patlama"); sars = 10; var d = 40 + z.lv * 25; U.forEach(function (o) { if (o.s !== s && !o.dead) { vur(o, d, s); for (var j = 0; j < 4; j++) F.push({ x: o.x + Px.rastgele(-4, 4), y: GY - 40 - j * 12, vx: 0, vy: 3, l: 14, c: "#ffcd75" }); } }); }
-    else if (id > 9) { z.em = z.em === id - 9 ? 0 : id - 9; Px.ses("tik"); mesaj = z.em === 1 ? "HÜCUM!" : z.em === 2 ? "GERİ ÇEKİL!" : (mod === 1 ? "SAVUNMA" : "İLERLE"); if (hasC(s) && (mod === 2 || s === 1)) msayac = 50; }
+    else if (id > 9) { z.em = id - 9; Px.ses("tik"); mesaj = z.em === 1 ? "HÜCUM!" : "GERİ ÇEKİL!"; if (hasC(s) && (mod === 2 || s === 1)) msayac = 50; }
     else if (id === 9) { z.ch = 1500; z.hp = Math.min(mhp(s), z.hp + mhp(s) * .3); Px.ses("al"); }
     paneliGuncelle(true);
   }
@@ -169,6 +169,7 @@
     if (hareket) {
       for (i = 0; i < U.length; i++) { o = U[i]; if (o !== u && !o.dead && o.s === u.s && (o.x - u.x) * hareket > 0 && (o.x - u.x) * hareket < 5) return; }
       u.x += hareket * u.sp * (rage ? 1.3 : 1); u.w++;
+      u.x = Px.sinir(u.x, 6, WW - 6);
     }
   }
   function mermiler() {
