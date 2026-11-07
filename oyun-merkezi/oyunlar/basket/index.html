@@ -36,7 +36,7 @@
     { n: "YÜKSEK POTA", hy: 46 }, { n: "ALÇAK POTA", hy: 84 }, { n: "GENİŞ POTA", rw: 30 }, { n: "DAR POTA", rw: 11 },
     { n: "HAFİF TOP", g: .058, r: 3.5, tc: 1 }, { n: "AĞIR TOP", g: .158, r: 5, tc: 2 }, { n: "DEV TOP", r: 7 },
     { n: "KAR YAĞIYOR · KAYGAN ZEMİN", kar: 1, fr: .975 }, { n: "ÇİFT PUAN x2", pts: 2 }, { n: "ÜÇ PUAN x3", pts: 3, hy: 48 },
-    { n: "AY YERÇEKİMİ", pg: .1, g: .058, jm: .95 }, { n: "SÜPER ZIPLAMA", jm: 1.28 }, { n: "ZIPLAYAN TOP", bn: .93 },
+    { n: "AY YERÇEKİMİ", pg: .1, g: .058, jm: .95 }, { n: "SÜPER ZIPLAMA", jm: 1.28 }, { n: "ZIPLAYAN TOP", bn: .85 },
     { n: "RÜZGAR →", w: .012 }, { n: "RÜZGAR ←", w: -.012 }, { n: "ÇİFT PUAN x2 · AĞIR TOP", pts: 2, g: .158, r: 5, tc: 2 }
   ];
   var mod = 1, zor = 1, tek = true, V, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, bekle, bitis, vsayac, kar, tHeld, prevDn, prevA, ch, ign, BOY = 6, CH = 45;
@@ -167,7 +167,7 @@
     if (top.h) { var e = el(top.h); top.x = e.x + e.dx * 2; top.y = e.y + e.dy * 2; top.vx = top.vy = 0; return; }
     var r = V.r, py = top.y;
     top.vy += V.g; top.vx += V.w || 0; top.x += top.vx; top.y += top.vy; top.vx *= .999; top.d += top.vx * 12;
-    if (top.y > ZEMIN - r) { top.y = ZEMIN - r; if (V.tc === 2) { top.vy = 0; top.vx *= .85; } else { top.vy = -Math.abs(top.vy) * (V.tc === 1 ? .96 : (V.bn || (V.g > .13 ? .5 : .78))); top.vx *= V.kar ? .99 : .92; if (Math.abs(top.vy) > .8) Px.ses("tik"); if (Math.abs(top.vy) < (V.tc === 1 ? .25 : .5)) top.vy = 0; } }
+    if (top.y > ZEMIN - r) { top.y = ZEMIN - r; if (V.tc === 2) { top.vy = 0; top.vx *= .85; } else { top.vy = -Math.abs(top.vy) * (V.tc === 1 ? .8 : (V.bn || (V.g > .13 ? .35 : .55))); top.vx *= V.kar ? .99 : .92; if (Math.abs(top.vy) > .8) Px.ses("tik"); if (Math.abs(top.vy) < (V.tc === 1 ? .6 : 1.1)) top.vy = 0; } }
     if (top.y < r) { top.y = r; top.vy = Math.abs(top.vy) * .6; }
     if (top.x < r) { top.x = r; top.vx = Math.abs(top.vx) * .7; }
     if (top.x > W - r) { top.x = W - r; top.vx = -Math.abs(top.vx) * .7; }
