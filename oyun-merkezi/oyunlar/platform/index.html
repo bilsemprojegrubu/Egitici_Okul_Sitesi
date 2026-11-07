@@ -129,9 +129,10 @@
       var px0 = Math.round(p.x - mes), w = Math.round(p.w);
       x.fillStyle = "#0d0e1a"; x.fillRect(px0 - 1, p.y - 1, w + 2, H);
       x.fillStyle = "#8a5a2b"; x.fillRect(px0, p.y + 5, w, H);
-      x.fillStyle = "#a47040"; for (var u = 0; u < w; u += 12) for (var v = p.y + 9; v < H; v += 10) x.fillRect(px0 + u + ((v / 10) % 2 ? 4 : 0), v, 6, 3);
+      x.save(); x.beginPath(); x.rect(px0, p.y, w, H); x.clip(); // desenler platformun dışına taşmasın
+      x.fillStyle = "#a47040"; for (var u = 0; u < w; u += 12) for (var v = p.y + 9, ri = 0; v < H; v += 10, ri++) x.fillRect(px0 + u + (ri % 2 ? 4 : 0), v, 6, 3);
       x.fillStyle = "#38b764"; x.fillRect(px0, p.y, w, 5); x.fillStyle = "#a7f070"; x.fillRect(px0, p.y, w, 2);
-      x.fillStyle = "#257179"; for (u = 0; u < w; u += 6) x.fillRect(px0 + u, p.y + 5, 3, 2);
+      x.fillStyle = "#257179"; for (u = 0; u < w; u += 6) x.fillRect(px0 + u, p.y + 5, 3, 2); x.restore();
     });
     dk.forEach(function (d) { x.drawImage(DIKEN, Math.round(d.x - mes) - 4, d.y - 7); });
     var cf = Math.floor(tik / 8) % 4;

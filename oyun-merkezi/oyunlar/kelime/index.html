@@ -98,7 +98,12 @@
       for (i = 0; i < hedef.length; i++) ad.push(i);
       kar(ad); bos = ad.slice(0, say).sort(function (a, b) { return a - b; }); dolu = 0;
       var sec2 = bos.map(function (n) { return hedef.charAt(n); });
-      while (sec2.length < say + 3) { var h = ALFA[Px.tamsayi(0, ALFA.length - 1)]; if (sec2.indexOf(h) < 0) sec2.push(h); }
+      var gd = 0;
+      while (sec2.length < say + 3 && gd++ < 400) {
+        var h = ALFA[Px.tamsayi(0, ALFA.length - 1)]; if (sec2.indexOf(h) >= 0) continue;
+        var cak = bos.some(function (n) { var w = hedef.slice(0, n) + h + hedef.slice(n + 1); return KUME[w.toLocaleLowerCase("tr")]; }); // başka geçerli kelime oluşturan harf seçenek olmasın
+        if (!cak) sec2.push(h);
+      }
       harfler = kar(sec2);
     } else { kar(harfler); var d = 0; while (harfler.join("") === hedef && d++ < 20) kar(harfler); }
     toplam = kalan = (eksik ? 15 : 25) + hedef.length * 2.5;

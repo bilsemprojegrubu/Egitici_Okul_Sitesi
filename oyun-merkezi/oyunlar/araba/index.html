@@ -70,6 +70,7 @@
     nesne = []; agac = []; yazi = []; par = []; yol = 0;
     for (var k = 0; k < 7; k++) { agac.push({ x: Px.tamsayi(0, 1) ? 140 + Px.tamsayi(2, 4) : Px.tamsayi(0, 3), y: k * 38 + Px.tamsayi(0, 12) }); }
     geri = 180; document.getElementById("bitti").hidden = true; ya();
+    try { if (document.activeElement && document.activeElement.tagName === "INPUT") document.activeElement.blur(); } catch (e) { }
   }
   function lane(d) { var n = Px.sinir(hedef + d, 0, 3); if (n !== hedef) { hedef = n; Px.ses("tik"); } }
   function sayi(n) { var m = 0, k; for (k = 0; k < 4; k++) if (n[k]) m++; return m; }
@@ -110,9 +111,8 @@
     if (geri > 0) { geri--; if (geri % 60 === 59) Px.ses("tik"); if (geri === 0) { calis = true; Px.ses("puan"); } }
     var h = geri > 0 ? 1.2 : v;
     // şerit değiştirme (tuş basma anı) ve akıcı kayma
-    if (p.ArrowLeft || p.KeyA) lane(-1);
-    if (p.ArrowRight || p.KeyD) lane(1);
-    var dx = Px.sinir(MER[hedef] - o.x, -4, 4); o.x += dx; o.tilt = dx / 4;
+    // (şerit tuşları aşağıdaki keydown dinleyicisinde anında işlenir, kare atlasa da kaybolmaz)
+    var dx = Px.sinir(MER[hedef] - o.x, -6, 6); o.x += dx; o.tilt = dx / 4;
     // yol kayması
     dist += h * (geri > 0 ? 0 : 1);
     yol += h;
@@ -190,6 +190,16 @@
     if (geri > 0) Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 90, 13, "#ffcd75", "center");
     if (puan >= SINIR) Px.yazi(x, "MAKS!", W / 2, 30, 12, "#ffcd75", "center");
   }
+  // Klavye: capture aşamasında yakala (isim kutusu odakta kalsa da, kare atlasa da çalışır)
+  document.addEventListener("keydown", function (e) {
+    var sol = e.code === "ArrowLeft" || e.code === "KeyA", sag = e.code === "ArrowRight" || e.code === "KeyD";
+    if (!sol && !sag) return;
+    if (e.repeat) { e.preventDefault(); return; }
+    var ae = document.activeElement;
+    if (ae && ae.tagName === "INPUT") { if (!calis && geri <= 0) return; ae.blur(); }
+    e.preventDefault();
+    if (calis || geri > 0) lane(sol ? -1 : 1);
+  }, true);
   // Dokunmatik: sol/sağ yarıya dokun -> bir şerit kay
   C.addEventListener("pointerdown", function (e) {
     e.preventDefault(); var kt = C.getBoundingClientRect();

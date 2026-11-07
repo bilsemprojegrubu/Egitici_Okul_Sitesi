@@ -91,19 +91,36 @@
   }
   function birak() { var n = 0; while (cakisir(p.b, p.x, p.y + 1) === false) { p.y++; n++; } puan += n; guncelle(); kilitle(); }
   function guncelle() { document.getElementById("puan").textContent = puan; document.getElementById("satir").textContent = satir; }
+  var TUSLAR = ["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowUp", "KeyW", "Space", "ArrowDown", "KeyS"], yedi = {}, tut = {};
+  function eylem(c) {
+    if (!calis || !p) return;
+    if (c === "ArrowLeft" || c === "KeyA") git(-1);
+    else if (c === "ArrowRight" || c === "KeyD") git(1);
+    else if (c === "ArrowUp" || c === "KeyW") don();
+    else if (c === "Space") birak();
+    else if (c === "ArrowDown" || c === "KeyS") { if (asagi()) { puan++; guncelle(); } sayac = 0; }
+  }
+  // Tuşu oyun döngüsünü beklemeden anında işle (Px.p basışları kare atlayınca kaybolabiliyor)
+  document.addEventListener("keydown", function (e) {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || TUSLAR.indexOf(e.code) < 0 || !calis || !p) return;
+    var el = document.activeElement; if (el && el.tagName === "INPUT") el.blur();
+    e.preventDefault(); yedi[e.code] = true; tut[e.code] = 0; eylem(e.code);
+  }, true);
   function adim() {
     tik++;
     if (sars) sars--;
     parc.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.vy += .12; q.o--; }); parc = parc.filter(function (q) { return q.o > 0; });
     yanan.forEach(function (y) { y.o--; }); yanan = yanan.filter(function (y) { return y.o > 0; });
     if (!calis) return;
-    if (Px.p.ArrowLeft || Px.p.KeyA) git(-1);
-    if (Px.p.ArrowRight || Px.p.KeyD) git(1);
-    if (Px.p.ArrowUp || Px.p.KeyW) don();
-    if (Px.p.Space) { birak(); return; }
-    if (Px.p.ArrowDown || Px.p.KeyS) { if (asagi()) { puan++; guncelle(); } sayac = 0; }
-    // basılı tutulunca tekrar (yan hareket)
-    if (tik % 5 === 0) { if (Px.k.ArrowLeft || Px.k.KeyA) git(-1); if (Px.k.ArrowRight || Px.k.KeyD) git(1); if ((Px.k.ArrowDown || Px.k.KeyS) && asagi()) { puan++; guncelle(); } }
+    // dokunmatik düğmeler (Px.p) — klavye basışları zaten anında işlendi (yedi)
+    TUSLAR.forEach(function (c) { if (Px.p[c] && !yedi[c]) { eylem(c); tut[c] = 0; } });
+    yedi = {};
+    // basılı tutunca tekrar (yan hareket / aşağı): 9 kare gecikme, sonra her 3 karede
+    ["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowDown", "KeyS"].forEach(function (c) {
+      if (!calis) return;
+      if (Px.k[c]) { tut[c] = (tut[c] || 0) + 1; if (tut[c] > 9 && (tut[c] - 9) % 3 === 0) eylem(c); } else tut[c] = 0;
+    });
+    if (!calis) return;
     var bekle = Math.max(6, 42 - Math.floor(satir / 10) * 4);
     sayac++; if (sayac >= bekle) { sayac = 0; asagi(); }
   }
