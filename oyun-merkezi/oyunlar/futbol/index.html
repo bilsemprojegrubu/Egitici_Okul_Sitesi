@@ -93,12 +93,9 @@
   }
   function pas(p) {
     var l = oyunculari(p.t).filter(function (q) { return q !== p; })[0], yon = p.t === 0 ? 1 : -1, dx, dy, n, v;
-    if ((l.x - p.x) * yon > -4) { // arkadaş önde/yanda: ona at
-      dx = l.x + l.vx * 12 - p.x; dy = l.y + l.vy * 12 - p.y; n = Math.sqrt(dx * dx + dy * dy) || 1; v = 1.8 + Math.min(1.8, n / 45);
-      insanlar.forEach(function (h) { if (h.c === p) h.c = l; });
-    } else { // arkadaş geride: geriye kaçmasın, ileri doğru kısa pas
-      dx = yon; dy = p.yy * .7; n = Math.sqrt(dx * dx + dy * dy) || 1; v = 2.4;
-    }
+    // pas her zaman takım arkadaşına gider (öndeyse de, gerideyse de)
+    dx = l.x + l.vx * 6 - p.x; dy = l.y + l.vy * 6 - p.y; n = Math.sqrt(dx * dx + dy * dy) || 1; v = 1.8 + Math.min(1.8, n / 45);
+    insanlar.forEach(function (h) { if (h.c === p) h.c = l; });
     top.vx = dx / n * v; top.vy = dy / n * v; p.cd = 14; top.son = p.t; Px.ses("tik");
   }
   function botGuncelle(p, oyuncuBot) {
