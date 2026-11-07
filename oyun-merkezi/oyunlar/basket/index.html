@@ -117,6 +117,11 @@
     if (p.yer || true) { if (Math.abs(dx) > 3) p.face = Math.sign(dx); }
     if (!p.hold && Math.abs(dx) < 3) p.face = h.sol ? -1 : 1;
     if (p.hold) p.face = h.sol ? -1 : 1;
+    // takılma önleyici: uzun süre kıpırdamayan bot hareketlenir, topu çok uzun tutan atar
+    p.st = Math.abs(p.x - (p.px || 0)) < .3 ? (p.st || 0) + 1 : 0; p.px = p.x;
+    if (p.st > 90 && !p.hold && !(topSahipTakim === -1 && !enYakin(p, es))) { p.st = 0; p.vx = (Math.random() < .5 ? -1 : 1) * hiz; if (p.yer) zipla(p, p.vx * .5); }
+    if (p.hold && p.bz > 150) { p.vx = Math.sign(h.ix - p.x) * hiz; if (p.yer && p.bz > 200) { zipla(p); p.bz = 100; } }
+    if (!top.h && Math.hypot(top.vx, top.vy) < .35 && enYakin(p, es)) { p.idl = (p.idl || 0) + 1; if (p.idl > 150) { p.idl = 0; if (p.yer) zipla(p, Math.sign(top.x - p.x)); top.vy = -2.2; top.vx = Px.rastgele(-1, 1); } } else p.idl = 0;
   }
   function yon(q) { // tek tuşta zıplama yönü: top bizdeyse pota, değilse topa
     var h = hoop(q.t), tutan = pl.some(function (z) { return z.t === q.t && z.hold; });
@@ -268,7 +273,7 @@
     if (bitis) return;
     insan(0); if (mod === 2) insan(1); else pl.forEach(function (p) { if (p.t === 1) botGuncelle(p, zor === 0 ? .42 : (zor === 2 ? .8 : .58)); });
     pl.forEach(function (p) { if (p.auto && p.hold && !p.yer && p.vy > -.8) { atGuc(p); p.auto = false; } });
-    pl.forEach(oyuncuFizik); // Basket Random gibi karakterler iç içe geçebilir
+    pl.forEach(oyuncuFizik); ayrisma(); // karakterler iç içe geçmez, birbirini iter
     topFizik();
   }
   function daire(cx, cy, r, renk) { x.fillStyle = renk; for (var j = -r; j <= r; j++) { var w = Math.floor(Math.sqrt(r * r - j * j)); x.fillRect(Math.round(cx - w), Math.round(cy + j), w * 2 + 1, 1); } }
@@ -304,10 +309,10 @@
   (function () { var ad = ["bacak0", "bacak1", "bacak2", "govde0", "govde1", "kafa0", "kafa1", "kol0", "kol1"]; PNG_N = ad.length; ad.forEach(function (n) { var im = new Image(); im.onload = function () { PNG_HAZIR++; }; im.src = "karakter/" + n + ".png"; PNG[n] = im; }); })();
   function cizPng(p, fr) {
     var g = p.ang || 0, hr = V.hr, a = (p.th + (p.sw || 0)) * Math.PI / 180, k = (hr + 1) / 4;
-    x.save(); x.translate(Math.round(p.x), Math.round(p.y)); x.rotate(g); x.imageSmoothingEnabled = false;
+    x.save(); x.translate(Math.round(p.x), Math.round(p.y)); x.rotate(g); x.imageSmoothingEnabled = false; x.scale(1.6, 1); // daha dolgun gövde
     x.drawImage(PNG["bacak" + fr], -5, -20, 10, 20);
     x.drawImage(PNG["govde" + p.t], -3, -17 - BOY, 6, 12);
-    x.save(); x.translate(0, -(18 + BOY + hr)); x.scale(p.face * k, k); x.drawImage(PNG["kafa" + p.t], -4.5, -4.5, 9, 9); x.restore();
+    x.save(); x.translate(0, -(18 + BOY + hr)); x.scale(p.face * k / 1.6, k); x.drawImage(PNG["kafa" + p.t], -4.5, -4.5, 9, 9); x.restore();
     x.translate(p.face * 3, -15 - BOY); x.rotate(-p.face * a); x.scale(1, V.L / 11); x.drawImage(PNG["kol" + p.t], -2, -2, 5, 14);
     x.restore();
   }

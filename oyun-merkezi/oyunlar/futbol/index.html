@@ -70,8 +70,8 @@
     pl.forEach(function (p, i) { p.x = yer[i][0]; p.y = yer[i][1]; p.vx = p.vy = 0; p.cd = 0; });
   }
   var KEY = {
-    0: { u: ["KeyW"], d: ["KeyS"], l: ["KeyA"], r: ["KeyD"], sut: ["KeyQ"], pas: ["KeyE"], ku: ["KeyT"], kd: ["KeyG"], sk: ["KeyZ"], sh: ["KeyX"], st: ["KeyR"], sb: ["KeyC"] },
-    1: { u: ["KeyO"], d: ["KeyK"], l: ["Semicolon"], r: ["KeyL"], sut: ["KeyI"], pas: ["KeyP"], ku: ["KeyU"], kd: ["KeyJ"], sk: ["KeyM"], sh: ["Comma"], st: ["BracketLeft"], sb: ["Period"] }
+    0: { u: ["KeyW"], d: ["KeyS"], l: ["KeyA"], r: ["KeyD"], sut: ["KeyE"], pas: ["KeyQ"], ku: ["KeyT"], kd: ["KeyG"], sk: ["KeyZ"], sh: ["KeyX"], st: ["KeyR"], sb: ["KeyC"] },
+    1: { u: ["KeyO"], d: ["KeyK"], l: ["Semicolon"], r: ["KeyL"], sut: ["KeyP"], pas: ["KeyI"], ku: ["KeyU"], kd: ["KeyJ"], sk: ["KeyM"], sh: ["Comma"], st: ["BracketLeft"], sb: ["Period"] }
   };
   function bas(t, ad) { var a = KEY[t][ad].slice(); if (mod === 1 && t === 0) { if (ad === "u") a.push("ArrowUp"); if (ad === "d") a.push("ArrowDown"); if (ad === "l") a.push("ArrowLeft"); if (ad === "r") a.push("ArrowRight"); } return a.some(function (k) { return Px.k[k]; }); }
   function bas1(t, ad) { var a = KEY[t][ad].slice(); return a.some(function (k) { return Px.p[k]; }); }
@@ -459,8 +459,8 @@
   function basla(m, z) {
     mod = m; zor = z;
     document.getElementById("ipucu").textContent = m === 1
-      ? "★ Hareket: WASD / ok tuşları (top ayağına yapışır; rakip topu çalabilir, sen de çalabilirsin) · Q: ŞUT (basılı tut = güçlü) · E: PAS · X: HAVADAN pas · C: havadan gelen topa KAFA (tam üstündeyken) · R: taç · Z: korner/taçta yerden atış (korner ve taçta Z, X, R). Ekrandaki düğmeler de çalışır." + (elle ? " Kaleci: T/G ya da çubuk." : "")
-      : "★ Kırmızı: WASD yürü, Q ŞUT (basılı tut = güçlü), E PAS, Z yerden korner, X HAVADAN, C KAFA, R TAÇ" + (elle ? ", T/G kaleci" : "") + " · Mavi: O ileri, K geri, L sağ, Ş sol, I ŞUT, P PAS, M yerden korner, Ö HAVADAN, Ç KAFA, Ğ TAÇ" + (elle ? ", U/J kaleci" : "") + ". (Sıralamaya yazılmaz)";
+      ? "★ Hareket: WASD / ok tuşları (top ayağına yapışır; rakip topu çalabilir, sen de çalabilirsin) · E: ŞUT (basılı tut = güçlü) · Q: PAS · X: HAVADAN pas · C: havadan gelen topa KAFA (tam üstündeyken) · R: taç · Z: korner/taçta yerden atış (korner ve taçta Z, X, R). Ekrandaki düğmeler de çalışır." + (elle ? " Kaleci: T/G ya da çubuk." : "")
+      : "★ Kırmızı: WASD yürü, E ŞUT (basılı tut = güçlü), Q PAS, Z yerden korner, X HAVADAN, C KAFA, R TAÇ" + (elle ? ", T/G kaleci" : "") + " · Mavi: O ileri, K geri, L sağ, Ş sol, P ŞUT, I PAS, M yerden korner, Ö HAVADAN, Ç KAFA, Ğ TAÇ" + (elle ? ", U/J kaleci" : "") + ". (Sıralamaya yazılmaz)";
     kurPad(); yeni();
   }
   var son = { m: 1, z: 1 };
