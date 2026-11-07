@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.7** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.8** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -85,6 +85,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 
 | Sürüm | Neler değişti |
 |---|---|
+| 1.8 | Uygulama olarak yükleme (PWA): ana ekranda "Uygulama olarak yükle" düğmesi, çevrimdışı çalışma, uygulama simgesi |
 | 1.7 | Arayüz boyutu artık ayar çubuğu: %50 - %150 arası (büyütme de var), %100'e sıfırla düğmesi |
 | 1.6 | Ana ekranda sürüm numarası; README'de sürüm geçmişi |
 | 1.5 | Araba: "HAZIRLAN 3-2-1" geri sayımı tuşa basınca / dokununca atlanır (iki satırlı yazı) |
@@ -93,3 +94,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.2 | Zıpla: oyuncu astronot, canavar yeşil uzaylı |
 | 1.1 | Kale Savaşı: 4 katlı 20 maden, güç/hız kuleleri, kapasite sekmesi, yola doğru eğik yol ve 6+6 kule dizilimi; Simon, Basket, Tetris, Platform, Futbol, Kelime, Hafıza, Yılan düzeltmeleri |
 | 1.0 | İlk yayın: 20 oyun, Supabase sıralama, GitHub Pages |
+
+## Uygulama olarak yükleme
+
+Ana ekrandaki **📲 Uygulama olarak yükle** düğmesi (Chrome/Edge/Android) siteyi telefona, tablete ya da bilgisayara uygulama gibi kurar; bir kez açıldıktan sonra internetsiz de çalışır. iPhone/iPad'de: Paylaş → "Ana Ekrana Ekle". Sürüm numarası (`surum.js`) değişince önbellek kendiliğinden yenilenir. Yeni dosya eklenirse `sw.js` içindeki `DOSYALAR` listesine de ekle.

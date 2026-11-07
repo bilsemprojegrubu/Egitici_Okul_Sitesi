@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Oyun Merkezi</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a1c2c">
+<link rel="icon" href="ikon/ikon-192.png">
+<link rel="apple-touch-icon" href="ikon/ikon-192.png">
 <link rel="stylesheet" href="oyunlar/ortak.css">
 <link rel="stylesheet" href="merkez.css">
 </head>
@@ -14,6 +18,7 @@
   <nav class="menu">
     <!-- Sıralama kapalıysa (config.js boşsa) bu bağlantılar gizli kalır -->
     <a id="siralamaLink" href="siralama.html" hidden>Sıralama</a>
+    <button id="yukleBtn" type="button" hidden>📲 Uygulama olarak yükle</button>
     <button id="adBtn" type="button" hidden>Takma ad: <span id="adYazi"></span></button>
   </nav>
 </header>
@@ -22,6 +27,22 @@
 <span id="surum" class="surum"></span>
 <script src="surum.js"></script>
 <script>(function(){var e=document.getElementById("surum");if(e&&window.OYUN_SURUM)e.textContent="v"+window.OYUN_SURUM;})();</script>
+<script>
+// Uygulama olarak yükleme (PWA) + çevrimdışı çalışma
+(function(){
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
+  var b = document.getElementById("yukleBtn"), ist = null;
+  var kurulu = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if (kurulu) return;
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); ist = e; b.hidden = false; });
+  window.addEventListener("appinstalled", function(){ b.hidden = true; });
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent)) b.hidden = false;
+  b.addEventListener("click", function(){
+    if (ist) { ist.prompt(); ist.userChoice.then(function(){ ist = null; b.hidden = true; }); }
+    else alert("Yüklemek için: Paylaş düğmesine bas, sonra \"Ana Ekrana Ekle\" seç.");
+  });
+})();
+</script>
 <script src="config.js"></script>
 <script src="skor.js"></script>
 <script src="oyunlar/piksel.js"></script>
