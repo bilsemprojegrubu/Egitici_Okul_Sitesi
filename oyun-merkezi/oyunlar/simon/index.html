@@ -108,8 +108,16 @@
     } else if (durum === "basla") {
       if (Px.p.Space || Px.p.Enter) bas(0);
     }
-    for (var k in KEYS) if (Px.p[k]) bas(KEYS[k]);
   }
+  // Tuşları döngüyü beklemeden anında işle (Px.p basışları kare atlayınca kaybolabiliyor)
+  document.addEventListener("keydown", function (e) {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    var i = KEYS[e.code];
+    if (i === undefined) return;
+    var el = document.activeElement;
+    if (el && el.tagName === "INPUT") el.blur();
+    e.preventDefault(); bas(i);
+  }, true);
   function padCiz(i) {
     var p = PAD[i], a = (yanan === i), r = (durum === "hata" && hata && dizi[idx] === i);
     var px = p.x, py = p.y;
