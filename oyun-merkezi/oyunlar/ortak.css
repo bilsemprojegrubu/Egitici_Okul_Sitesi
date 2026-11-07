@@ -47,6 +47,10 @@ body:not(.tam) .sahne .kaplama{zoom:calc(1 / var(--ui,1))}
 .arac{position:fixed;top:6px;right:8px;display:flex;gap:6px;z-index:60}
 .arac-d{width:38px;height:38px;border:3px solid var(--koyu);background:#3b5dc9 center/24px no-repeat;image-rendering:pixelated;cursor:pointer;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.35),0 3px 0 var(--koyu)}
 .arac-hiz{font:inherit;font-weight:900;font-size:.95rem;color:#f4f4f4;width:auto;min-width:44px;padding:0 6px;text-shadow:2px 2px 0 var(--koyu)}
+.arac{flex-wrap:wrap;justify-content:flex-end}
+.ui-panel{flex-basis:100%;margin-top:4px;background:#1d2b53;border:3px solid var(--koyu);padding:10px 12px;color:#f4f4f4;font-weight:700;font-size:.85rem;display:flex;flex-direction:column;gap:8px;min-width:200px;box-shadow:0 3px 0 var(--koyu)}
+.ui-panel[hidden]{display:none}
+.ui-panel input[type=range]{width:100%;height:28px}
 .arac-d:active{transform:translateY(2px)}
 /* Tam ekran: oyun alanı ekranı doldurur */
 body.tam{justify-content:flex-start;height:100vh;height:100dvh;min-height:0;overflow:hidden}

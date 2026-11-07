@@ -152,18 +152,34 @@
   IKON.tam = ["###....###", "#........#", "#........#", "..........", "..........", "#........#", "#........#", "###....###"];
   function ikonYap(ad) { return Px.sprite(IKON[ad], { "#": "#f4f4f4" }, 3).toDataURL(); }
   var tamBtn, sesBtn, aracDiv, hizBtn, uiBtn;
-  // Arayüz boyutu: %100 / %90 / %75 / %60 (seçim hatırlanır)
-  var UI = [100, 90, 75, 60];
+  // Arayüz boyutu: ayar çubuğu, %50 - %150 (seçim hatırlanır)
   Px.ui = parseInt(oku("px_ui"), 10) || 100;
-  if (UI.indexOf(Px.ui) < 0) Px.ui = 100;
-  function uiUygula() { document.documentElement.style.setProperty("--ui", String(Px.ui / 100)); if (uiBtn) uiBtn.textContent = Px.ui + "%"; }
+  if (Px.ui < 50 || Px.ui > 150) Px.ui = 100;
+  var uiPanel, uiRange, uiYazi;
+  function uiUygula() {
+    document.documentElement.style.setProperty("--ui", String(Px.ui / 100));
+    if (uiBtn) uiBtn.textContent = Px.ui + "%";
+    if (uiRange) uiRange.value = Px.ui;
+    if (uiYazi) uiYazi.textContent = "Arayüz boyutu: %" + Px.ui;
+  }
   uiUygula();
+  function uiAyarla(v) {
+    Px.ui = Math.max(50, Math.min(150, v)); yaz("px_ui", String(Px.ui)); uiUygula(); sigdir();
+  }
   function uiEkle() {
-    uiBtn = document.createElement("button"); uiBtn.type = "button"; uiBtn.className = "arac-d arac-hiz"; uiBtn.setAttribute("aria-label", "Arayüz boyutu");
-    uiBtn.addEventListener("click", function () {
-      Px.ui = UI[(UI.indexOf(Px.ui) + 1) % UI.length]; yaz("px_ui", String(Px.ui)); uiUygula(); Px.ses("tik"); sigdir();
-    });
-    uiUygula(); aracDiv.insertBefore(uiBtn, aracDiv.firstChild);
+    uiBtn = document.createElement("button"); uiBtn.type = "button"; uiBtn.className = "arac-d arac-hiz"; uiBtn.setAttribute("aria-label", "Arayüz boyutu ayarı");
+    uiPanel = document.createElement("div"); uiPanel.className = "ui-panel"; uiPanel.hidden = true;
+    uiYazi = document.createElement("div"); uiYazi.className = "ui-yazi";
+    uiRange = document.createElement("input"); uiRange.type = "range"; uiRange.min = 50; uiRange.max = 150; uiRange.step = 5;
+    uiRange.setAttribute("aria-label", "Arayüz boyutu");
+    uiRange.addEventListener("input", function () { uiAyarla(parseInt(uiRange.value, 10)); });
+    var sf = document.createElement("button"); sf.type = "button"; sf.className = "btn kucuk"; sf.textContent = "%100'e sıfırla";
+    sf.addEventListener("click", function () { uiAyarla(100); Px.ses("tik"); });
+    uiPanel.appendChild(uiYazi); uiPanel.appendChild(uiRange); uiPanel.appendChild(sf);
+    uiBtn.addEventListener("click", function (e) { e.stopPropagation(); uiPanel.hidden = !uiPanel.hidden; Px.ses("tik"); });
+    uiPanel.addEventListener("click", function (e) { e.stopPropagation(); });
+    document.addEventListener("click", function () { uiPanel.hidden = true; });
+    uiUygula(); aracDiv.insertBefore(uiBtn, aracDiv.firstChild); aracDiv.appendChild(uiPanel);
   }
   // Oyun hızı: 1x / 2x / 4x (döngü kullanan oyunlarda görünür, seçim hatırlanır)
   Px.hiz = parseInt(oku("px_hiz"), 10) || 1;
