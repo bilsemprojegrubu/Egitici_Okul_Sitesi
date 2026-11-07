@@ -28,3 +28,7 @@ footer{text-align:center;color:#94b0c2;font-size:.85rem;padding:0 16px 24px}
 .panel-kap .siralama{max-width:none;font-size:1.05rem}
 .kapali-not{text-align:center;color:#94b0c2;padding:24px 16px}
 @media(max-width:420px){header h1{font-size:1.6rem}.izgara{grid-template-columns:repeat(2,1fr);gap:12px;padding:8px 12px 24px}.kart canvas{width:60px;height:60px}}
+
+/* Sürüm numarası: sağ alt köşede küçük */
+.surum{position:fixed;right:8px;bottom:6px;font-size:.7rem;color:#94b0c2;opacity:.6;pointer-events:none;z-index:3;text-shadow:1px 1px 0 #0d0e1a}
+.surum:empty{display:none}

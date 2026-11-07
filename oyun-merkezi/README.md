@@ -1,5 +1,7 @@
 # Oyun Merkezi
 
+**Sürüm: 1.6** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
 ## Oyunlar
@@ -76,3 +78,17 @@ oyunlar/ortak.css           oyunların ortak stili
 oyunlar/piksel.js           ortak piksel çizim, ses, tam ekran, menü kodu (global "Px")
 oyunlar/<oyun>/index.html   her oyun tek dosya
 ```
+
+## Sürüm geçmişi
+
+Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve buraya bir satır ekle.
+
+| Sürüm | Neler değişti |
+|---|---|
+| 1.6 | Ana ekranda sürüm numarası; README'de sürüm geçmişi |
+| 1.5 | Araba: "HAZIRLAN 3-2-1" geri sayımı tuşa basınca / dokununca atlanır (iki satırlı yazı) |
+| 1.4 | Tam ekrandan çıkınca oyunun büyük kalması düzeltildi; sağ üstte UI boyutu düğmesi (%100 / %90 / %75 / %60); "herhangi bir tuşa bas ya da dokun" ile başlama |
+| 1.3 | Menüsü olmayan oyunlara BAŞLA kapısı; Araba: ileri-geri hareket, araçlar iç içe geçmez, yavaş başlangıç; Zıpla kartı astronot |
+| 1.2 | Zıpla: oyuncu astronot, canavar yeşil uzaylı |
+| 1.1 | Kale Savaşı: 4 katlı 20 maden, güç/hız kuleleri, kapasite sekmesi, yola doğru eğik yol ve 6+6 kule dizilimi; Simon, Basket, Tetris, Platform, Futbol, Kelime, Hafıza, Yılan düzeltmeleri |
+| 1.0 | İlk yayın: 20 oyun, Supabase sıralama, GitHub Pages |
