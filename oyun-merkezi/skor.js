@@ -13,7 +13,7 @@
     "futbol": "Futbol", "platform": "Platform", "tetris": "Tetris",
     "kus": "Kuş", "basket": "Basket", "voleybol": "Voleybol",
     "tugla": "Tuğla Kır", "kostebek": "Köstebek", "uzay": "Uzay Savaşı",
-    "simon": "Simon", "pong": "Pong", "mayin": "Mayın", "zipla": "Zıpla", "araba": "Araba Kaçış", "dans": "Dans Pisti"
+    "simon": "Simon", "pong": "Pong", "mayin": "Mayın", "zipla": "Zıpla", "araba": "Araba Kaçış", "dans": "Robot Dansı"
   };
   var OYUNLAR = Object.keys(OYUN_ADLARI);
 

@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dans Pisti — Oyun Merkezi</title>
+<title>Robot Dansı — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
 </head>
 <body data-oyun="dans">
-<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>DANS PİSTİ</h1>
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>ROBOT DANSI</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <canvas id="c" class="cv" width="400" height="520" style="--mw:400px"></canvas>
@@ -19,7 +19,7 @@
     <button class="btn" data-k="3" aria-label="Sağ">▶</button>
   </div>
   <div id="bitti" class="kaplama" hidden>
-    <h2>Dans bitti</h2><p id="sonuc"></p>
+    <h2>Robot yoruldu!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
     <button class="btn" id="tekrar">Tekrar oyna</button>
   </div>
@@ -31,7 +31,7 @@
 // Dans Pisti: oklar yukarıdan düşer, hedef çizgisine gelince doğru tuşa bas. Puan = vuruş puanı x kombo.
 (function () {
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 400, H = 520, LX = 72, LW = 64, RY = 462, SY = 196;
-  var RENK = ["#ef4d5e", "#41a6f6", "#38b764", "#ffcd75"], KOD = [["ArrowLeft", "KeyA"], ["ArrowDown", "KeyS"], ["ArrowUp", "KeyW"], ["ArrowRight", "KeyD"]];
+  var RENK = ["#ff4fd8", "#00e5ff", "#a7f070", "#ffe14d"], KOD = [["ArrowLeft", "KeyA"], ["ArrowDown", "KeyS"], ["ArrowUp", "KeyW"], ["ArrowRight", "KeyD"]];
   var notlar, sk, kombo, enKombo, can, kare, beat, bf, sonLn, bas, bitti, yazi, yazT, poz, hedef, bas0, par, flas, lvl, hitSay, bitisT;
   function yeni() {
     notlar = []; sk = 0; kombo = 0; enKombo = 0; can = 100; kare = 0; beat = 0; bf = 0; sonLn = -1; bas = false; bitti = false; yazi = ""; yazT = 0;
@@ -98,27 +98,31 @@
     x.restore();
   }
   function dansci() {
-    var cx = 200, cy = 118 + poz.bob * 1.5;
+    var cx = 200, cy = 118 + poz.bob * 1.5, sp = Math.sin(kare / 5) * 3, nb = Math.floor(kare / 8) % 2;
     x.save(); x.translate(cx, cy); x.scale(1.5, 1.5); x.rotate(poz.lean);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-11, -50, 22, 2);
-    var sp = Math.sin(kare / 5) * 3;
-    x.fillStyle = "#41a6f6"; x.fillRect(-8 + sp, 0, 7, 24); x.fillRect(1 - sp, 0, 7, 24);
-    x.fillStyle = "#0d0e1a"; x.fillRect(-10 + sp, 24, 10, 5); x.fillRect(0 - sp, 24, 10, 5);
-    x.fillStyle = "#e0344f"; x.fillRect(-10, -28, 20, 28); x.fillStyle = "#b13e53"; x.fillRect(-10, -4, 20, 4); x.fillStyle = "rgba(255,255,255,.35)"; x.fillRect(-9, -27, 3, 22);
-    function kol(sx, a) { x.save(); x.translate(sx, -26); x.rotate(a); x.fillStyle = "#ffcd75"; x.fillRect(-3, 0, 6, 24); x.fillStyle = "#e0344f"; x.fillRect(-3, 0, 6, 9); x.restore(); }
-    kol(-12, poz.a1); kol(12, poz.a2);
-    x.fillStyle = "#ffcd75"; x.fillRect(-9, -50, 18, 20); x.fillStyle = "#0d0e1a"; x.fillRect(-5, -43, 3, 3); x.fillRect(3, -43, 3, 3); x.fillRect(-3, -36, 7, 2);
-    x.fillStyle = "#5d275d"; x.fillRect(-10, -53, 20, 6); x.fillRect(-10, -51, 3, 8);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-9 + sp, 0, 8, 25); x.fillRect(1 - sp, 0, 8, 25);
+    x.fillStyle = "#94a0b8"; x.fillRect(-8 + sp, 1, 6, 22); x.fillRect(2 - sp, 1, 6, 22); x.fillStyle = "#00e5ff"; x.fillRect(-7 + sp, 14, 4, 2); x.fillRect(3 - sp, 14, 4, 2);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-11 + sp, 23, 11, 6); x.fillRect(0 - sp, 23, 11, 6); x.fillStyle = "#566c86"; x.fillRect(-10 + sp, 24, 9, 4); x.fillRect(1 - sp, 24, 9, 4);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-12, -30, 24, 32); x.fillStyle = "#b8c4d8"; x.fillRect(-11, -29, 22, 30); x.fillStyle = "#e8eef8"; x.fillRect(-11, -29, 22, 3);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-6, -22, 12, 12); x.fillStyle = nb ? "#ff4fd8" : "#00e5ff"; x.fillRect(-5, -21, 10, 10); x.fillStyle = "#fff"; x.fillRect(-3, -19, 3, 3);
+    x.fillStyle = "#566c86"; x.fillRect(-11, -6, 22, 3);
+    function kol(sx, a) { x.save(); x.translate(sx, -26); x.rotate(a); x.fillStyle = "#0d0e1a"; x.fillRect(-4, -1, 8, 27); x.fillStyle = "#94a0b8"; x.fillRect(-3, 0, 6, 24); x.fillStyle = "#00e5ff"; x.fillRect(-3, 10, 6, 2); x.fillStyle = "#ffe14d"; x.fillRect(-4, 22, 8, 5); x.restore(); }
+    kol(-14, poz.a1); kol(14, poz.a2);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-1, -58, 2, 8); x.fillStyle = nb ? "#00e5ff" : "#ff4fd8"; x.fillRect(-2, -61, 4, 4);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-11, -51, 22, 21); x.fillStyle = "#b8c4d8"; x.fillRect(-10, -50, 20, 19);
+    x.fillStyle = "#0d0e1a"; x.fillRect(-8, -46, 16, 8); x.fillStyle = "#00e5ff"; x.fillRect(-7, -45, 5, 6); x.fillRect(2, -45, 5, 6); x.fillStyle = "#fff"; x.fillRect(-6, -44, 2, 2); x.fillRect(3, -44, 2, 2);
+    x.fillStyle = "#566c86"; x.fillRect(-5, -35, 10, 2);
     x.restore();
   }
   function ciz() {
     var i, l;
     // sahne zemini
-    var bt = bf / (3600 / bpm()), pals = ["#5d275d", "#3b5dc9", "#b13e53", "#257179"];
+    var bt = bf / (3600 / bpm()), pals = ["#ff4fd8", "#00e5ff", "#7a4fff", "#a7f070"];
     x.fillStyle = "#0d0e1a"; x.fillRect(0, 0, W, H);
-    for (i = 0; i < 8; i++) for (var j = 0; j < 3; j++) { x.fillStyle = pals[(i + j + beat) % 4]; x.globalAlpha = .55 - bt * .3; x.fillRect(i * 50, 140 + j * 18, 50, 18); }
-    x.globalAlpha = 1; x.fillStyle = "#1a1c2c"; x.fillRect(0, 0, W, 135);
-    for (i = 0; i < 10; i++) { x.fillStyle = pals[(i + beat) % 4]; x.globalAlpha = .35; x.fillRect(i * 40 + 6, 10 + (i % 3) * 8, 28, 4); } x.globalAlpha = 1;
+    x.fillStyle = "#0b0f2a"; x.fillRect(0, 0, W, 190);
+    for (i = 0; i < 40; i++) { x.fillStyle = "#fff"; x.globalAlpha = .3 + ((i * 7 + beat) % 5) * .12; x.fillRect((i * 97) % W, (i * 53) % 120, 2, 2); } x.globalAlpha = 1;
+    x.fillStyle = pals[beat % 4]; x.globalAlpha = .25 - bt * .15; x.fillRect(0, 150, W, 44); x.globalAlpha = 1;
+    x.fillStyle = pals[(beat + 1) % 4]; x.globalAlpha = .55; for (i = 0; i <= 10; i++) x.fillRect(200 + (i - 5) * 44 - 1, 150, 2, 44); for (i = 0; i < 4; i++) x.fillRect(0, 152 + i * 12, W, 2); x.globalAlpha = 1;
     dansci();
     // şeritler
     x.fillStyle = "#12142a"; x.fillRect(LX - 4, SY - 6, LW * 4 + 8, H - SY + 6);
