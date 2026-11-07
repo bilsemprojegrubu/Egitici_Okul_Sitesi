@@ -265,13 +265,13 @@
     faz = 2; kut = KUTLAMA; msayac = KUTLAMA + 10; top.vx *= .3;
     if (altin) bitir();
   }
-  function topuBirak() { // sayıdan sonra oyuncular yerinde kalır, top ortadan bırakılır
+  function topuBirak() {
     top = { x: W / 2, y: 30, vx: 0, vy: 0, h: null, cd: 0, d: 0 };
     pl.forEach(function (p) { p.hold = false; p.cd = 0; p.dunk = 0; p.chg = 0; p.auto = false; p.stl = 0; });
   }
   function kutlamaBitti() { // kutlama sonrası: yeni değişiklik seç, pozisyonları sıfırla, geri sayım
     var vi = Px.tamsayi(1, VARYANT.length - 1); V = varyant(vi); Px.ses("boss");
-    if (V.kar) kar = []; topuBirak(); agSifirla(); sonSayi = null; sayimBasla();
+    if (V.kar) kar = []; dizil(); agSifirla(); sonSayi = null; sayimBasla();
   }
   function bitir() {
     if (bitis) return; bitis = true;
