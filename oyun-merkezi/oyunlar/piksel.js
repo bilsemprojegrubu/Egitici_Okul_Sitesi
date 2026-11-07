@@ -35,12 +35,34 @@
     x.fillStyle = "rgba(255,255,255,.3)"; x.fillRect(a, b, c, 2); x.fillRect(a, b, 2, d);
     x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(a, b + d - 2, c, 2); x.fillRect(a + c - 2, b, 2, d);
   };
-  // Piksel yazı (kalın, gölgeli)
+  // Yazı: oyun tuvali düşük çözünürlüklü olduğu için yazı, tuvalin üstündeki yüksek çözünürlüklü
+  // saydam katmana normal (pürüzsüz) yazı tipiyle çizilir. Katman her karede temizlenir (Px.temizle).
+  var katmanlar = [];
+  function katman(cv) {
+    var o = cv._ov;
+    if (!o) {
+      o = document.createElement("canvas"); o.style.cssText = "position:absolute;pointer-events:none;z-index:2;background:transparent;border:0;outline:0;max-width:none;image-rendering:auto";
+      cv.parentNode.insertBefore(o, cv.nextSibling); cv._ov = o; katmanlar.push([cv, o]);
+    }
+    var dpr = Math.min(2, g.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+    if (!w) return null;
+    var pw = Math.round(w * dpr), ph = Math.round(h * dpr);
+    if (o.width !== pw || o.height !== ph) { o.width = pw; o.height = ph; }
+    o.style.left = (cv.offsetLeft + cv.clientLeft) + "px"; o.style.top = (cv.offsetTop + cv.clientTop) + "px"; o.style.width = w + "px"; o.style.height = h + "px";
+    return o;
+  }
+  Px.temizle = function () {
+    katmanlar.forEach(function (k) { var o = k[1]; o.getContext("2d").clearRect(0, 0, o.width, o.height); });
+  };
   Px.yazi = function (x, t, a, b, boy, renk, hiza) {
-    x.font = "bold " + (boy || 12) + 'px "Courier New",monospace';
-    x.textAlign = hiza || "left"; x.textBaseline = "top";
-    x.fillStyle = "#0d0e1a"; x.fillText(t, a + 1, b + 1); x.fillText(t, a + 2, b + 2);
-    x.fillStyle = renk || "#fff"; x.fillText(t, a, b);
+    var cv = x.canvas, o = katman(cv); boy = boy || 12;
+    if (!o) return;
+    var c = o.getContext("2d"), sc = o.width / cv.width;
+    c.setTransform(sc, 0, 0, sc, 0, 0);
+    c.font = "bold " + boy + 'px "Trebuchet MS","Segoe UI",Arial,sans-serif';
+    c.textAlign = hiza || "left"; c.textBaseline = "top"; c.lineJoin = "round";
+    c.lineWidth = Math.max(1.5, boy * .26); c.strokeStyle = "#0d0e1a"; c.strokeText(t, a, b);
+    c.fillStyle = renk || "#fff"; c.fillText(t, a, b);
   };
 
   // ---- Tuş girdisi (klavye + ekrandaki düğmeler aynı yerde) ----
@@ -198,7 +220,7 @@
       birik += Math.min(100, t - onceki); onceki = t;
       var n = 0;
       while (birik >= 16.667 && n < 5) { guncelle(); birik -= 16.667; n++; }
-      ciz(); Px.son();
+      Px.temizle(); ciz(); Px.son();
       requestAnimationFrame(kare);
     }
     requestAnimationFrame(kare);
