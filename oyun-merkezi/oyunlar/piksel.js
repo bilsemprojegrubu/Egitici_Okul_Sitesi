@@ -95,6 +95,28 @@
     kap.appendChild(d); return d;
   };
 
+  // ---- Ekranda dokunmatik joystick: sürükleyince yön tuşları basılı sayılır ----
+  Px.joystick = function (kap, m) {
+    var d = document.createElement("div"), top = document.createElement("div"), R = 46, bas_ = {};
+    d.className = "joy"; d.style.cssText = "position:relative;width:" + R * 2 + "px;height:" + R * 2 + "px;border-radius:50%;background:rgba(255,255,255,.12);border:4px solid #0d0e1a;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25);touch-action:none;user-select:none;-webkit-user-select:none;flex:none";
+    top.style.cssText = "position:absolute;left:" + (R - 20) + "px;top:" + (R - 20) + "px;width:32px;height:32px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
+    d.appendChild(top); d.setAttribute("aria-label", "Joystick");
+    function ayarla(t) {
+      ["u", "d", "l", "r"].forEach(function (y) { if (!m[y]) return; if (t[y] && !bas_[y]) bas(m[y]); if (!t[y] && bas_[y]) birak(m[y]); bas_[y] = !!t[y]; });
+    }
+    function tasi(e) {
+      var r = d.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), n = Math.sqrt(dx * dx + dy * dy) || 1, k = Math.min(1, n / R);
+      var ox = dx / n * Math.min(n, R - 8), oy = dy / n * Math.min(n, R - 8);
+      top.style.transform = "translate(" + ox + "px," + oy + "px)";
+      ayarla({ l: dx < -R * .3, r: dx > R * .3, u: dy < -R * .3, d: dy > R * .3 });
+    }
+    function birak_(e) { e.preventDefault(); top.style.transform = ""; ayarla({}); }
+    d.addEventListener("pointerdown", function (e) { e.preventDefault(); try { d.setPointerCapture(e.pointerId); } catch (x) { } tasi(e); });
+    d.addEventListener("pointermove", function (e) { if (e.buttons || e.pressure) tasi(e); });
+    d.addEventListener("pointerup", birak_); d.addEventListener("pointercancel", birak_); d.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    kap.appendChild(d); return d;
+  };
+
   // ---- Ses ----
   var ac = null, sessiz = oku("px_ses") === "0";
   function baglam() {
