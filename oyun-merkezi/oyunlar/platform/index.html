@@ -153,6 +153,7 @@
   });
   C.addEventListener("pointerdown", function (e) { e.preventDefault(); istek(); });
   document.getElementById("tekrar").addEventListener("click", yeni);
+  window.__dbg = function () { return JSON.stringify({ o: o, koyot: koyot, tampon: tampon, calis: calis }); }; //DBG
   yeni(); Px.dongu(guncelle, ciz);
 })();
 </script>

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zıpla — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+</head>
+<body data-oyun="zipla">
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>ZIPLA</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" class="cv" width="160" height="240" style="--mw:340px;touch-action:none"></canvas>
+  <p class="ipucu">Hep zıplarsın! ◀ ▶ / A D ile yön ver (dokunmatikte ekranın sol/sağ yarısına bas). Kırılan platforma güvenme, yay seni uçurur. Canavara üstten bas!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Düştün!</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
+<script>
+// Zıpla: Doodle Jump benzeri, 160x240 düşük çözünürlük
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 160, H = 240;
+  var SINIR = 20000, ESIK = 100;
+  var K = "#0d0e1a";
+  var OYUNCU = Px.sprite([
+    "...kkkkkk...", "..kyyyyyyk..", ".kyywwyywwyk", ".kyykwyykwyk", ".kyyyyyyyyk.", "kkyyyoooyykk",
+    ".kyyyyyyyyk.", "..kyyyyyyk..", "..kyyyyyyk..", "..kkyyyykk..", "..koo..ook..", ".kkkk..kkkk."],
+    { k: K, y: "#ffcd75", w: "#f4f4f4", o: "#ef7d57" }, 1);
+  var OYUNCU_S = Px.cevir(OYUNCU);
+  var CANAVAR = Px.sprite([
+    "..k......k..", "...k....k...", "..kkkkkkkk..", ".kppppppppk.", "kppwkppwkppk", "kppppppppppk",
+    "kpkkkkkkkkpk", ".kpwpwpwpk..", "..kkkkkkkk..", ".k..k..k..k."],
+    { k: K, p: "#b55088", w: "#f4f4f4" }, 1);
+  var ROKET = Px.sprite([
+    "..kk..", ".krrk.", ".kwwk.", ".kwbk.", ".kwwk.", "kkwwkk", "kr.kkr", "ky..yk"],
+    { k: K, r: "#ef4d5e", w: "#f4f4f4", b: "#41a6f6", y: "#ffcd75" }, 1);
+  var JETON = Px.sprite([
+    ".kkkk.", "kyyyyk", "kywyyk", "kyyoyk", "kyyyyk", ".kkkk."],
+    { k: K, y: "#ffcd75", w: "#f4f4f4", o: "#ef7d57" }, 1);
+
+  var P, pl, mon, jt, rk, hgt, bonus, puan, calis, geri, olum, tepe, kam, yazi, par, yildiz = [], bulut = [], ptr = 0, son2 = 0, kirik;
+  try { document.getElementById("rekor").textContent = Skor.rekor("zipla"); } catch (e) { }
+  var i;
+  for (i = 0; i < 40; i++) yildiz.push({ x: Px.rastgele(0, W), y: Px.rastgele(0, H), b: Px.tamsayi(1, 2) });
+  for (i = 0; i < 5; i++) bulut.push({ x: Px.rastgele(0, W), y: Px.rastgele(0, H), w: Px.tamsayi(18, 34) });
+
+  function ya() { document.getElementById("puan").textContent = puan; }
+  function zor() { return Math.min(1, hgt / 20000); }
+  function pYap(y, tip) {
+    var d = zor(), w = Math.round(30 - d * 8);
+    var p = { x: Px.rastgele(2, W - w - 2), y: y, w: w, tip: tip || 0, yay: false, dx: 0, kir: 0, vy: 0 };
+    if (p.tip === 1) { p.dx = (Math.random() < .5 ? -1 : 1) * (.5 + d * .8 + Math.random() * .4); }
+    return p;
+  }
+  function uret() {
+    while (tepe > -30) {
+      var d = zor(), gap = Px.rastgele(24 + d * 14, 38 + d * 38);
+      tepe -= gap;
+      var r = Math.random(), tip = 0;
+      if (kirik) tip = 0;
+      else if (r < .1 + .38 * d) tip = 2;
+      else if (r < .1 + .38 * d + .12 + .14 * d) tip = 1;
+      kirik = tip === 2;
+      var p = pYap(tepe, tip);
+      pl.push(p);
+      if (tip === 0) {
+        var s = Math.random();
+        if (s < .07) p.yay = true;
+        else if (s < .07 + (hgt > 1200 ? .03 + .07 * d : 0)) mon.push({ p: p, ox: p.x + p.w / 2 - 6, t: 0 });
+        else if (s < .30) jt.push({ x: p.x + p.w / 2, y: tepe - 14, t: 0 });
+        else if (s < .31) rk.push({ x: p.x + p.w / 2, y: tepe - 14 });
+      }
+    }
+  }
+  function yeni() {
+    pl = []; mon = []; jt = []; rk = []; par = []; yazi = [];
+    hgt = 0; bonus = 0; puan = 0; calis = false; olum = 0; kam = 0; kirik = false;
+    var p0 = pYap(H - 24, 0); p0.x = W / 2 - 24; p0.w = 48; pl.push(p0);
+    tepe = H - 24;
+    for (var k = 1; k < 5; k++) { var q = pYap(H - 24 - k * 40, 0); pl.push(q); tepe = q.y; }
+    uret();
+    P = { x: W / 2, y: H - 26, vx: 0, vy: 0, yon: 1, roket: 0 };
+    geri = 180; document.getElementById("bitti").hidden = true; ya();
+  }
+  function patlat(px, py, r, n) {
+    for (var k = 0; k < (n || 8); k++) par.push({ x: px, y: py, vx: Px.rastgele(-1.8, 1.8), vy: Px.rastgele(-2.4, .6), r: r, o: 24 });
+  }
+  function bitir() {
+    calis = false; Px.ses("kaybet");
+    Skor.oyunBitti("zipla", puan);
+  }
+  function guncelle() {
+    var k = Px.k, a, b;
+    // parçacıklar / yazılar her zaman akar
+    par.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += .12; p.o--; }); par = par.filter(function (p) { return p.o > 0; });
+    yazi.forEach(function (t) { t.y -= .5; t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
+    if (geri > 0) { geri--; if (geri % 60 === 59 && geri > 0) Px.ses("tik"); if (geri === 0) { calis = true; Px.ses("puan"); P.vy = -7.6; } return; }
+    if (olum) { olum++; P.vy = Math.min(P.vy + .3, 9); P.y += P.vy; if (olum > 55) { olum = 0; bitir(); } return; }
+    if (!calis) return;
+    // yatay kontrol
+    var dir = 0;
+    if (k.ArrowLeft || k.KeyA || ptr < 0) dir -= 1;
+    if (k.ArrowRight || k.KeyD || ptr > 0) dir += 1;
+    P.vx += (dir * 2.5 - P.vx) * .28;
+    if (dir) P.yon = dir;
+    P.x += P.vx;
+    if (P.x < 0) P.x += W; else if (P.x >= W) P.x -= W;
+    // dikey
+    var onceki = P.y;
+    if (P.roket > 0) { P.roket--; P.vy = -8.5; if (P.roket % 6 === 0) patlat(P.x, P.y, "#ef7d57", 1); }
+    else P.vy = Math.min(P.vy + .28, 9);
+    P.y += P.vy;
+    // platformlar
+    pl.forEach(function (p) {
+      if (p.tip === 1) { p.x += p.dx; if (p.x < 0 || p.x + p.w > W) { p.dx = -p.dx; p.x = Px.sinir(p.x, 0, W - p.w); } }
+      if (p.kir) { p.kir++; p.vy += .3; p.y += p.vy; return; }
+      if (P.vy > 0 && P.roket <= 0 && onceki <= p.y + 1 && P.y >= p.y && P.x + 4 > p.x && P.x - 4 < p.x + p.w) {
+        if (p.tip === 2) { p.kir = 1; p.vy = 0; Px.ses("patla"); patlat(P.x, p.y, "#a05b53", 6); }
+        else {
+          P.y = p.y;
+          if (p.yay) { P.vy = -12.4; Px.ses("al"); patlat(P.x, p.y, "#f4f4f4", 6); yazi.push({ t: "YAY!", x: P.x, y: P.y - 18, r: "#f4f4f4", o: 30 }); }
+          else { P.vy = -7.6; Px.ses("zipla"); }
+        }
+      }
+    });
+    // canavarlar
+    for (a = 0; a < mon.length; a++) {
+      b = mon[a]; b.t++;
+      var mx = b.p.x + b.p.w / 2 - 6 + Math.sin(b.t / 20) * 6, my = b.p.y - 10;
+      b.cx = mx; b.cy = my;
+      if (Math.abs(P.x - (mx + 6)) < 9 && P.y > my && P.y - 10 < my + 10) {
+        if (P.roket > 0 || (P.vy > 0 && onceki <= my + 4)) {
+          mon.splice(a, 1); a--; if (P.roket <= 0) P.vy = -8.2;
+          bonus += 30; Px.ses("vur"); patlat(mx + 6, my + 5, "#b55088", 10); yazi.push({ t: "+30", x: mx + 6, y: my - 8, r: "#ffcd75", o: 36 });
+        } else { olum = 1; P.vy = -3; Px.ses("vur"); patlat(P.x, P.y - 6, "#f4f4f4", 10); }
+      }
+    }
+    if (olum) return;
+    jt = jt.filter(function (j) {
+      j.t++;
+      if (Math.abs(P.x - j.x) < 9 && Math.abs((P.y - 6) - j.y) < 11) { bonus += 25; Px.ses("para"); yazi.push({ t: "+25", x: j.x, y: j.y - 6, r: "#ffcd75", o: 30 }); return false; }
+      return true;
+    });
+    rk = rk.filter(function (r) {
+      if (Math.abs(P.x - r.x) < 10 && Math.abs((P.y - 6) - r.y) < 12) { P.roket = 110; bonus += 50; Px.ses("kazan"); yazi.push({ t: "ROKET!", x: P.x, y: P.y - 20, r: "#ef7d57", o: 50 }); return false; }
+      return true;
+    });
+    // kaydırma
+    if (P.y < ESIK) {
+      var dk = ESIK - P.y; P.y = ESIK; hgt += dk; tepe += dk;
+      pl.forEach(function (p) { p.y += dk; }); jt.forEach(function (j) { j.y += dk; }); rk.forEach(function (r) { r.y += dk; });
+      yildiz.forEach(function (s) { s.y += dk * .1; if (s.y > H) { s.y -= H; s.x = Px.rastgele(0, W); } });
+      bulut.forEach(function (c) { c.y += dk * .35; if (c.y > H + 10) { c.y = -10; c.x = Px.rastgele(0, W); c.w = Px.tamsayi(18, 34); } });
+      uret();
+    }
+    pl = pl.filter(function (p) { return p.y < H + 20; });
+    jt = jt.filter(function (j) { return j.y < H + 20; });
+    rk = rk.filter(function (r) { return r.y < H + 20; });
+    mon = mon.filter(function (m) { return m.p.y < H + 20 && pl.indexOf(m.p) >= 0; });
+    var np = Math.min(SINIR, Math.floor(hgt / 5) + bonus);
+    if (np !== puan) { puan = np; ya(); }
+    if (P.y > H + 14) { calis = false; bitir(); }
+  }
+  function govde(y0) { // yüksekliğe göre gökyüzü rengi
+    var t = Px.sinir(hgt / 12000, 0, 1);
+    var r = Math.round(60 - 50 * t), g = Math.round(130 - 110 * t), b = Math.round(220 - 150 * t);
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+  function platCiz(p) {
+    var px = Math.round(p.x), py = Math.round(p.y), w = p.w;
+    if (p.kir) {
+      x.save(); x.globalAlpha = Math.max(0, 1 - p.kir / 40);
+      x.fillStyle = K; x.fillRect(px, py, w / 2 - 1, 7); x.fillRect(px + w / 2 + 2, py + 2, w / 2 - 2, 7);
+      x.fillStyle = "#a05b53"; x.fillRect(px + 1, py + 1, w / 2 - 3, 4); x.fillRect(px + w / 2 + 3, py + 3, w / 2 - 4, 4);
+      x.restore(); return;
+    }
+    var c1 = p.tip === 1 ? "#41a6f6" : p.tip === 2 ? "#a05b53" : "#38b764";
+    var c2 = p.tip === 1 ? "#a8e0ff" : p.tip === 2 ? "#d08a70" : "#a7f070";
+    var c3 = p.tip === 1 ? "#2a6fc0" : p.tip === 2 ? "#6e3a35" : "#257b43";
+    x.fillStyle = K; x.fillRect(px - 1, py - 1, w + 2, 8);
+    x.fillStyle = c1; x.fillRect(px, py, w, 6);
+    x.fillStyle = c2; x.fillRect(px, py, w, 2);
+    x.fillStyle = c3; x.fillRect(px, py + 4, w, 2);
+    if (p.tip === 2) { x.fillStyle = K; x.fillRect(px + w / 2 - 1, py, 1, 3); x.fillRect(px + w / 2, py + 3, 1, 3); x.fillRect(px + 5, py + 2, 2, 1); }
+    if (p.tip === 1) { x.fillStyle = K; x.fillRect(px + 3, py + 2, 2, 2); x.fillRect(px + w - 5, py + 2, 2, 2); }
+    if (p.yay) { // yay
+      var yx = px + Math.round(w / 2) - 4;
+      x.fillStyle = K; x.fillRect(yx - 1, py - 7, 10, 8);
+      x.fillStyle = "#f4f4f4"; x.fillRect(yx, py - 6, 8, 2); x.fillRect(yx, py - 2, 8, 2);
+      x.fillStyle = "#ef4d5e"; x.fillRect(yx + 1, py - 4, 6, 2);
+    }
+  }
+  function ciz() {
+    x.save();
+    x.fillStyle = govde(); x.fillRect(0, 0, W, H);
+    var a = Px.sinir(hgt / 8000 - .3, 0, 1);
+    if (a > 0) { x.globalAlpha = a; yildiz.forEach(function (s) { x.fillStyle = s.b > 1 ? "#f4f4f4" : "#ffcd75"; x.fillRect(Math.round(s.x), Math.round(s.y), s.b, s.b); }); x.globalAlpha = 1; }
+    x.globalAlpha = 1 - a * .8;
+    bulut.forEach(function (c) { x.fillStyle = "#f4f4f4"; x.fillRect(Math.round(c.x), Math.round(c.y), c.w, 5); x.fillRect(Math.round(c.x) + 4, Math.round(c.y) - 3, c.w - 10, 4); });
+    x.globalAlpha = 1;
+    pl.forEach(platCiz);
+    jt.forEach(function (j) { var f = Math.abs(Math.sin(j.t / 14)); x.drawImage(JETON, Math.round(j.x - 3), Math.round(j.y - 3 + f * 2)); });
+    rk.forEach(function (r) { x.drawImage(ROKET, Math.round(r.x - 3), Math.round(r.y - 4)); });
+    mon.forEach(function (m) { if (m.cx !== undefined) x.drawImage(CANAVAR, Math.round(m.cx), Math.round(m.cy + (m.t % 30 < 15 ? 0 : 1))); });
+    // oyuncu (kenardan taşınca öbür tarafta da çiz)
+    var sp = P.yon > 0 ? OYUNCU : OYUNCU_S, sy = Math.round(P.y) - 12;
+    if (P.roket > 0) { x.fillStyle = "#ef7d57"; x.fillRect(Math.round(P.x) - 3, sy + 12, 6, 5 + (P.roket % 4)); x.fillStyle = "#ffcd75"; x.fillRect(Math.round(P.x) - 1, sy + 12, 2, 4); }
+    var sk = P.vy < -3 ? -1 : 0;
+    [0, -W, W].forEach(function (o) {
+      var px = Math.round(P.x - 6 + o); if (px > -14 && px < W) {
+        if (P.roket > 0) x.drawImage(ROKET, px + 3, sy + 4, 6, 8);
+        x.drawImage(sp, px, sy + sk);
+      }
+    });
+    par.forEach(function (p) { x.fillStyle = p.r; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
+    yazi.forEach(function (t) { Px.yazi(x, t.t, Math.round(t.x), Math.round(t.y), 9, t.r, "center"); });
+    if (geri > 0) Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 70, 13, "#ffcd75", "center");
+    if (puan >= SINIR) Px.yazi(x, "MAKS!", W / 2, 20, 12, "#ffcd75", "center");
+    x.restore();
+  }
+  // Dokunmatik: ekranın sol/sağ yarısına basılı tut, parmağı kaydırınca yön değişir
+  function ptrAyar(e) {
+    var k = C.getBoundingClientRect(); ptr = (e.clientX - k.left) < k.width / 2 ? -1 : 1;
+  }
+  C.addEventListener("pointerdown", function (e) { e.preventDefault(); try { C.setPointerCapture(e.pointerId); } catch (z) { } ptrAyar(e); });
+  C.addEventListener("pointermove", function (e) { if (e.buttons || e.pointerType === "touch") ptrAyar(e); });
+  ["pointerup", "pointercancel"].forEach(function (n) { C.addEventListener(n, function () { ptr = 0; }); });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni(); Px.dongu(guncelle, ciz);
+  window.__z = function () { return { P: P, hgt: hgt, puan: puan, calis: calis }; };
+})();
+</script>
+</body>
+</html>
