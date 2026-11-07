@@ -46,6 +46,7 @@
   function agSifirla() { ag = [{ s: 0, sv: 0, r: 0, rv: 0, p: 0 }, { s: 0, sv: 0, r: 0, rv: 0, p: 0 }]; }
   function sallan(t, ns, rim) { var a = ag[t]; a.sv += ns; a.rv += rim; }
   function sayNo(s) { return s > SAY_B ? Math.ceil((s - SAY_B) / SAY_N) : 0; } // 3, 2, 1, sonra 0 = BAŞLA!
+  Px.atla(function () { return calis && faz === 1 && say > 1; }, function () { say = 1; });
   function sayimBasla() { faz = 1; say = SAY_N * 3 + SAY_B; mesaj = ""; msayac = 0; Px.ses("tik"); }
   function oyuncu(t, px, id) { return { t: t, id: id, x: px, y: ZEMIN, vx: 0, vy: 0, yer: true, face: t === 0 ? 1 : -1, hold: false, cd: 0, f: 0, ph: id * 2, th: 100, bz: 0, pw: .8, chg: 0, auto: false }; }
   function varyant(i) { var b = { L: 12, hr: 7, hy: 64, rw: 18, g: .1, r: 4, fr: .82, kar: 0, pg: .15, jm: 1, pts: 1, w: 0, bn: 0, tc: 0, n: "" }, v = VARYANT[i]; for (var k in v) b[k] = v[k]; return b; }
@@ -354,6 +355,7 @@
       var no = sayNo(say), pulse = no > 0 ? 1 + (1 - ((say - SAY_B - 1) % SAY_N) / SAY_N) * .35 : 1;
       x.fillStyle = "rgba(13,14,26,.35)"; x.fillRect(0, 36, W, 56);
       Px.yazi(x, "HAZIRLAN", 120, 38, 10, "#ffcd75", "center");
+      Px.atlaYazi(x, 120, 96);
       Px.yazi(x, no > 0 ? String(no) : "BAŞLA!", 120, 50, Math.round((no > 0 ? 34 : 26) * pulse), no > 0 ? "#fff" : "#a7f070", "center");
     } else if (msayac > 0 && calis) {
       var sk = faz === 2 && sonSayi !== null;

@@ -43,6 +43,7 @@
     ".kkkk.", "kyyyyk", "kywyyk", "kyyoyk", "kyyyyk", ".kkkk."],
     { k: K, y: "#ffcd75", w: "#f4f4f4", o: "#ef7d57" }, 1);
 
+  Px.atla(function () { return geri > 1; }, function () { geri = 1; });
   var P, pl, mon, jt, rk, hgt, bonus, puan, calis, geri, olum, tepe, kam, yazi, par, yildiz = [], bulut = [], ptr = 0, son2 = 0, kirik;
   try { document.getElementById("rekor").textContent = Skor.rekor("zipla"); } catch (e) { }
   var i;
@@ -221,6 +222,7 @@
     par.forEach(function (p) { x.fillStyle = p.r; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
     yazi.forEach(function (t) { Px.yazi(x, t.t, Math.round(t.x), Math.round(t.y), 9, t.r, "center"); });
     if (geri > 0) Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 70, 13, "#ffcd75", "center");
+    if (geri > 0) Px.atlaYazi(x, W / 2, 92);
     if (puan >= SINIR) Px.yazi(x, "MAKS!", W / 2, 20, 12, "#ffcd75", "center");
     x.restore();
   }

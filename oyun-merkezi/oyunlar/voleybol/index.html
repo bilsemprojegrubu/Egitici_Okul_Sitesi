@@ -28,6 +28,7 @@
 (function () {
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, ZEMIN = 128, NX = 120, NY = 86, BR = 6, PR = 10;
   var say = 0, gw = 0, sayNo = 0, sonraki = true;
+  Px.atla(function () { return say > 1 && calis; }, function () { say = 1; });
   var mod = 1, a, b, pl, ctrl, top, sa, sb, calis, bekle, tik, parc, sars, sonDokunan, golMesaj, golSayac;
   function insan(forma, koyu, sac) {
     var P = { s: "#ffcd75", h: sac, j: forma, J: koyu, p: "#1a1c2c", w: "#fff", k: "#0d0e1a", g: "#94a0b8" };
@@ -173,7 +174,7 @@
     parc.forEach(function (p) { x.fillStyle = "#fff"; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
     Px.yazi(x, String(sa), 90, 6, 18, "#ffb0b0", "center"); Px.yazi(x, String(sb), 150, 6, 18, "#b0c8ff", "center");
     Px.yazi(x, "-", 120, 6, 18, "#fff", "center");
-    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", 120, 40, 11, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), 120, 52, 30, "#ffcd75", "center"); }
+    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", 120, 40, 11, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), 120, 52, 30, "#ffcd75", "center"); Px.atlaYazi(x, 120, 92); }
     else if (golSayac > 0 && calis) Px.yazi(x, golMesaj, 120, 36, golMesaj === "BAŞLA!" ? 20 : 14, "#ffcd75", "center");
     x.restore();
   }

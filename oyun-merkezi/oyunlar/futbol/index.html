@@ -36,6 +36,7 @@
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, H = 160;
   var PL = 14, PR = 226, PT = 20, PB = 152, GT = 69, GB = 103, CY = 86, CX = 120, SURE = 90 * 60;
   var say = 0, gw = 0, sayNo = 0;
+  Px.atla(function () { return say > 1 && calis; }, function () { say = 1; });
   var uzat = false, pen = null;
   var mod = 1, zor = 1, elle = false, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, kontrolId, bitis, ses2;
   var insanlar; // [{takim, ctrl(oyuncu), tus, onceSut, sarj}]
@@ -348,7 +349,7 @@
     Px.yazi(x, "KIR " + skor[0], 6, 2, 9, "#ffb0b0"); Px.yazi(x, skor[1] + " MAV", W - 6, 2, 9, "#b0d8ff", "right");
     Px.yazi(x, pen ? "PENALTI" : (uzat ? "UZATMA " : "") + dk + ":" + (sc < 10 ? "0" : "") + sc, CX, 2, 9, "#ffcd75", "center");
     if (pen) { Px.yazi(x, "K " + pen.pk[0] + "(" + pen.n[0] + ") - " + pen.pk[1] + "(" + pen.n[1] + ") M", CX, 22, 7, "#fff", "center"); penCiz(); }
-    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", CX, 40, 12, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), CX, 54, 34, "#ffcd75", "center"); }
+    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", CX, 40, 12, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), CX, 54, 34, "#ffcd75", "center"); Px.atlaYazi(x, CX, 98); }
     else if (msayac > 0 && calis) { var gm = mesaj.indexOf("GOL") === 0; Px.yazi(x, mesaj, CX, gm ? 52 : 56, gm ? 18 : 22, gm ? "#ffcd75" : "#fff", "center"); }
     x.restore();
   }
