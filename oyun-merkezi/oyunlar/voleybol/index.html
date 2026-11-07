@@ -27,6 +27,7 @@
 // Voleybol: tek kişilik (bota karşı, sıralamaya gider: puan = aldığın sayı, bot 5 sayıya ulaşınca biter) ve iki kişilik (7 sayıya, sıralamaya GİTMEZ)
 (function () {
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, ZEMIN = 128, NX = 120, NY = 86, BR = 6, PR = 10;
+  var say = 0, gw = 0, sayNo = 0, sonraki = true;
   var mod = 1, a, b, pl, ctrl, top, sa, sb, calis, bekle, tik, parc, sars, sonDokunan, golMesaj, golSayac;
   function insan(forma, koyu, sac) {
     var P = { s: "#ffcd75", h: sac, j: forma, J: koyu, p: "#1a1c2c", w: "#fff", k: "#0d0e1a", g: "#94a0b8" };
@@ -48,28 +49,28 @@
   })();
   function oyuncu(px, sol) { return { x: px, y: ZEMIN, vx: 0, vy: 0, sol: sol, yer: true, f: 0 }; }
   function yeni() {
-    pl = [oyuncu(40, true), oyuncu(88, true), oyuncu(152, false), oyuncu(200, false)]; pl[0].id = 0; pl[1].id = 1; pl[2].id = 0; pl[3].id = 1; a = pl[0]; b = pl[2]; ctrl = [pl[1], pl[2]]; sa = 0; sb = 0; calis = true; tik = 0; parc = []; sars = 0; golSayac = 0;
+    pl = [oyuncu(40, true), oyuncu(88, true), oyuncu(152, false), oyuncu(200, false)]; pl[0].id = 0; pl[1].id = 1; pl[2].id = 0; pl[3].id = 1; a = pl[0]; b = pl[2]; ctrl = [pl[1], pl[2]]; sa = 0; sb = 0; calis = true; tik = 0; parc = []; sars = 0; golSayac = 0; gw = 0;
     document.getElementById("bitti").hidden = true; yaz(); servis(true);
   }
   function yaz() { document.getElementById("puan").textContent = sa; document.getElementById("rakip").textContent = sb; }
-  function servis(solMu) { top = { x: solMu ? 64 : 176, y: 40, vx: 0, vy: 0, d: 0 }; bekle = 50; sonDokunan = 0; }
+  function servis(solMu) { top = { x: solMu ? 64 : 176, y: 40, vx: 0, vy: 0, d: 0 }; bekle = 0; sonDokunan = 0; say = 150; sayNo = 0; gw = 0; }
   function kontrol(o, sag, sol, zip) {
     var yon = (sag ? 1 : 0) - (sol ? 1 : 0);
-    o.vx = yon * 1.7;
+    o.vx = yon * 1.4;
     if (zip && o.yer) { o.vy = -4.6; o.yer = false; Px.ses("zipla"); }
   }
   function bot(o) {
     // topun düşeceği yeri tahmin et; takımın en yakın oyuncusu gider, diğeri yerinde bekler
     var sol = o.sol, ort = o === pl[1] || o === pl[3];
     var tx = top.x, ty = top.y, vx = top.vx, vy = top.vy, n = 0;
-    while (ty < ZEMIN - BR && n < 300) { tx += vx; vy += .11; ty += vy; if (tx < BR || tx > W - BR) vx = -vx; n++; }
+    while (ty < ZEMIN - BR && n < 300) { tx += vx; vy += .09; ty += vy; if (tx < BR || tx > W - BR) vx = -vx; n++; }
     var es = pl[sol ? (o === pl[0] ? 1 : 0) : (o === pl[2] ? 3 : 2)];
     var kendiYari = sol ? top.x < NX : top.x > NX, tIn = sol ? tx < NX : tx > NX;
     var sorumlu = tIn && (Math.abs(o.x - tx) < Math.abs(es.x - tx) || (Math.abs(o.x - tx) === Math.abs(es.x - tx) && !ort));
     var bek = sol ? (ort ? 100 : 45) : (ort ? 195 : 150);
     var hedef = sorumlu ? tx + (sol ? -4 : 4) : bek;
     var yon = Math.abs(o.x - hedef) < 3 ? 0 : (hedef > o.x ? 1 : -1);
-    o.vx = yon * (sorumlu ? 1.5 : 1.1);
+    o.vx = yon * (sorumlu ? 1.2 : .9);
     var yakin = sorumlu && Math.abs(top.x - o.x) < 26 && top.y > o.y - 54 && top.y < o.y - 14 && kendiYari;
     if (yakin && o.yer && top.vy > -1) { o.vy = -4.6; o.yer = false; Px.ses("zipla"); }
   }
@@ -83,16 +84,16 @@
     if (d < m && d > 0) {
       var nx = dx / d, ny = dy / d;
       top.x = cx + nx * m; top.y = cy + ny * m;
-      var hiz = Math.max(3.4, Math.sqrt(top.vx * top.vx + top.vy * top.vy) * .7 + 1.8);
+      var hiz = Math.max(3, Math.sqrt(top.vx * top.vx + top.vy * top.vy) * .65 + 1.5);
       top.vx = nx * hiz + o.vx * .6; top.vy = ny * hiz + o.vy * .4 - 1.2;
-      var sp = Math.sqrt(top.vx * top.vx + top.vy * top.vy); if (sp > 5.8) { top.vx *= 5.8 / sp; top.vy *= 5.8 / sp; }
+      var sp = Math.sqrt(top.vx * top.vx + top.vy * top.vy); if (sp > 5) { top.vx *= 5 / sp; top.vy *= 5 / sp; }
       sonDokunan = no; Px.ses("vur");
       for (var i = 0; i < 5; i++) parc.push({ x: top.x, y: top.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 1), o: 10 });
     }
   }
   function sayi(solAldi) {
     if (solAldi) sa++; else sb++;
-    yaz(); golSayac = 70; golMesaj = solAldi ? (mod === 1 ? "SAYI SENİN!" : "KIRMIZI SAYI!") : (mod === 1 ? "RAKİP SAYI ALDI" : "MAVİ SAYI!");
+    yaz(); golSayac = 120; golMesaj = solAldi ? "KIRMIZI SAYI!" : "MAVİ SAYI!"; top.vx = top.vy = 0;
     Px.ses(solAldi ? "puan" : "hata"); sars = 8;
     var bitis = mod === 1 ? sb >= 5 : (sa >= 7 || sb >= 7);
     if (bitis) {
@@ -103,12 +104,14 @@
       }, 900);
       return;
     }
-    setTimeout(function () { if (calis) servis(!solAldi ? true : false); }, 0);
+    sonraki = !solAldi; gw = 120;
   }
   function guncelle() {
     tik++; if (sars) sars--; if (golSayac) golSayac--;
     parc.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.o--; }); parc = parc.filter(function (p) { return p.o > 0; });
     if (!calis) return;
+    if (gw > 0) { gw--; if (gw === 0) { servis(sonraki); } return; }
+    if (say > 0) { var no = Math.ceil(say / 50); if (no !== sayNo) { sayNo = no; Px.ses("tik"); } say--; if (say === 0) { golMesaj = "BAŞLA!"; golSayac = 50; Px.ses("puan"); } return; }
     // kontroller: insanın takımındaki İKİ oyuncu birlikte, aynı tuşlarla yönetilir (tuşa basmazsan durur)
     var k = Px.k;
     if (mod === 1) { var K1 = k.KeyD || k.ArrowRight, K2 = k.KeyA || k.ArrowLeft, K3 = k.KeyW || k.ArrowUp || k.Space; kontrol(pl[0], K1, K2, K3); kontrol(pl[1], K1, K2, K3); pl.forEach(function (o, i) { if (i > 1) bot(o); }); }
@@ -119,7 +122,7 @@
     var ps = [[pl[0], pl[1]], [pl[2], pl[3]]];
     ps.forEach(function (q) { if (Math.abs(q[0].x - q[1].x) < 9) { var d = q[0].x < q[1].x ? 1 : -1; q[0].x -= d * .6; q[1].x += d * .6; } });
     if (bekle > 0) { bekle--; top.y = 40 + Math.sin(tik / 8) * 2; return; }
-    top.vy += .11; top.x += top.vx; top.y += top.vy; top.d += top.vx * 3;
+    top.vy += .09; top.x += top.vx; top.y += top.vy; top.d += top.vx * 3;
     if (top.x < BR) { top.x = BR; top.vx = -top.vx * .9; } if (top.x > W - BR) { top.x = W - BR; top.vx = -top.vx * .9; }
     // file: direk + üst kenar
     if (top.y > NY - BR && Math.abs(top.x - NX) < BR + 2) {
@@ -170,8 +173,8 @@
     parc.forEach(function (p) { x.fillStyle = "#fff"; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
     Px.yazi(x, String(sa), 90, 6, 18, "#ffb0b0", "center"); Px.yazi(x, String(sb), 150, 6, 18, "#b0c8ff", "center");
     Px.yazi(x, "-", 120, 6, 18, "#fff", "center");
-    if (golSayac > 0 && calis) Px.yazi(x, golMesaj, 120, 36, 12, "#ffcd75", "center");
-    if (bekle > 0 && calis) Px.yazi(x, "HAZIR!", 120, 56, 10, "#fff", "center");
+    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", 120, 40, 11, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), 120, 52, 30, "#ffcd75", "center"); }
+    else if (golSayac > 0 && calis) Px.yazi(x, golMesaj, 120, 36, golMesaj === "BAŞLA!" ? 20 : 14, "#ffcd75", "center");
     x.restore();
   }
   function basla(m) {

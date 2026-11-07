@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Köstebek Vur — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+</head>
+<body data-oyun="kostebek">
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>KÖSTEBEK VUR</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Süre <b id="sure">45</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" class="cv" width="200" height="200" style="--mw:420px;touch-action:manipulation"></canvas>
+  <p class="ipucu">Çıkan köstebeklere dokun! Altın köstebek 5 puan. Kırmızı BOMBAYA dokunma, puan ve süre kaybedersin. 45 saniyen var.</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Süre bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
+<script>
+// Köstebek Vur: 3x3 delik, 200x200 düşük çözünürlük
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 200, H = 200;
+  var KOSTEBEK = Px.sprite([
+    "....kkkkkk....", "...kbbbbbbk...", "..kbbbbbbbbk..", ".kbbwkbbkwbbk.", ".kbbkkbbkkbbk.", ".kbbbbppbbbbk.",
+    ".kbbbppppbbbk.", ".kbbbbppbbbbk.", "..kbbkkkkbbk..", "..kbbbbbbbbk.."], { k: "#0d0e1a", b: "#a05b53", w: "#f4f4f4", p: "#ef7d57" }, 3);
+  var ALTIN = Px.sprite([
+    "....kkkkkk....", "...kyyyyyyk...", "..kyyyyyyyyk..", ".kyywkyykwyyk.", ".kyykkyykkyyk.", ".kyyyyooyyyyk.",
+    ".kyyyooooyyyk.", ".kyyyyooyyyyk.", "..kyykkkkyyk..", "..kyyyyyyyyk.."], { k: "#0d0e1a", y: "#ffcd75", w: "#f4f4f4", o: "#ef7d57" }, 3);
+  var BOMBA = Px.sprite([
+    "......yy....", ".....yk.....", "...kkkkkk...", "..kkkkkkkk..", ".kkwwkkkkkk.", ".kkwkkkkkkk.", ".kkkkkkkkkk.", ".kkkrrrrkkk.", ".kkkkkkkkkk.", "..kkkkkkkk..", "...kkkkkk..."],
+    { k: "#0d0e1a", w: "#94b0c2", y: "#ffcd75", r: "#ef4d5e" }, 3);
+  var CX = [38, 100, 162], CY = [62, 114, 166];
+  var del, puan, kalan, calis, zam, yazi, par, sars, spawn;
+  try { document.getElementById("rekor").textContent = Skor.rekor("kostebek"); } catch (e) { }
+  function yeni() {
+    del = []; for (var i = 0; i < 9; i++) del.push({ t: 0, tip: "", yuk: 0, vur: 0 });
+    puan = 0; kalan = 45 * 60; calis = true; yazi = []; par = []; sars = 0; spawn = 30;
+    document.getElementById("bitti").hidden = true; ya();
+  }
+  function ya() { document.getElementById("puan").textContent = puan; document.getElementById("sure").textContent = Math.max(0, Math.ceil(kalan / 60)); }
+  function cikar() {
+    var bos = []; del.forEach(function (d, i) { if (d.tip === "") bos.push(i); });
+    if (!bos.length) return;
+    var d = del[bos[Px.tamsayi(0, bos.length - 1)]], r = Math.random();
+    d.tip = r < .14 ? "b" : r < .22 ? "a" : "k"; d.t = 0; d.vur = 0;
+    var ilerle = 1 - kalan / (45 * 60);
+    d.omur = Math.round(Px.rastgele(55, 85) - ilerle * 30);
+  }
+  function guncelle() {
+    if (!calis) return;
+    kalan--; if (kalan % 60 === 0) ya();
+    spawn--;
+    if (spawn <= 0) { cikar(); var ilerle = 1 - kalan / (45 * 60); spawn = Math.round(Px.rastgele(18, 34) - ilerle * 12); if (Math.random() < .35) cikar(); }
+    del.forEach(function (d) {
+      if (d.tip === "") return;
+      d.t++;
+      if (d.vur) { d.vur--; if (d.vur <= 0) d.tip = ""; return; }
+      var yuk = d.t < 8 ? d.t / 8 : d.t > d.omur - 8 ? Math.max(0, (d.omur - d.t) / 8) : 1; d.yuk = yuk;
+      if (d.t >= d.omur) d.tip = "";
+    });
+    if (sars) sars--;
+    par.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += .1; p.o--; }); par = par.filter(function (p) { return p.o > 0; });
+    yazi.forEach(function (t) { t.y -= .5; t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
+    if (kalan <= 0) { calis = false; ya(); Px.ses("kaybet"); Skor.oyunBitti("kostebek", puan); }
+  }
+  function vur(i) {
+    var d = del[i]; if (d.tip === "" || d.vur) return;
+    var cx = CX[i % 3], cy = CY[Math.floor(i / 3)];
+    if (d.tip === "b") { puan = Math.max(0, puan - 5); kalan = Math.max(60, kalan - 180); sars = 14; Px.ses("patlama"); yazi.push({ t: "-5  -3sn", x: cx, y: cy - 20, r: "#ef4d5e", o: 40 }); }
+    else { var p = d.tip === "a" ? 5 : 1; puan += p; Px.ses(d.tip === "a" ? "puan" : "vur"); yazi.push({ t: "+" + p, x: cx, y: cy - 20, r: d.tip === "a" ? "#ffcd75" : "#f4f4f4", o: 30 }); }
+    for (var k = 0; k < 8; k++) par.push({ x: cx, y: cy - 8, vx: Px.rastgele(-1.5, 1.5), vy: Px.rastgele(-2, 0), r: d.tip === "b" ? "#ef7d57" : d.tip === "a" ? "#ffcd75" : "#a05b53", o: 20 });
+    d.vur = 8; ya();
+  }
+  function ciz() {
+    x.save(); if (sars) x.translate(Px.tamsayi(-2, 2), Px.tamsayi(-2, 2));
+    x.fillStyle = "#5a9e3a"; x.fillRect(0, 0, W, H);
+    x.fillStyle = "#6bb84a"; for (var i = 0; i < 60; i++) x.fillRect((i * 37) % W, (i * 53) % H, 2, 2);
+    x.fillStyle = "#4a8a2e"; for (i = 0; i < 40; i++) x.fillRect((i * 61 + 7) % W, (i * 29) % H, 3, 1);
+    for (var j = 0; j < 9; j++) {
+      var cx = CX[j % 3], cy = CY[Math.floor(j / 3)], d = del[j];
+      x.fillStyle = "#0d0e1a"; x.fillRect(cx - 21, cy - 5, 42, 14); x.fillRect(cx - 17, cy - 8, 34, 20);
+      x.fillStyle = "#3b2a1e"; x.fillRect(cx - 19, cy - 4, 38, 12); x.fillRect(cx - 15, cy - 6, 30, 16);
+      if (d.tip !== "") {
+        var s = d.tip === "b" ? BOMBA : d.tip === "a" ? ALTIN : KOSTEBEK, h = s.height, g = Math.round(h * (d.vur ? .3 : d.yuk));
+        x.save(); x.beginPath(); x.rect(cx - 24, cy - 40, 48, 40 + 6); x.clip();
+        x.drawImage(s, cx - s.width / 2, cy + 6 - g + (d.vur ? 4 : 0));
+        x.restore();
+      }
+      x.fillStyle = "#5a3d2a"; x.fillRect(cx - 21, cy + 6, 42, 3); x.fillRect(cx - 17, cy + 9, 34, 3);
+      x.fillStyle = "#0d0e1a"; x.fillRect(cx - 21, cy + 9, 42, 1);
+    }
+    par.forEach(function (p) { x.fillStyle = p.r; x.fillRect(Math.round(p.x), Math.round(p.y), 3, 3); });
+    yazi.forEach(function (t) { Px.yazi(x, t.t, Math.round(t.x), Math.round(t.y), 10, t.r, "center"); });
+    x.restore();
+  }
+  C.addEventListener("pointerdown", function (e) {
+    if (!calis) return; e.preventDefault();
+    var k = C.getBoundingClientRect(), px = (e.clientX - k.left) * W / k.width, py = (e.clientY - k.top) * H / k.height, en = -1, ed = 1e9;
+    for (var i = 0; i < 9; i++) {
+      var dx = px - CX[i % 3], dy = py - (CY[Math.floor(i / 3)] - 6), dd = dx * dx + dy * dy;
+      if (Math.abs(dx) < 26 && Math.abs(dy) < 28 && dd < ed) { ed = dd; en = i; }
+    }
+    if (en >= 0) vur(en);
+  });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni(); Px.dongu(guncelle, ciz);
+})();
+</script>
+</body>
+</html>

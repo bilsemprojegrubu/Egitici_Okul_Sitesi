@@ -6,20 +6,25 @@
 <title>Hafıza — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
 <style>
-#bilgi{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%;max-width:440px}
-#bilgi .kut{flex:1;min-width:110px;background:#262b44;border:3px solid #0d0e1a;outline:2px solid #566c86;padding:6px 8px;text-align:center;font-size:.9rem}
+#bilgi{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;max-width:520px}
+#bilgi .kut{flex:1;min-width:96px;background:#262b44;border:3px solid #0d0e1a;outline:2px solid #566c86;padding:6px 8px;text-align:center;font-size:.9rem}
 #bilgi .kut b{color:#ffcd75;font-size:1.15rem}
 #bilgi .kut.sira{background:#3b5dc9;outline-color:#ffcd75}
-#kartlar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:min(100%,440px)}
-.k{aspect-ratio:1/1;perspective:500px;border:0;background:none;padding:0;cursor:pointer}
+#bilgi .kut.kombo{background:#b13e53;outline-color:#ffcd75}
+#kartlar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(100%,460px)}
+#kartlar.c6{grid-template-columns:repeat(6,1fr);width:min(100%,560px);gap:6px}
+.k{aspect-ratio:1/1;perspective:500px;border:0;background:none;padding:0;cursor:pointer;touch-action:manipulation}
 .k .ic{position:relative;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d}
 .k.acik .ic,.k.eslesti .ic{transform:rotateY(180deg)}
 .k .y{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid #0d0e1a;box-shadow:inset 3px 3px 0 rgba(255,255,255,.3),inset -3px -3px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
 .k .arka{background:#3b5dc9 repeating-conic-gradient(#3b5dc9 0 25%,#41a6f6 0 50%) 0 0/16px 16px}
 .k .on{background:#f4f4f4;transform:rotateY(180deg)}
-.k .on canvas{width:78%;height:78%;border:0;outline:0;background:none}
+.k .on canvas{width:80%;height:80%;border:0;outline:0;background:none;image-rendering:pixelated}
+.k .on canvas.yz{width:94%;height:94%;image-rendering:auto}
 .k.eslesti .on{background:#a7f070}
 .k.eslesti.p1 .on{background:#73eff7}.k.eslesti.p2 .on{background:#ffcd75}
+.k.eslesti .ic{animation:zp .4s steps(4)}
+@keyframes zp{50%{transform:rotateY(180deg) scale(1.1)}}
 .k:hover .arka{filter:brightness(1.15)}
 </style>
 </head>
@@ -41,72 +46,147 @@
 <script src="../../skor.js"></script>
 <script src="../piksel.js"></script>
 <script>
-// Hafıza: tek kişilik puan = 1000 - hamle*20 - saniye*3 (en az 50). İki kişilik: sırayla, çok eş bulan kazanır (sıralamaya girmez).
+// Hafıza: eş kartları bul. Modlar: Resimler, Matematik, Eş anlam, Zıt anlam, Değeri eşit.
+// 1 oyuncu puanı (en çok 1000): 100 taban + 500 verimlilik (az hamle) + 250 süre + 150 kombo, zorluk çarpanı ile. Tek id: "hafiza".
 (function () {
-  // 12x12 piksel hayvan yüzleri program ile üretilir
-  var HAY = [
-    { c: "#94b0c2", d: "#566c86", kulak: "sivri", burun: "#ef7d57" },                 // kedi
-    { c: "#c98a4b", d: "#7a4a2a", kulak: "sarkik", burun: "#1a1c2c" },                // köpek
-    { c: "#ef7d57", d: "#b13e53", kulak: "sivri", burun: "#1a1c2c", yanak: "#f4f4f4" }, // tilki
-    { c: "#f4f4f4", d: "#1a1c2c", kulak: "yuvarlak", burun: "#1a1c2c", leke: true },  // panda
-    { c: "#38b764", d: "#257179", kulak: "kurbaga", burun: "#257179" },               // kurbağa
-    { c: "#f4a6c0", d: "#d66a8f", kulak: "sivri", burun: "#d66a8f", domuz: true },    // domuz
-    { c: "#c98a4b", d: "#5d3a1e", kulak: "sivri", burun: "#ffcd75", baykus: true },   // baykuş
-    { c: "#ffcd75", d: "#ef7d57", kulak: "yok", burun: "#ef7d57", civciv: true }      // civciv
+  // ---------- Piksel resimler (12x12) ----------
+  // Simetrik olanlar yarım satırla yazılır (sol 6 sütun), sağ yarısı aynalanır.
+  function ayna(sol) { return sol.map(function (s) { return s + s.split("").reverse().join(""); }); }
+  var TEMEL = { k: "#1a1c2c", w: "#ffffff", r: "#e43b44", R: "#a22633", g: "#3ea84a", G: "#265c42", y: "#ffd34e", Y: "#e8a317", o: "#f08a3c", b: "#7a4a2a", p: "#f4a6c0", s: "#2b2b3b" };
+  var RES = [
+    { ad: "Elma", pal: {}, s: ayna([".....b", "..kkgb", ".krrrr", "krwrrr", "krwrrr", "krrrrr", "krrrrr", ".krrrr", ".kkrrR", "..kkkk"]) },
+    { ad: "Muz", pal: {}, s: ["..........bk", "........kkbk", ".......kyyk.", "......kyyyk.", ".....kyyyyk.", "k...kyyyyYk.", "kk.kyyyyyYk.", "kykyyyyyYYk.", "kyyyyyyYYk..", ".kyyyyYYYk..", "..kkYYYkk...", "....kkkk...."] },
+    { ad: "Çilek", pal: {}, s: ayna(["...kgg", "..kggg", ".krrrr", "krwrrr", "krryrr", "krrrrr", ".kryrr", ".krrrr", "..krrr", "...kkk"]) },
+    { ad: "Karpuz", pal: {}, s: ayna(["", "", "kkkkkk", "kgwrrr", "kgwrsr", "kgwrrr", ".kwrrs", ".kwrrr", "..kwwr", "...kgg", "....kk"].map(function (x) { return (x + "......").slice(0, 6); })).map(function (x) { return x; }) },
+    { ad: "Kedi", pal: { c: "#e0902f", e: "#f4a6c0" }, s: ayna(["kk....", "kck...", "kcckkk", "kcccce", "kcwkcc", "kckkcc", "kccccp", "kccckp", ".kcccc", "..kkkk"]) },
+    { ad: "Köpek", pal: { c: "#d9a066", d: "#7a4a2a", m: "#fff1d6", n: "#1a1c2c" }, s: ayna(["..kkkk", ".kcccc", "kddccc", "kddccc", "kddwkc", "kddkkc", "kddmmm", "kddmmn", ".kcmmm", "..kkkk"]) },
+    { ad: "Kurbağa", pal: {}, s: ayna([".kkk..", "kwwwk.", "kwkwkk", "kggggg", "kgrggg", "kkkkkk", "kgggg", "kgggg", ".kgggg", "..kkkk"].map(function (x) { return (x + "......").slice(0, 6); })) },
+    { ad: "Civciv", pal: {}, s: ayna([".....k", "....ky", "..kkyy", ".kyyyy", "kyykyy", "kyykyy", "kyyyoo", "kyyyyo", ".kyyyy", "..kkoo"]) },
+    { ad: "Yıldız", pal: {}, s: ayna([".....k", "....ky", "....ky", "kkkkky", "kywyyy", ".kyyyy", "..kyyy", "..kyyy", ".kyyyk", ".kkkk."]) },
+    { ad: "Kalp", pal: {}, s: ayna([".kkk..", "krwrrk", "krwrrr", "krrrrr", ".krrrr", "..krrr", "...krr", "....kr", ".....k"]) },
+    { ad: "Güneş", pal: { o: "#f08a3c" }, s: ayna([".....o", ".o..kk", "..kkyy", "..kyyy", "okyyyy", "okykyy", "okyyyy", "okykkk", "..kyyy", "..kkyy", ".o..kk", ".....o"]) },
+    { ad: "Ağaç", pal: {}, s: ayna(["..kkkk", ".kgggg", "kggwgg", "kggggg", "kgggGg", ".kgggg", "..kkkg", "....kb", "....kb", "...kkk"]) }
   ];
-  function yuz(h) {
-    var s = []; for (var i = 0; i < 12; i++) s.push("............".split(""));
-    function n(r, c, ch) { if (r >= 0 && r < 12 && c >= 0 && c < 12) s[r][c] = ch; }
-    function sag(r, c, ch) { n(r, c, ch); n(r, 11 - c, ch); }
-    // baş (köşeleri kesik)
-    for (var r = 3; r <= 10; r++) for (var c = 1; c <= 10; c++) {
-      var kose = (r === 3 || r === 10) && (c === 1 || c === 10);
-      if (!kose) n(r, c, "c");
-    }
-    for (c = 1; c <= 10; c++) { n(10, c, "k"); }
-    for (r = 4; r <= 9; r++) { n(r, 0, "k"); n(r, 11, "k"); }
-    for (c = 2; c <= 9; c++) n(3, c, "c");
-    // kulaklar
-    if (h.kulak === "sivri") { sag(0, 1, "k"); sag(1, 1, "k"); sag(1, 2, "d"); sag(2, 1, "d"); sag(2, 2, "d"); sag(2, 3, "k"); sag(0, 2, "."); }
-    if (h.kulak === "yuvarlak") { sag(1, 1, "k"); sag(1, 2, "k"); sag(2, 1, "d"); sag(2, 2, "d"); sag(0, 1, "."); sag(2, 3, "k"); sag(0, 2, "k"); sag(0, 1, "k"); sag(1, 1, "d"); sag(1, 2, "d"); }
-    if (h.kulak === "sarkik") { sag(2, 1, "d"); sag(3, 0, "d"); sag(4, 0, "d"); sag(5, 0, "d"); sag(6, 0, "d"); sag(2, 2, "k"); sag(1, 1, "k"); sag(1, 2, "d"); sag(2, 1, "d"); }
-    if (h.kulak === "kurbaga") { sag(1, 2, "w"); sag(1, 3, "w"); sag(2, 2, "w"); sag(2, 3, "w"); sag(0, 2, "k"); sag(0, 3, "k"); sag(2, 1, "c"); sag(2, 4, "k"); sag(3, 1, "k"); }
-    if (h.leke) { sag(4, 2, "d"); sag(4, 3, "d"); sag(5, 2, "d"); sag(5, 3, "d"); }
-    if (h.yanak) { sag(7, 1, "w"); sag(7, 2, "w"); sag(8, 2, "w"); sag(8, 3, "w"); sag(9, 3, "w"); sag(9, 4, "w"); n(9, 5, "w"); n(9, 6, "w"); }
-    // gözler
-    var gr = h.kulak === "kurbaga" ? 1 : 5;
-    if (h.baykus) { for (r = 4; r <= 6; r++) for (c = 2; c <= 4; c++) sag(r, c, "w"); sag(5, 3, "g"); sag(5, 4, "g"); sag(5, 2, "w"); }
-    else if (h.kulak === "kurbaga") { sag(1, 3, "g"); sag(2, 3, "g"); }
-    else { sag(5, 3, "g"); sag(5, 2, "w"); sag(4, 3, "w"); if (h.leke) { sag(5, 2, "g"); sag(4, 3, "d"); } }
-    // burun, ağız
-    if (h.domuz) { for (c = 4; c <= 7; c++) { n(7, c, "p"); n(8, c, "p"); } n(7, 5, "b"); n(7, 6, "b"); n(8, 4, "p"); }
-    else if (h.civciv) { n(7, 4, "b"); n(7, 5, "b"); n(7, 6, "b"); n(7, 7, "b"); n(8, 5, "b"); n(8, 6, "b"); n(2, 5, "b"); n(1, 6, "b"); n(2, 6, "b"); }
-    else if (h.baykus) { n(7, 5, "b"); n(7, 6, "b"); n(8, 5, "b"); n(8, 6, "b"); }
-    else { n(7, 5, "b"); n(7, 6, "b"); n(8, 4, "g"); n(8, 7, "g"); n(9, 5, "g"); n(9, 6, "g"); }
-    return Px.sprite(s.map(function (a) { return a.join(""); }), { c: h.c, d: h.d, k: "#1a1c2c", w: "#fff", g: "#1a1c2c", b: h.burun, p: h.domuz ? "#d66a8f" : "#fff" }, 5);
+  function resimCiz(r, olcek) {
+    var pal = {}, a; for (a in TEMEL) pal[a] = TEMEL[a]; for (a in r.pal) pal[a] = r.pal[a];
+    var s = r.s.map(function (x) { return (x + "............").slice(0, 12); });
+    var ust = Math.floor((12 - s.length) / 2), z = [], i;
+    for (i = 0; i < 12; i++) z.push("............");
+    for (i = 0; i < s.length; i++) z[ust + i] = s[i];
+    return Px.sprite(z, pal, olcek);
   }
-  var KARTLAR = HAY.map(yuz);
+
+  // ---------- Kelime/ifade havuzları ----------
+  var ES = [["güzel", "hoş"], ["büyük", "iri"], ["küçük", "ufak"], ["hızlı", "çabuk"], ["mutlu", "sevinçli"], ["üzgün", "kederli"], ["cesur", "yürekli"], ["akıllı", "zeki"], ["çalışkan", "gayretli"], ["temiz", "pak"], ["ev", "konut"], ["okul", "mektep"], ["doktor", "hekim"], ["cevap", "yanıt"], ["soru", "sual"], ["hediye", "armağan"], ["dost", "arkadaş"], ["savaş", "harp"], ["kuvvetli", "güçlü"], ["zor", "çetin"], ["kolay", "basit"], ["anne", "ana"], ["sevinç", "neşe"], ["ödül", "mükâfat"], ["hata", "yanlış"], ["yardım", "destek"], ["ilk", "evvel"], ["çok", "fazla"], ["yaşlı", "ihtiyar"], ["harika", "muhteşem"], ["kızmak", "öfkelenmek"], ["yorgun", "bitkin"], ["fakir", "yoksul"], ["zengin", "varlıklı"], ["nazik", "kibar"], ["öğrenci", "talebe"], ["vakit", "zaman"], ["hayat", "yaşam"], ["sınav", "imtihan"], ["dil", "lisan"], ["baş", "kafa"], ["gizli", "saklı"], ["resim", "tablo"], ["deniz", "derya"], ["yüksek", "yüce"], ["çocuk", "yavru"]];
+  var ZIT = [["sıcak", "soğuk"], ["büyük", "küçük"], ["uzun", "kısa"], ["hızlı", "yavaş"], ["ağır", "hafif"], ["kalın", "ince"], ["geniş", "dar"], ["yüksek", "alçak"], ["derin", "sığ"], ["ıslak", "kuru"], ["temiz", "kirli"], ["güzel", "çirkin"], ["iyi", "kötü"], ["doğru", "yanlış"], ["zengin", "fakir"], ["genç", "yaşlı"], ["yeni", "eski"], ["kolay", "zor"], ["açık", "kapalı"], ["gece", "gündüz"], ["aydınlık", "karanlık"], ["tatlı", "acı"], ["dolu", "boş"], ["çok", "az"], ["ileri", "geri"], ["yukarı", "aşağı"], ["sağ", "sol"], ["ön", "arka"], ["içeri", "dışarı"], ["sevinç", "üzüntü"], ["gülmek", "ağlamak"], ["yaz", "kış"], ["sabah", "akşam"], ["başlamak", "bitirmek"], ["gelmek", "gitmek"], ["almak", "vermek"], ["sert", "yumuşak"], ["ak", "kara"], ["var", "yok"], ["cesur", "korkak"], ["çalışkan", "tembel"], ["dost", "düşman"], ["barış", "savaş"], ["ucuz", "pahalı"], ["tok", "aç"]];
+  var ESIT = [["1/2", "0,5", "%50", "2/4"], ["1/4", "0,25", "%25", "2/8"], ["3/4", "0,75", "%75", "6/8"], ["1/5", "0,2", "%20", "2/10"], ["1/10", "0,1", "%10"], ["2/5", "0,4", "%40", "4/10"], ["3/5", "0,6", "%60", "6/10"], ["4/5", "0,8", "%80", "8/10"], ["1/3", "2/6", "3/9"], ["2/3", "4/6", "6/9"], ["1 saat", "60 dk", "3600 sn"], ["1 dk", "60 sn"], ["1 m", "100 cm"], ["1 km", "1000 m"], ["1 kg", "1000 g"], ["1 L", "1000 mL"], ["1 gün", "24 saat"], ["1 hafta", "7 gün"], ["1 yıl", "12 ay"], ["1 düzine", "12 adet"], ["yarım saat", "30 dk"], ["çeyrek saat", "15 dk"], ["%100", "1", "10/10"], ["2×6", "3×4", "24÷2", "10+2"], ["3×5", "30÷2", "10+5"], ["4×5", "40÷2", "10+10"], ["4×4", "2×8", "8+8"], ["2×9", "3×6", "9+9"], ["4×6", "3×8", "12+12"], ["5×5", "50÷2", "20+5"]];
+  window.__HAFIZA_HAVUZ = { ES: ES, ZIT: ZIT, ESIT: ESIT };
+
+  function kar(a) { for (var i = a.length - 1; i > 0; i--) { var j = Px.tamsayi(0, i), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function ornek(a, n) { return kar(a.slice()).slice(0, n); }
+  function ciftYon(c) { return Math.random() < .5 ? [c[0], c[1]] : [c[1], c[0]]; }
+
+  // Matematik: [ifade, değer] çiftleri; değerler ve ifadeler benzersiz
+  function matUret(n, zor) {
+    var cift = [], deg = {}, ifd = {}, deneme = 0;
+    while (cift.length < n && deneme++ < 800) {
+      var a, b, c, e, v, t = Px.tamsayi(0, zor === 0 ? 1 : zor === 1 ? 3 : 6);
+      if (zor === 0) {
+        a = Px.tamsayi(2, 12); b = Px.tamsayi(2, 9);
+        if (t === 0) { e = a + "+" + b; v = a + b; } else { if (a <= b) continue; e = a + "−" + b; v = a - b; }
+      } else if (zor === 1) {
+        a = Px.tamsayi(2, 10); b = Px.tamsayi(2, 10);
+        if (t === 0) { e = a + "+" + b; v = a + b; } else if (t === 1) { e = a + "×" + b; v = a * b; } else if (t === 2) { e = (a * b) + "÷" + b; v = a; } else { if (a <= b) continue; e = a + "−" + b; v = a - b; }
+      } else {
+        a = Px.tamsayi(2, 9); b = Px.tamsayi(2, 9); c = Px.tamsayi(2, 20);
+        if (t === 0) { e = a + "×" + b + "+" + c; v = a * b + c; }
+        else if (t === 1) { if (a * b <= c) continue; e = a + "×" + b + "−" + c; v = a * b - c; }
+        else if (t === 2) { e = (a + c) + "−" + c + "+" + b; v = a + b; }
+        else if (t === 3) { e = "(" + a + "+" + b + ")×2"; v = (a + b) * 2; }
+        else if (t === 4) { e = (a * b * 2) + "÷" + (a * 2); v = b; }
+        else if (t === 5) { e = c + "+" + a + "×" + b; v = c + a * b; }
+        else { e = (a * 10) + "÷" + 5 + "+" + b; v = a * 2 + b; }
+      }
+      if (v < 2 || v > 99 || deg[v] || ifd[e] || String(v) === e) continue;
+      deg[v] = 1; ifd[e] = 1; cift.push(ciftYon([e, String(v)]));
+    }
+    return cift;
+  }
+  function havuzdan(h, n) { return ornek(h, n).map(function (g) { var m = g.length > 2 ? ornek(g, 2) : g; return ciftYon(m); }); }
+
+  var MODLAR = [
+    { id: "resim", ad: "Resimler", alt: "Piksel resimlerin eşini bul", hedef: 3.5 },
+    { id: "mat", ad: "Matematik", alt: "İşlem ile sonucunu eşle", hedef: 6 },
+    { id: "es", ad: "Türkçe: Eş anlam", alt: "Anlamdaş kelimeleri eşle", hedef: 6 },
+    { id: "zit", ad: "Türkçe: Zıt anlam", alt: "Karşıt kelimeleri eşle", hedef: 6 },
+    { id: "esit", ad: "Değeri eşit", alt: "1/2 = 0,5 = %50 gibi", hedef: 6 }
+  ];
+  var ZORLUK = [
+    { ad: "Kolay", alt: "12 kart, 6 çift", n: 6, cs: 4, carpan: .8 },
+    { ad: "Orta", alt: "16 kart, 8 çift", n: 8, cs: 4, carpan: .9 },
+    { ad: "Zor", alt: "24 kart, 12 çift", n: 12, cs: 6, carpan: 1 }
+  ];
+
   var K = document.getElementById("kartlar"), BILGI = document.getElementById("bilgi"), IP = document.getElementById("ipucu");
-  var mod = 1, acik, bulunan, hamle, bas, sayac, kilit, sira, es, menu;
+  var mod = MODLAR[0], zor = 0, oyuncu = 1, acik, bulunan, hamle, bas, sayac, kilit, sira, es, kombo, enKombo, toplamCift, menuMod, menuZor, menuOy, resimler = [];
+
+  // Metin kartı: yazı kartın içine sığacak şekilde boyutlanır (gerekirse iki satıra bölünür)
+  function metinCiz(t) {
+    var cv = document.createElement("canvas"); cv.width = 120; cv.height = 120; cv.className = "yz";
+    var x = cv.getContext("2d"), W = 108, boyut, satirlar = [t];
+    function olc(b) { x.font = "900 " + b + 'px "Trebuchet MS","Segoe UI",Arial,sans-serif'; var m = 0; satirlar.forEach(function (s) { m = Math.max(m, x.measureText(s).width); }); return m; }
+    boyut = 40; while (boyut > 10 && olc(boyut) > W) boyut--;
+    if (t.indexOf(" ") > 0 && boyut < 26) {
+      var p = t.split(" "), ort = Math.ceil(p.length / 2); satirlar = [p.slice(0, ort).join(" "), p.slice(ort).join(" ")];
+      boyut = 38; while (boyut > 10 && olc(boyut) > W) boyut--;
+    }
+    olc(boyut);
+    x.textAlign = "center"; x.textBaseline = "middle"; x.lineJoin = "round";
+    var lh = boyut * 1.15, y0 = 60 - (satirlar.length - 1) * lh / 2;
+    satirlar.forEach(function (s, i) {
+      x.lineWidth = Math.max(2, boyut * .12); x.strokeStyle = "#fff"; x.strokeText(s, 60, y0 + i * lh);
+      x.fillStyle = "#1a1c2c"; x.fillText(s, 60, y0 + i * lh);
+    });
+    return cv;
+  }
+
   function bilgiCiz() {
     BILGI.textContent = "";
-    function kutu(e, d, sr) { var k = document.createElement("div"); k.className = "kut" + (sr ? " sira" : ""); k.appendChild(document.createTextNode(e + " ")); var b = document.createElement("b"); b.textContent = d; k.appendChild(b); BILGI.appendChild(k); }
-    if (mod === 1) { kutu("Hamle", hamle); kutu("Süre", Math.floor(bas ? (Date.now() - bas) / 1000 : 0)); }
-    else { kutu("Oyuncu 1", es[0], sira === 0); kutu("Oyuncu 2", es[1], sira === 1); }
+    function kutu(e, d, sr, ek) { var k = document.createElement("div"); k.className = "kut" + (sr ? " sira" : "") + (ek ? " " + ek : ""); k.appendChild(document.createTextNode(e + " ")); var b = document.createElement("b"); b.textContent = d; k.appendChild(b); BILGI.appendChild(k); }
+    if (oyuncu === 1) {
+      kutu("Hamle", hamle); kutu("Süre", Math.floor(bas ? (Date.now() - bas) / 1000 : 0));
+      kutu("Kombo", "x" + kombo, false, kombo >= 2 ? "kombo" : "");
+    } else { kutu("Oyuncu 1", es[0], sira === 0); kutu("Oyuncu 2", es[1], sira === 1); }
   }
+
+  function kartlariHazirla() {
+    var n = ZORLUK[zor].n, d = [], i;
+    if (mod.id === "resim") {
+      resimler = ornek(RES.map(function (_, i) { return i; }), n);
+      for (i = 0; i < n; i++) { d.push({ e: i, r: resimler[i] }); d.push({ e: i, r: resimler[i] }); }
+    } else {
+      var c = mod.id === "mat" ? matUret(n, zor) : mod.id === "es" ? havuzdan(ES, n) : mod.id === "zit" ? havuzdan(ZIT, n) : havuzdan(ESIT, n);
+      c.forEach(function (p, i) { d.push({ e: i, t: p[0] }); d.push({ e: i, t: p[1] }); });
+    }
+    toplamCift = d.length / 2;
+    return kar(d);
+  }
+
   function yeni() {
-    var d = []; for (var i = 0; i < 8; i++) { d.push(i); d.push(i); }
-    for (i = d.length - 1; i > 0; i--) { var j = Px.tamsayi(0, i), t = d[i]; d[i] = d[j]; d[j] = t; }
-    K.textContent = ""; acik = []; bulunan = 0; hamle = 0; bas = 0; kilit = false; sira = 0; es = [0, 0];
+    var d = kartlariHazirla();
+    K.textContent = ""; K.className = ZORLUK[zor].cs === 6 ? "c6" : "";
+    acik = []; bulunan = 0; hamle = 0; bas = 0; kilit = false; sira = 0; es = [0, 0]; kombo = 0; enKombo = 0;
     clearInterval(sayac); sayac = null;
     document.getElementById("bitti").hidden = true;
-    IP.textContent = mod === 1 ? "Kartlara dokun, eşleri bul. Az hamle ve kısa süre = yüksek puan." : "Sırayla kart aç. Eş bulan tekrar oynar. İki kişilik maç sıralamaya girmez.";
+    IP.textContent = oyuncu === 1 ? "Kartlara dokun, eşleri bul. Az hamle, kısa süre ve arka arkaya eşleşme (kombo) = yüksek puan." : "Sırayla kart aç. Eş bulan tekrar oynar. İki kişilik maç sıralamaya girmez.";
     d.forEach(function (e) {
-      var b = document.createElement("button"); b.className = "k"; b.type = "button"; b.setAttribute("data-e", e); b.setAttribute("aria-label", "Kart");
+      var b = document.createElement("button"); b.className = "k"; b.type = "button"; b.setAttribute("data-e", e.e); b.setAttribute("aria-label", "Kart");
       var ic = document.createElement("div"); ic.className = "ic";
       var a = document.createElement("div"); a.className = "y arka";
       var o = document.createElement("div"); o.className = "y on";
-      var cv = document.createElement("canvas"); cv.width = 60; cv.height = 60; cv.getContext("2d").drawImage(KARTLAR[e], 0, 0);
+      var cv;
+      if (e.r !== undefined) { cv = document.createElement("canvas"); cv.width = 96; cv.height = 96; cv.getContext("2d").drawImage(resimCiz(RES[e.r], 8), 0, 0); }
+      else cv = metinCiz(e.t);
       o.appendChild(cv); ic.appendChild(a); ic.appendChild(o); b.appendChild(ic);
       b.addEventListener("click", function () { cevir(b); }); K.appendChild(b);
     });
@@ -114,47 +194,64 @@
   }
   function cevir(b) {
     if (kilit || b.classList.contains("acik") || b.classList.contains("eslesti")) return;
-    if (!bas && mod === 1) { bas = Date.now(); sayac = setInterval(bilgiCiz, 500); }
+    if (!bas && oyuncu === 1) { bas = Date.now(); sayac = setInterval(bilgiCiz, 500); }
     Px.ses("don");
     b.classList.add("acik"); acik.push(b);
     if (acik.length < 2) return;
     hamle++;
     var a = acik[0], c = acik[1]; acik = [];
     if (a.getAttribute("data-e") === c.getAttribute("data-e")) {
-      setTimeout(function () {
-        [a, c].forEach(function (k) { k.classList.remove("acik"); k.classList.add("eslesti"); if (mod === 2) k.classList.add(sira ? "p2" : "p1"); });
-        Px.ses("puan"); bulunan++; if (mod === 2) es[sira]++; bilgiCiz();
-        if (bulunan === 8) bitir();
-      }, 350);
-    } else {
       kilit = true;
       setTimeout(function () {
+        [a, c].forEach(function (k) { k.classList.remove("acik"); k.classList.add("eslesti"); if (oyuncu === 2) k.classList.add(sira ? "p2" : "p1"); });
+        Px.ses("puan"); bulunan++; kombo++; if (kombo > enKombo) enKombo = kombo; if (oyuncu === 2) es[sira]++;
+        kilit = false; bilgiCiz();
+        if (bulunan === toplamCift) bitir();
+      }, 350);
+    } else {
+      kilit = true; kombo = 0;
+      setTimeout(function () {
         [a, c].forEach(function (k) { k.classList.remove("acik"); });
-        kilit = false; if (mod === 2) sira = 1 - sira; bilgiCiz();
-      }, 800);
+        kilit = false; if (oyuncu === 2) sira = 1 - sira; bilgiCiz();
+      }, mod.id === "resim" ? 800 : 1100);
     }
     bilgiCiz();
   }
   function bitir() {
     clearInterval(sayac);
-    if (mod === 1) {
-      var sn = Math.floor((Date.now() - bas) / 1000);
-      var puan = Math.max(50, 1000 - hamle * 20 - sn * 3);
+    if (oyuncu === 1) {
+      var sn = Math.floor((Date.now() - bas) / 1000), n = toplamCift;
+      var ver = Math.min(1, n / hamle);
+      var sureOran = Px.sinir(2 - sn / (n * mod.hedef), 0, 1);
+      var komboOran = Math.min(1, enKombo / n);
+      var ham = 100 + 500 * ver + 250 * sureOran + 150 * komboOran;
+      var puan = Px.sinir(Math.round(ham * ZORLUK[zor].carpan), 50, 1000);
+      IP.textContent = "Hamle " + hamle + " · Süre " + sn + " sn · En uzun kombo x" + enKombo;
       setTimeout(function () { Px.ses("kazan"); Skor.oyunBitti("hafiza", puan); }, 400);
     } else {
       setTimeout(function () { Px.sonuc2(es[0] === es[1] ? "Berabere! " + es[0] + " - " + es[1] : (es[0] > es[1] ? "Oyuncu 1" : "Oyuncu 2") + " kazandı! " + es[0] + " - " + es[1]); }, 400);
     }
   }
-  menu = Px.menu({
-    baslik: "HAFIZA", not: "Piksel hayvanların eşlerini bul!",
+
+  menuMod = Px.menu({
+    baslik: "HAFIZA", not: "Ne eşleştirmek istersin?",
+    secenekler: MODLAR.map(function (m) { return { ad: m.ad, alt: m.alt, fn: function () { mod = m; menuZor.el.hidden = false; } }; })
+  });
+  menuZor = Px.menu({
+    baslik: "ZORLUK", not: "Kart sayısı",
+    secenekler: ZORLUK.map(function (z, i) { return { ad: z.ad, alt: z.alt, fn: function () { zor = i; menuOy.el.hidden = false; } }; })
+  });
+  menuOy = Px.menu({
+    baslik: "KAÇ KİŞİ?", not: "",
     secenekler: [
-      { ad: "1 Oyuncu", alt: "Sıralamaya girer", fn: function () { mod = 1; yeni(); } },
-      { ad: "2 Oyuncu", alt: "Sırayla oynayın", fn: function () { mod = 2; yeni(); } }
+      { ad: "1 Oyuncu", alt: "Sıralamaya girer", fn: function () { oyuncu = 1; yeni(); } },
+      { ad: "2 Oyuncu", alt: "Sırayla oynayın", fn: function () { oyuncu = 2; yeni(); } }
     ]
   });
+  menuZor.kapat(); menuOy.kapat();
   document.getElementById("tekrar").addEventListener("click", yeni);
-  document.getElementById("menuBtn").addEventListener("click", function () { clearInterval(sayac); menu.ac(); });
-  BILGI.textContent = ""; // menü seçilene kadar boş
+  document.getElementById("menuBtn").addEventListener("click", function () { clearInterval(sayac); menuZor.kapat(); menuOy.kapat(); menuMod.ac(); });
+  BILGI.textContent = "";
 })();
 </script>
 </body>

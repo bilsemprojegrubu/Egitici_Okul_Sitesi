@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simon — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+</head>
+<body data-oyun="simon">
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>SİMON</h1>
+<div class="puanlar">Tur <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" class="cv" width="200" height="200" style="--mw:400px;touch-action:none"></canvas>
+  <p class="ipucu">Renklerin sırasını izle, sonra aynısını tekrarla. Dokun ya da Q W / A S tuşlarını (veya 1 2 3 4) kullan. Her turda dizi uzar ve hızlanır!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
+<script>
+// Simon: 200x200 düşük çözünürlük. Dört renkli pad, dizi her turda uzar.
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 200, H = 200;
+  // 0 yeşil (sol üst), 1 kırmızı (sağ üst), 2 sarı (sol alt), 3 mavi (sağ alt)
+  var PAD = [
+    { x: 8, y: 8, acik: "#73eff7", koyu: "#257179", f: 392, ad: "Q" },
+    { x: 104, y: 8, acik: "#ff7a8a", koyu: "#7a2a3a", f: 330, ad: "W" },
+    { x: 8, y: 104, acik: "#ffe29a", koyu: "#8a6a2a", f: 262, ad: "A" },
+    { x: 104, y: 104, acik: "#7cc4ff", koyu: "#27508a", f: 220, ad: "S" }
+  ];
+  PAD[0].acik = "#6ee78a"; PAD[0].koyu = "#1f6b3a";
+  var PW = 88;
+  var KEYS = { KeyQ: 0, KeyW: 1, KeyA: 2, KeyS: 3, Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3,
+    Numpad1: 0, Numpad2: 1, Numpad3: 2, Numpad4: 3 };
+  var dizi, durum, idx, say, yanan, yananSure, puan, hata, bekleSay, adim, ac = null;
+  try { document.getElementById("rekor").textContent = Skor.rekor("simon"); } catch (e) { }
+
+  function baglam() {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; } }
+    if (ac && ac.state === "suspended") { try { ac.resume(); } catch (e) { } }
+    return ac;
+  }
+  // Her rengin kendi perdesi; süre ms
+  function ton(f, sure, tur) {
+    try {
+      if (Px.oku("px_ses") === "0") return;
+      var a = baglam(); if (!a) return;
+      var t0 = a.currentTime, o = a.createOscillator(), v = a.createGain();
+      o.type = tur || "square"; o.frequency.setValueAtTime(f, t0);
+      v.gain.setValueAtTime(.001, t0); v.gain.exponentialRampToValueAtTime(.12, t0 + .01);
+      v.gain.setValueAtTime(.12, t0 + sure - .04); v.gain.exponentialRampToValueAtTime(.0001, t0 + sure);
+      o.connect(v); v.connect(a.destination); o.start(t0); o.stop(t0 + sure + .02);
+    } catch (e) { }
+  }
+  function yak(i, kare) { yanan = i; yananSure = kare; ton(PAD[i].f, Math.max(.12, kare / 60), "square"); }
+  function hiz() { return Math.max(12, Math.round(34 - Math.min(puan, 20) * 1.1)); }
+
+  function yeni() {
+    dizi = []; puan = 0; idx = 0; yanan = -1; yananSure = 0; hata = false; durum = "basla"; bekleSay = 0;
+    document.getElementById("puan").textContent = 0;
+    document.getElementById("bitti").hidden = true;
+  }
+  function tur() {
+    dizi.push(Px.tamsayi(0, 3)); idx = 0; durum = "goster"; adim = 0; say = 40;
+  }
+  function bas(i) {
+    if (durum === "basla") { baglam(); tur(); return; }
+    if (durum !== "sira") return;
+    yak(i, Math.max(12, Math.round(hiz() * .7)));
+    if (dizi[idx] !== i) {
+      durum = "hata"; hata = true; say = 70; Px.ses("hata"); return;
+    }
+    idx++;
+    if (idx >= dizi.length) {
+      puan = Math.min(500, puan + 1);
+      document.getElementById("puan").textContent = puan;
+      durum = "bekle"; say = 36;
+      if (puan >= 500) { durum = "son"; say = 30; }
+    }
+  }
+  function bitir() {
+    durum = "son2"; Px.ses("kaybet");
+    setTimeout(function () { Skor.oyunBitti("simon", puan); }, 300);
+  }
+  function guncelle() {
+    if (yananSure > 0) { yananSure--; if (yananSure <= 0) yanan = -1; }
+    bekleSay++;
+    if (durum === "goster") {
+      say--;
+      if (say > 0) return;
+      if (adim < dizi.length) { yak(dizi[adim], hiz()); say = hiz() + Math.max(6, Math.round(hiz() * .35)); adim++; }
+      else { durum = "sira"; idx = 0; }
+    } else if (durum === "bekle") {
+      say--; if (say <= 0) { Px.ses("puan"); tur(); say = 20; }
+    } else if (durum === "hata") {
+      say--; if (say <= 0) bitir();
+    } else if (durum === "son") {
+      say--; if (say <= 0) bitir();
+    } else if (durum === "basla") {
+      if (Px.p.Space || Px.p.Enter) bas(0);
+    }
+    for (var k in KEYS) if (Px.p[k]) bas(KEYS[k]);
+  }
+  function padCiz(i) {
+    var p = PAD[i], a = (yanan === i), r = (durum === "hata" && hata && dizi[idx] === i);
+    var px = p.x, py = p.y;
+    x.fillStyle = "#0d0e1a"; x.fillRect(px - 2, py - 2, PW + 4, PW + 4);
+    x.fillStyle = a ? p.acik : p.koyu; x.fillRect(px, py, PW, PW);
+    // parlak/koyu kenar (piksel kabartma)
+    x.fillStyle = a ? "rgba(255,255,255,.55)" : "rgba(255,255,255,.18)"; x.fillRect(px, py, PW, 4); x.fillRect(px, py, 4, PW);
+    x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px, py + PW - 4, PW, 4); x.fillRect(px + PW - 4, py, 4, PW);
+    if (a) { x.fillStyle = "rgba(255,255,255,.25)"; x.fillRect(px + 10, py + 10, PW - 20, PW - 20); }
+    if (r) { x.fillStyle = "#f4f4f4"; x.fillRect(px + 4, py + 4, 6, 6); }
+    Px.yazi(x, p.ad, i % 2 ? px + PW - 8 : px + 8, i < 2 ? py + 6 : py + PW - 16, 10, "rgba(255,255,255,.6)", i % 2 ? "right" : "left");
+  }
+  function ciz() {
+    x.fillStyle = "#1a1c2c"; x.fillRect(0, 0, W, H);
+    for (var i = 0; i < 4; i++) padCiz(i);
+    // orta panel
+    x.fillStyle = "#0d0e1a"; x.fillRect(74, 74, 52, 52);
+    x.fillStyle = "#262b44"; x.fillRect(77, 77, 46, 46);
+    x.fillStyle = "#566c86"; x.fillRect(77, 77, 46, 2); x.fillRect(77, 77, 2, 46);
+    var m = durum === "goster" ? "İZLE" : durum === "sira" ? "SIRA" : durum === "hata" ? "HATA" : durum === "basla" ? "" : "";
+    if (durum !== "basla") Px.yazi(x, String(dizi.length), 100, 82, 22, "#ffcd75", "center");
+    Px.yazi(x, m, 100, 108, 9, durum === "sira" ? "#38b764" : durum === "hata" ? "#ef4d5e" : "#f4f4f4", "center");
+    if (durum === "basla") {
+      x.fillStyle = "#0d0e1a"; x.fillRect(30, 84, 140, 32);
+      Px.yazi(x, "BAŞLA", 100, 87, 13, "#ffcd75", "center");
+      Px.yazi(x, "dokun / boşluk", 100, 103, 8, "#f4f4f4", "center");
+    }
+  }
+  function konum(e) {
+    var k = C.getBoundingClientRect(), px = (e.clientX - k.left) * W / k.width, py = (e.clientY - k.top) * H / k.height;
+    if (durum === "basla") return 0;
+    var i = (px < 100 ? 0 : 1) + (py < 100 ? 0 : 2);
+    return i;
+  }
+  C.addEventListener("pointerdown", function (e) { e.preventDefault(); bas(konum(e)); });
+  C.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni(); Px.dongu(guncelle, ciz);
+})();
+</script>
+</body>
+</html>

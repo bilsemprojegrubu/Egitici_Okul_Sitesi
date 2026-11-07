@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uzay Savaşı — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+</head>
+<body data-oyun="uzay">
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>UZAY SAVAŞI</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Can <b id="can">3</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" class="cv" width="200" height="260" style="--mw:400px;touch-action:none"></canvas>
+  <p class="ipucu">Gemi otomatik ateş eder. Sağa-sola kaydır (veya ◀ ▶ / A D) ve uzaylıları vur! Üstteki büyük patron dalgası zorludur. Çarpışırsan can gider.</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
+<script>
+// Uzay Savaşı: 200x260 düşük çözünürlük
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 200, H = 260;
+  var GEMI = Px.sprite([
+    "....kk....", "....bb....", "...kbwbk..", "...bbwbb..", "..kbbwbbk.", ".kbbbbbbbk", "kbbrbbbbrbk", "kb.rkbbkr.bk", "k...yyyy...k"],
+    { k: "#0d0e1a", b: "#41a6f6", w: "#f4f4f4", r: "#ef4d5e", y: "#ffcd75" }, 2);
+  var UZ = [
+    Px.sprite(["..k....k..", "...k..k...", "..kkkkkk..", ".kggkkggk.", "kgwgggwggk", "kgggggggk.", ".k.kkkk.k.", "k..k..k..k"], { k: "#0d0e1a", g: "#38b764", w: "#f4f4f4" }, 2),
+    Px.sprite(["...kkkk...", "..kppppk..", ".kpwppwpk.", ".kppppppk.", "..kkkkkk..", ".kp.kk.pk.", "k.k....k.k"], { k: "#0d0e1a", p: "#b55088", w: "#f4f4f4" }, 2),
+    Px.sprite(["..kkkkkk..", ".koooooook", "kowowooowok", "koooooooook", ".kokokokok.", "..k.k.k.k.."], { k: "#0d0e1a", o: "#ef7d57", w: "#f4f4f4" }, 2)];
+  var PATRON = Px.sprite([
+    "....kkkkkkkk....", "..kkrrrrrrrrkk..", ".krrrwrrrrwrrrk.", "krrrrrrrrrrrrrrk", "krrkkkrrrrkkkrrk", "krrrrrrkkrrrrrrk", ".kkrrrrrrrrrrkk.", "..k.kk.kk.kk.k..", "..k..k....k..k.."],
+    { k: "#0d0e1a", r: "#b13e53", w: "#ffcd75" }, 2);
+  var gm, ok, du, par, yazi, yil = [], puan, can, dalga, calis, hedef, ates, yan, sars, bekle;
+  try { document.getElementById("rekor").textContent = Skor.rekor("uzay"); } catch (e) { }
+  for (var i = 0; i < 40; i++) yil.push({ x: Px.rastgele(0, W), y: Px.rastgele(0, H), v: Px.rastgele(.2, 1.2) });
+  function ya() { document.getElementById("puan").textContent = puan; document.getElementById("can").textContent = can; }
+  function yeni() {
+    gm = { x: W / 2, y: H - 26 }; ok = []; du = []; par = []; yazi = []; puan = 0; can = 3; dalga = 0; calis = true; hedef = null; ates = 0; yan = 0; sars = 0; bekle = 40;
+    document.getElementById("bitti").hidden = true; ya(); dalgaYap();
+  }
+  function dalgaYap() {
+    dalga++; du = []; bekle = 50;
+    if (dalga % 4 === 0) { du.push({ patron: true, x: W / 2, y: -20, ox: W / 2, can: 30 + dalga * 4, mx: 30, t: 0, atis: 0 }); yazi.push({ t: "PATRON!", o: 80 }); Px.ses("boss"); return; }
+    var sat = Math.min(3 + Math.floor(dalga / 3), 5), sut = 7;
+    for (var j = 0; j < sat; j++) for (var i = 0; i < sut; i++) du.push({ x: 28 + i * 24, y: -10 - j * 18, ox: 28 + i * 24, oy: 24 + j * 18, tip: j % 3, can: 1, t: 0, atis: Px.tamsayi(40, 400) });
+    yazi.push({ t: "DALGA " + dalga, o: 70 });
+  }
+  function patla(a, r) { for (var i = 0; i < 8; i++) par.push({ x: a.x, y: a.y, vx: Px.rastgele(-1.8, 1.8), vy: Px.rastgele(-1.8, 1.8), r: r, o: 22 }); }
+  function guncelle() {
+    if (!calis) return;
+    var k = Px.k;
+    if (k.ArrowLeft || k.KeyA) { gm.x -= 2.8; hedef = null; }
+    if (k.ArrowRight || k.KeyD) { gm.x += 2.8; hedef = null; }
+    if (hedef !== null) gm.x += Px.sinir(hedef - gm.x, -4, 4);
+    gm.x = Px.sinir(gm.x, 7, W - 7);
+    if (yan) yan--; if (sars) sars--;
+    ates--; if (ates <= 0) { ok.push({ x: gm.x - 3, y: gm.y - 6, v: -4, d: 0 }, { x: gm.x + 3, y: gm.y - 6, v: -4, d: 0 }); ates = 14; Px.ses("ok"); }
+    yil.forEach(function (s) { s.y += s.v; if (s.y > H) { s.y = 0; s.x = Px.rastgele(0, W); } });
+    ok.forEach(function (o) { o.y += o.v; }); ok = ok.filter(function (o) { return o.y > -6 && o.y < H + 6; });
+    var sonSayi = du.length;
+    if (bekle > 0) bekle--;
+    du.forEach(function (a) {
+      a.t++;
+      if (a.patron) {
+        a.y = Math.min(a.y + 1, 30); a.x = a.ox + Math.sin(a.t / 40) * 55;
+        a.atis--; if (a.atis <= 0 && bekle <= 0) { for (var q = -1; q <= 1; q++) ok.push({ x: a.x + q * 12, y: a.y + 14, v: 1.8, d: 1, vx: q * .5 }); a.atis = 46; }
+      } else {
+        var inis = Math.min(a.oy, a.y + 1.2);
+        a.y = a.y < a.oy ? inis : a.oy + Math.sin(a.t / 50 + a.ox) * 3 + Math.min(dalga * 0.05 * (a.t / 60), 40);
+        a.x = a.ox + Math.sin(a.t / 45 + a.ox / 20) * 10;
+        a.atis--; if (a.atis <= 0 && a.y >= a.oy - 1 && bekle <= 0) { ok.push({ x: a.x, y: a.y + 6, v: 1.5 + Math.min(dalga, 8) * .08, d: 1, vx: 0 }); a.atis = Px.tamsayi(120, 380) - Math.min(dalga * 10, 80); }
+      }
+    });
+    ok.forEach(function (o) { if (o.vx) o.x += o.vx; });
+    // oyuncu mermisi - uzaylı
+    ok.forEach(function (o) {
+      if (o.d !== 0) return;
+      for (var i = 0; i < du.length; i++) {
+        var a = du[i], rx = a.patron ? 20 : 10, ry = a.patron ? 12 : 8;
+        if (Math.abs(o.x - a.x) < rx && Math.abs(o.y - a.y) < ry) {
+          o.y = -99; a.can--; a.vur = 3;
+          if (a.can <= 0) { puan += a.patron ? 500 : 10 * (a.tip + 1); patla(a, a.patron ? "#ef4d5e" : "#ffcd75"); if (a.patron) { patla(a, "#ffcd75"); patla(a, "#f4f4f4"); } Px.ses("patla"); du.splice(i, 1); ya(); }
+          else Px.ses("tik");
+          break;
+        }
+      }
+    });
+    // düşman mermisi / çarpışma - oyuncu
+    if (!yan) {
+      var vurdu = false;
+      ok.forEach(function (o) { if (o.d === 1 && Math.abs(o.x - gm.x) < 8 && Math.abs(o.y - gm.y) < 9) { o.y = H + 99; vurdu = true; } });
+      du.forEach(function (a) { if (!a.patron && Math.abs(a.x - gm.x) < 13 && Math.abs(a.y - gm.y) < 12) { vurdu = true; } else if (a.patron && a.y > H - 60 && Math.abs(a.x - gm.x) < 22) vurdu = true; });
+      if (vurdu) {
+        can--; yan = 100; sars = 12; patla(gm, "#41a6f6"); Px.ses("patlama"); ya();
+        if (can <= 0) { calis = false; Px.ses("kaybet"); Skor.oyunBitti("uzay", puan); return; }
+      }
+    }
+    if (!du.length && sonSayi === 0 && bekle <= 0) { puan += dalga * 25; ya(); dalgaYap(); }
+    else if (!du.length) { puan += dalga * 25; ya(); Px.ses("kazan"); dalgaYap(); }
+    par.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.o--; }); par = par.filter(function (p) { return p.o > 0; });
+    yazi.forEach(function (t) { t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
+  }
+  function ciz() {
+    x.save(); if (sars) x.translate(Px.tamsayi(-2, 2), Px.tamsayi(-2, 2));
+    x.fillStyle = "#0d0e1a"; x.fillRect(0, 0, W, H);
+    yil.forEach(function (s) { x.fillStyle = s.v > .8 ? "#f4f4f4" : s.v > .5 ? "#94b0c2" : "#566c86"; x.fillRect(Math.round(s.x), Math.round(s.y), 1, s.v > .8 ? 2 : 1); });
+    du.forEach(function (a) {
+      var s = a.patron ? PATRON : UZ[a.tip];
+      if (a.vur) { a.vur--; x.globalAlpha = .5; }
+      x.drawImage(s, Math.round(a.x - s.width / 2), Math.round(a.y - s.height / 2)); x.globalAlpha = 1;
+      if (a.patron) { x.fillStyle = "#0d0e1a"; x.fillRect(a.x - 25, 6, 50, 5); x.fillStyle = "#ef4d5e"; x.fillRect(a.x - 24, 7, Math.round(48 * a.can / (30 + dalga * 4)), 3); }
+    });
+    ok.forEach(function (o) { if (o.d === 0) { x.fillStyle = "#ffcd75"; x.fillRect(Math.round(o.x) - 1, Math.round(o.y) - 3, 2, 6); } else { x.fillStyle = "#ef4d5e"; x.fillRect(Math.round(o.x) - 1, Math.round(o.y) - 2, 3, 5); x.fillStyle = "#fff"; x.fillRect(Math.round(o.x), Math.round(o.y) - 1, 1, 2); } });
+    if (!yan || Math.floor(yan / 5) % 2 === 0) {
+      x.drawImage(GEMI, Math.round(gm.x - GEMI.width / 2), Math.round(gm.y - GEMI.height / 2));
+      x.fillStyle = Math.floor(Date.now() / 80) % 2 ? "#ffcd75" : "#ef7d57"; x.fillRect(Math.round(gm.x) - 2, Math.round(gm.y) + 9, 4, 3);
+    }
+    par.forEach(function (p) { x.fillStyle = p.r; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
+    yazi.forEach(function (t) { Px.yazi(x, t.t, W / 2, 120, 14, "#ffcd75", "center"); });
+    x.restore();
+  }
+  function konum(e) { var k = C.getBoundingClientRect(); return (e.clientX - k.left) * W / k.width; }
+  C.addEventListener("pointerdown", function (e) { e.preventDefault(); hedef = konum(e); });
+  C.addEventListener("pointermove", function (e) { if (e.buttons || e.pointerType === "mouse") hedef = konum(e); });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni(); Px.dongu(guncelle, ciz);
+})();
+</script>
+</body>
+</html>

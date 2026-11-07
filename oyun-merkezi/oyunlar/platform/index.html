@@ -45,12 +45,14 @@
     Px.sprite([".kkk..", "kYyyk.", "kYYyk.", "kYYyk.", "kyyyk.", ".kkk.."], { k: "#7a4a0a", y: "#ffcd75", Y: "#fff" }, 1)
   ];
   var DIKEN = Px.sprite(["...ww...", "..wggw..", "..wggw..", ".wggggw.", ".wggggw.", "wggggggw", "kkkkkkkk"], { w: "#fff", g: "#94a0b8", k: "#566c86" }, 1);
-  var ph, jt, dk, o, mes, hiz, coin, calis, par, bulut, sars, tik;
+  var ph, jt, dk, o, mes, hiz, coin, calis, par, bulut, sars, tik, tampon = 0, koyot = 0;
   for (var i = 0, bl = []; i < 5; i++) bl.push({ x: Px.rastgele(0, W), y: Px.rastgele(8, 60), v: Px.rastgele(.1, .25) });
   bulut = bl;
   function yeni() {
     ph = [{ x: -40, w: 380, y: 112 }]; jt = []; dk = []; par = [];
-    o = { y: 112, v: 0, z: 0, yer: true }; mes = 0; hiz = 1.7; coin = 0; calis = true; sars = 0; tik = 0;
+    o = { y: 112, v: 0, z: 0, yer: true }; mes = 0; hiz = 1.7; coin = 0; calis = true; sars = 0; tik = 0; tampon = 0; koyot = 0;
+    // Skor panelindeki isim kutusu odağı tutarsa tuşlar yutulur: odağı bırak
+    try { var ae = document.activeElement; if (ae && ae !== document.body && ae.blur) ae.blur(); } catch (e) { }
     uret(); document.getElementById("bitti").hidden = true; document.getElementById("puan").textContent = 0;
   }
   function uret() {
@@ -64,10 +66,16 @@
     }
   }
   function zipla() {
-    if (!calis || o.z >= 2) return;
-    o.v = o.z === 0 ? -5.6 : -5.0; o.z++; o.yer = false; Px.ses("zipla");
+    if (!calis) return false;
+    var ilk = o.yer || koyot > 0;           // yerde ya da az önce platformdan ayrıldı (coyote)
+    if (!ilk && o.z >= 2) return false;
+    if (ilk) o.z = 0;
+    o.v = o.z === 0 ? -5.6 : -5.0; o.z++; o.yer = false; koyot = 0; Px.ses("zipla");
     for (var i = 0; i < 5; i++) par.push({ x: HX, y: o.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(0, .8), o: 12, r: "#fff" });
+    return true;
   }
+  // Zıplama isteği "tampon"a yazılır; kısa süre içinde zıplanabilir olunca uygulanır
+  function istek() { tampon = 8; }
   function puan() { return Math.floor(mes / 20) + coin * 5; }
   function ol(neden) {
     if (!calis) return; calis = false; sars = 14; Px.ses("vur");
@@ -80,7 +88,7 @@
     bulut.forEach(function (b) { b.x -= b.v; if (b.x < -30) b.x = W + 10; });
     if (sars) sars--;
     if (!calis) return;
-    if (Px.p.Space || Px.p.ArrowUp || Px.p.KeyW) zipla();
+    if (tampon > 0) { if (zipla()) tampon = 0; else tampon--; }
     hiz = Math.min(3.1, hiz + .0006); mes += hiz;
     var px = mes + HX, eskiY = o.y;
     o.v += .34; if (o.v > 8) o.v = 8; o.y += o.v;
@@ -93,7 +101,9 @@
         else if (o.y > p.y + 3 && eskiY > p.y - 1 && px - 4 < p.x + hiz + 1 && px > p.x && o.y < p.y + 40) { ol(); }
       }
     }
-    if (dusuyor && o.z === 0) o.z = 1;
+    if (dusuyor) o.yer = false;
+    if (o.yer) koyot = 7; else if (koyot > 0) koyot--;
+    if (dusuyor && koyot <= 0 && o.z === 0) o.z = 1;
     if (!dusuyor && tik % 9 === 0) par.push({ x: HX - 4, y: o.y - 1, vx: -hiz * .6, vy: -.3, o: 10, r: "#c8a070" });
     jt.forEach(function (c) { if (!c.al && Math.abs(c.x - px) < 8 && Math.abs(c.y - (o.y - 8)) < 11) { c.al = true; coin++; Px.ses("para"); for (var i = 0; i < 6; i++) par.push({ x: c.x - mes, y: c.y, vx: Px.rastgele(-1.5, 1.5), vy: Px.rastgele(-2, 0), o: 16, r: "#ffcd75" }); } });
     dk.forEach(function (d) { if (Math.abs(d.x - px) < 6 && o.y > d.y - 6 && o.y - 10 < d.y) ol(); });
@@ -137,8 +147,16 @@
     x.restore();
     Px.yazi(x, String(puan()), W / 2, 6, 16, "#fff", "center");
   }
-  document.addEventListener("keydown", function (e) { if (e.code === "Space" || e.code === "ArrowUp") e.preventDefault(); });
-  C.addEventListener("pointerdown", function (e) { e.preventDefault(); zipla(); });
+  // Girdi doğrudan olayda yakalanır (Px.p kareler arasında kaçabiliyordu)
+  document.addEventListener("keydown", function (e) {
+    var c = e.code, t = e.target;
+    if (!(c === "Space" || c === "ArrowUp" || c === "KeyW")) return;
+    // Oyun sürerken isim kutusu odakta kalmışsa tuşu yutmasın
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) { if (!calis) return; t.blur(); }
+    if (c !== "KeyW") e.preventDefault();
+    if (!e.repeat) istek();
+  }, true);
+  C.addEventListener("pointerdown", function (e) { e.preventDefault(); istek(); });
   document.getElementById("tekrar").addEventListener("click", yeni);
   yeni(); Px.dongu(guncelle, ciz);
 })();

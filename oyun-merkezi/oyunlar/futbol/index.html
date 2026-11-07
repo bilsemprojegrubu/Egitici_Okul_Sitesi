@@ -6,6 +6,7 @@
 <title>Futbol — Oyun Merkezi</title>
 <link rel="stylesheet" href="../ortak.css">
 <style>
+.fut-ak .btn{min-width:84px;min-height:64px;font-size:1.1rem}
 .kbar{display:none;align-items:center;gap:8px;font-size:.8rem;color:#ffcd75}
 .kbar input{width:120px;accent-color:#ffcd75}
 #kalbar{display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);min-height:0}
@@ -34,6 +35,7 @@
 (function () {
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, H = 160;
   var PL = 14, PR = 226, PT = 20, PB = 152, GT = 69, GB = 103, CY = 86, CX = 120, SURE = 90 * 60;
+  var say = 0, gw = 0, sayNo = 0;
   var mod = 1, zor = 1, elle = false, pl, top, skor, sure, altin, calis, tik, parc, mesaj, msayac, sars, kontrolId, bitis, ses2;
   var insanlar; // [{takim, ctrl(oyuncu), tus, onceSut, sarj}]
   function kit(ana, koyu, saç) {
@@ -59,7 +61,7 @@
   }
   function yazBaslik() { document.getElementById("puan").textContent = skor[0] * 10; }
   function kickoff(t, m) {
-    var f = pl[0].t === 0; dizil2(); top.x = CX; top.y = CY; top.vx = top.vy = 0; top.gol = 0; mesaj = m; msayac = 70;
+    dizil2(); top.x = CX; top.y = CY; top.vx = top.vy = 0; top.gol = 0; mesaj = ""; msayac = 0; gw = 0; say = 150; sayNo = 0;
   }
   function dizil2() {
     var yer = [[PL + 7, CY], [75, 62], [75, 110], [PR - 7, CY], [165, 62], [165, 110]];
@@ -84,18 +86,22 @@
     var hy = Px.sinir(p.y + (Math.abs(p.yx) > .3 ? dy / Math.abs(dx) * Math.abs(gx - p.x) : 0), GT + 4, GB - 4);
     var ax = gx - p.x, ay = hy - p.y, an = Math.sqrt(ax * ax + ay * ay) || 1;
     if (dx * (gx - p.x) > 0 && Math.abs(gx - p.x) < 100) { dx = dx * .55 + ax / an * .45; dy = dy * .55 + ay / an * .45; var n = Math.sqrt(dx * dx + dy * dy) || 1; dx /= n; dy /= n; }
-    var v = 2.6 + guc * 3.3;
+    var v = 2.0 + guc * 2.5;
     top.vx = dx * v; top.vy = dy * v; p.cd = 18; top.son = p.t; Px.ses("sut");
     for (var i = 0; i < 4; i++) parc.push({ x: top.x, y: top.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 1), o: 10, c: "#fff" });
   }
   function pas(p) {
-    var l = oyunculari(p.t).filter(function (q) { return q !== p; })[0];
-    var dx = l.x + l.vx * 12 - p.x, dy = l.y + l.vy * 12 - p.y, n = Math.sqrt(dx * dx + dy * dy) || 1;
-    top.vx = dx / n * (2 + Math.min(2.2, n / 40)); top.vy = dy / n * (2 + Math.min(2.2, n / 40)); p.cd = 14; top.son = p.t; Px.ses("tik");
-    insanlar.forEach(function (h) { if (h.c === p) h.c = l; });
+    var l = oyunculari(p.t).filter(function (q) { return q !== p; })[0], yon = p.t === 0 ? 1 : -1, dx, dy, n, v;
+    if ((l.x - p.x) * yon > -4) { // arkadaş önde/yanda: ona at
+      dx = l.x + l.vx * 12 - p.x; dy = l.y + l.vy * 12 - p.y; n = Math.sqrt(dx * dx + dy * dy) || 1; v = 1.8 + Math.min(1.8, n / 45);
+      insanlar.forEach(function (h) { if (h.c === p) h.c = l; });
+    } else { // arkadaş geride: geriye kaçmasın, ileri doğru kısa pas
+      dx = yon; dy = p.yy * .7; n = Math.sqrt(dx * dx + dy * dy) || 1; v = 2.4;
+    }
+    top.vx = dx / n * v; top.vy = dy / n * v; p.cd = 14; top.son = p.t; Px.ses("tik");
   }
   function botGuncelle(p, oyuncuBot) {
-    var kendi = p.t, kale = hedefKale(kendi), top_ = top, hiz = (.9 + .12 * zor) * (oyuncuBot ? 1 : 1);
+    var kendi = p.t, kale = hedefKale(kendi), top_ = top, hiz = (.68 + .1 * zor);
     var yakin = topaYakin(kendi) === p;
     var tx = p.x, ty = p.y, sp = hiz;
     var yon = kendi === 0 ? 1 : -1;
@@ -120,16 +126,16 @@
     if (insanMi) {
       var r = document.getElementById(p.t === 0 ? "kr1" : "kr2"), v = +r.value;
       if (bas(p.t, "ku")) v = Math.max(0, v - 3); if (bas(p.t, "kd")) v = Math.min(100, v + 3); r.value = v;
-      var hedef = GT - 6 + v / 100 * (GB - GT + 12); p.vy = Px.sinir(hedef - p.y, -1.6, 1.6);
+      var hedef = GT - 6 + v / 100 * (GB - GT + 12); p.vy = Px.sinir(hedef - p.y, -1.3, 1.3);
     } else {
       var hedef2 = Px.sinir(top.y + top.vy * 3, GT - 2, GB + 2), uzak = Math.abs(top.x - p.x);
       var topKaleye = (p.t === 0 ? top.vx < -.5 : top.vx > .5) || uzak < 70;
       if (!topKaleye) hedef2 = CY;
-      p.vy = Px.sinir(hedef2 - p.y, -.75 - .08 * zor, .75 + .08 * zor);
+      p.vy = Px.sinir(hedef2 - p.y, -.6 - .06 * zor, .6 + .06 * zor);
     }
     p.vx = 0; p.y = Px.sinir(p.y + p.vy, GT - 8, GB + 8); p.yx = p.t === 0 ? 1 : -1;
     var d = mesafe(p, top);
-    if (d < 8 && p.cd === 0) { top.vx = (p.t === 0 ? 1 : -1) * (2.4 + Math.random() * 1.5); top.vy = (top.y - p.y) * .25 + Px.rastgele(-1, 1); p.cd = 10; Px.ses("vur"); top.gol = 0; top.son = p.t; for (var i = 0; i < 4; i++) parc.push({ x: top.x, y: top.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 1), o: 10, c: "#a7f070" }); }
+    if (d < 8 && p.cd === 0) { top.vx = (p.t === 0 ? 1 : -1) * (2 + Math.random() * 1.2); top.vy = (top.y - p.y) * .25 + Px.rastgele(-1, 1); p.cd = 10; Px.ses("vur"); top.gol = 0; top.son = p.t; for (var i = 0; i < 4; i++) parc.push({ x: top.x, y: top.y, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 1), o: 10, c: "#a7f070" }); }
   }
   function insanGuncelle(h) {
     var c = h.c, t = h.t;
@@ -137,21 +143,22 @@
     var yak = topaYakin(t); if (yak !== c && mesafe(c, top) > 14 && mesafe(yak, top) + 8 < mesafe(c, top)) h.c = c = yak;
     var ux = (bas(t, "r") ? 1 : 0) - (bas(t, "l") ? 1 : 0), uy = (bas(t, "d") ? 1 : 0) - (bas(t, "u") ? 1 : 0);
     var n = Math.sqrt(ux * ux + uy * uy);
-    if (n) { c.vx = ux / n * 1.2; c.vy = uy / n * 1.2; c.yx = ux / n; c.yy = uy / n; } else { c.vx = c.vy = 0; }
+    if (n) { c.vx = ux / n * .95; c.vy = uy / n * .95; c.yx = ux / n; c.yy = uy / n; } else { c.vx = c.vy = 0; }
     var diger = oyunculari(t).filter(function (q) { return q !== c; })[0]; botGuncelle(diger, false);
     // şut: basılı tut = güç
     var sut_ = bas(t, "sut");
     if (sut_) h.sarj = Math.min(1, h.sarj + 1 / 40);
-    if (!sut_ && h.onceSut) { if (mesafe(c, top) < 11 && c.cd === 0) sut(c, Math.max(.3, h.sarj)); h.sarj = 0; }
+    if (!sut_ && h.onceSut) { if (mesafe(c, top) < 14 && c.cd === 0) sut(c, Math.max(.3, h.sarj)); h.sarj = 0; }
     h.onceSut = sut_;
-    if (bas1(t, "pas") && mesafe(c, top) < 12 && c.cd === 0) pas(c);
+    if (bas1(t, "pas") && mesafe(c, top) < 14 && c.cd === 0) pas(c);
   }
   function gol(t) {
-    skor[t]++; yazBaslik(); mesaj = "GOOOL!"; msayac = 100; sars = 14; Px.ses("gol");
-    top.gol = 1; top.vx = top.vy = 0;
+    skor[t]++; yazBaslik(); mesaj = "GOL! " + (t === 0 ? "KIRMIZI" : "MAVİ"); msayac = 130; sars = 14; Px.ses("gol");
+    top.gol = 1; top.vx = top.vy = 0; top.x = Px.sinir(top.x, PL - 4, PR + 4);
     for (var i = 0; i < 40; i++) parc.push({ x: t === 0 ? PR + 4 : PL - 4, y: CY, vx: Px.rastgele(-2.5, 2.5), vy: Px.rastgele(-3, 1), o: 50, c: ["#ffcd75", "#fff", "#e0344f", "#41a6f6", "#a7f070"][i % 5] });
+    pl.forEach(function (p) { p.vx = p.vy = 0; });
     if (altin) { bitir(); return; }
-    setTimeout(function () { if (calis && !bitis) { dizil2(); top.x = CX; top.y = CY; top.vx = top.vy = 0; top.gol = 0; mesaj = "DEVAM!"; msayac = 40; } }, 1500);
+    gw = 120;
   }
   function bitir() {
     if (bitis) return; bitis = true;
@@ -165,6 +172,8 @@
     tik++; if (sars) sars--; if (msayac) msayac--;
     parc.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.vy += .05; q.o--; }); parc = parc.filter(function (q) { return q.o > 0; });
     if (!calis) return;
+    if (gw > 0) { gw--; if (gw === 0) { dizil2(); top.x = CX; top.y = CY; top.vx = top.vy = 0; top.gol = 0; msayac = 0; say = 150; sayNo = 0; } return; }
+    if (say > 0) { var no = Math.ceil(say / 50); if (no !== sayNo) { sayNo = no; Px.ses("tik"); } say--; if (say === 0) { mesaj = "BAŞLA!"; msayac = 50; Px.ses("puan"); } return; }
     if (!bitis && !top.gol) { sure--; if (sure <= 0) { if (skor[0] === skor[1]) { altin = true; sure = 0; mesaj = "ALTIN GOL!"; msayac = 80; } else { mesaj = "MAÇ BİTTİ"; msayac = 80; bitir(); } } }
     if (altin && sure < 0) sure = 0;
     if (bitis) { return; }
@@ -198,12 +207,12 @@
         if (d < 7.5 && p.cd === 0) topuSur(p);
         if (d < 8 && p.cd === 0 && (Math.abs(p.vx) + Math.abs(p.vy) > .2) && tik % 12 === 0) Px.ses("tik");
       });
-      top.x += top.vx; top.y += top.vy; top.vx *= .985; top.vy *= .985; top.d += top.vx * 8 + top.vy * 2;
+      top.x += top.vx; top.y += top.vy; top.vx *= .972; top.vy *= .972; top.d += top.vx * 8 + top.vy * 2;
       var mouth = top.y > GT && top.y < GB;
-      if (top.y < PT + 2) { top.y = PT + 2; top.vy = Math.abs(top.vy) * .8; }
-      if (top.y > PB - 2) { top.y = PB - 2; top.vy = -Math.abs(top.vy) * .8; }
-      if (top.x < PL) { if (mouth) { if (top.x < PL - 2) { gol(1); return; } } else { top.x = PL; top.vx = Math.abs(top.vx) * .8; } }
-      if (top.x > PR) { if (mouth) { if (top.x > PR + 2) { gol(0); return; } } else { top.x = PR; top.vx = -Math.abs(top.vx) * .8; } }
+      if (top.y < PT + 2) { top.y = PT + 2; top.vy = Math.abs(top.vy) * .4; }
+      if (top.y > PB - 2) { top.y = PB - 2; top.vy = -Math.abs(top.vy) * .4; }
+      if (top.x < PL) { if (mouth) { if (top.x < PL - 2) { gol(1); return; } } else { top.x = PL; top.vx = Math.abs(top.vx) * .4; } }
+      if (top.x > PR) { if (mouth) { if (top.x > PR + 2) { gol(0); return; } } else { top.x = PR; top.vx = -Math.abs(top.vx) * .4; } }
     }
   }
   function ciz() {
@@ -251,7 +260,8 @@
     var sn = Math.ceil(sure / 60), dk = Math.floor(sn / 60), sc = sn % 60;
     Px.yazi(x, "KIR " + skor[0], 6, 2, 9, "#ffb0b0"); Px.yazi(x, skor[1] + " MAV", W - 6, 2, 9, "#b0d8ff", "right");
     Px.yazi(x, altin ? "ALTIN" : dk + ":" + (sc < 10 ? "0" : "") + sc, CX, 2, 9, "#ffcd75", "center");
-    if (msayac > 0 && calis) Px.yazi(x, mesaj, CX, 56, mesaj === "GOOOL!" ? 20 : 12, mesaj === "GOOOL!" ? "#ffcd75" : "#fff", "center");
+    if (say > 0 && calis) { Px.yazi(x, "HAZIRLAN", CX, 40, 12, "#fff", "center"); Px.yazi(x, String(Math.ceil(say / 50)), CX, 54, 34, "#ffcd75", "center"); }
+    else if (msayac > 0 && calis) { var gm = mesaj.indexOf("GOL") === 0; Px.yazi(x, mesaj, CX, gm ? 52 : 56, gm ? 18 : 22, gm ? "#ffcd75" : "#fff", "center"); }
     x.restore();
   }
   function kurPad() {
@@ -260,7 +270,10 @@
       var d = document.createElement("div"); py.appendChild(d); var K = KEY[t];
       var sut = K.sut[0], pas_ = K.pas[0], u = K.u[0], dd = K.d[0], l = K.l[0], r = K.r[0];
       if (t === 0 && mod === 1) { /* tek kişilikte aynı tuş kodları (WASD) kullanılır */ }
-      Px.pad(d, [{ t: "◀", k: l }, { t: "▲", k: u }, { t: "▼", k: dd }, { t: "▶", k: r }, { t: "ŞUT", k: sut }, { t: "PAS", k: pas_ }]);
+      d.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1 1 300px;min-width:0";
+      var yon = document.createElement("div"), ak = document.createElement("div"); d.appendChild(yon); d.appendChild(ak);
+      Px.pad(yon, [{ t: "◀", k: l, a: "Sol" }, { t: "▲", k: u, a: "Yukarı" }, { t: "▼", k: dd, a: "Aşağı" }, { t: "▶", k: r, a: "Sağ" }]);
+      Px.pad(ak, [{ t: "ŞUT", k: sut, a: "Şut" }, { t: "PAS", k: pas_, a: "Pas" }], "fut-ak");
     }
     ekle(0); if (mod === 2) ekle(1);
     document.getElementById("kb1").style.display = elle ? "flex" : "none"; document.getElementById("kb2").style.display = elle && mod === 2 ? "flex" : "none";
@@ -268,8 +281,8 @@
   function basla(m, z) {
     mod = m; zor = z;
     document.getElementById("ipucu").textContent = m === 1
-      ? "★ ŞUT TUŞU: F veya BOŞLUK (basılı tut = daha güçlü, bırakınca vurur) · PAS: G veya X · Hareket: WASD / ok tuşları." + (elle ? " Kaleci: Q/E ya da çubuk." : "")
-      : "★ Kırmızı: WASD yürü, F = ŞUT (basılı tut = güçlü), G = pas" + (elle ? ", Q/E kaleci" : "") + " · Mavi: oklar yürü, ENTER = ŞUT, Sağ Shift = pas" + (elle ? ", O/L kaleci" : "") + ". (Sıralamaya yazılmaz)";
+      ? "★ ŞUT: F veya BOŞLUK (basılı tut = daha güçlü, bırakınca vurur) · PAS: G veya X (öndeki takım arkadaşına gider) · Hareket: WASD / ok tuşları. Ekrandaki ŞUT ve PAS düğmeleri de çalışır." + (elle ? " Kaleci: Q/E ya da çubuk." : "")
+      : "★ Kırmızı: WASD yürü, F = ŞUT (basılı tut = güçlü), G = PAS" + (elle ? ", Q/E kaleci" : "") + " · Mavi: oklar yürü, ENTER = ŞUT, Sağ Shift veya / = PAS" + (elle ? ", O/L kaleci" : "") + ". (Sıralamaya yazılmaz)";
     kurPad(); yeni();
   }
   var son = { m: 1, z: 1 };

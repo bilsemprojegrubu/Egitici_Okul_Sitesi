@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Araba Kaçış — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+</head>
+<body data-oyun="araba">
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>ARABA KAÇIŞ</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Jeton <b id="jeton">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
+  <p class="ipucu">◀ ▶ / A D ile şerit değiştir (dokunmatikte ekranın sol/sağ yarısına dokun). Araba, kamyon, koni ve çukurdan kaç; jeton ve benzin topla!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Kaza yaptın!</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
+<script>
+// Araba Kaçış: üstten görünüşlü şerit oyunu, 160x240 düşük çözünürlük
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 160, H = 240;
+  var SINIR = 5000, YOL0 = 20, SER = 30, MER = [35, 65, 95, 125], K = "#0d0e1a";
+  function ters(s) { return s.slice().reverse(); }
+  var ARABA = [
+    "...kkkkkkkk...", "..kbbbbbbbbk..", ".kbbbbbbbbbbk.", ".kbbhhhhhhbbk.", "kbbbbbbbbbbbbk", "kkggggggggggkk",
+    "kkggggggggggkk", "kbbggggggggbbk", "kbbbbbbbbbbbbk", "kbbbbbbbbbbbbk", "kbbbbddddbbbbk", "kbbbbddddbbbbk",
+    "kbbbbbbbbbbbbk", "kbbbbbbbbbbbbk", "kbbggggggggbbk", "kkggggggggggkk", "kbbbbbbbbbbbbk", "kbbbbbbbbbbbbk",
+    "kbbhhhhhhhhbbk", "kbbbbbbbbbbbbk", ".kbbbbbbbbbbk.", ".kllbbbbbbllk.", "..kkkkkkkkkk.."];
+  function renkli(b, h, d) { return { k: K, b: b, h: h, d: d, g: "#73eff7", l: "#ffcd75" }; }
+  var OYN = Px.sprite(ARABA, renkli("#ef4d5e", "#ff8a8a", "#b13e53"), 1);
+  var DUSMAN = [
+    Px.sprite(ters(ARABA), renkli("#41a6f6", "#a8e0ff", "#3b5dc9"), 1),
+    Px.sprite(ters(ARABA), renkli("#38b764", "#a7f070", "#257b43"), 1),
+    Px.sprite(ters(ARABA), renkli("#ffcd75", "#fff0b8", "#ef7d57"), 1),
+    Px.sprite(ters(ARABA), renkli("#b55088", "#e08ac0", "#7a3466"), 1)];
+  var YAVAS = [
+    Px.sprite(ARABA, renkli("#f4f4f4", "#ffffff", "#94b0c2"), 1),
+    Px.sprite(ARABA, renkli("#566c86", "#94b0c2", "#333c57"), 1)];
+  var kam = ["..kkkkkkkkkk..", ".kbbbbbbbbbbk.", "kbbbbbbbbbbbbk", "kkggggggggggkk", "kbggggggggggbk", "kbbbbbbbbbbbbk", "kkkkkkkkkkkkkk"];
+  var i;
+  for (i = 0; i < 26; i++) kam.push(i % 7 === 3 ? "kssssssssssssk" : "kcccccccccccck");
+  kam.push("kkkkkkkkkkkkkk"); kam.push(".kk........kk.");
+  var KAMYON = Px.sprite(ters(kam), { k: K, b: "#ef7d57", g: "#73eff7", c: "#f4f4f4", s: "#3b5dc9" }, 1);
+  var KONI = Px.sprite([
+    "...kk...", "..kook..", "..kwwk..", ".kooook.", ".kwwwwk.", "kooooook", "kkkkkkkk"],
+    { k: K, o: "#ef7d57", w: "#f4f4f4" }, 1);
+  var CUKUR = Px.sprite([
+    "...kkkkkkkk...", ".kkddddddddkk.", "kddkkkkkkkkddk", "kdkkkkkkkkkkdk", ".kdkkkkkkkkdk.", "..kkddddddkk.."],
+    { k: K, d: "#566c86" }, 1);
+  var JETON = Px.sprite([".kkkk.", "kyyyyk", "kywyyk", "kyyoyk", "kyyyyk", ".kkkk."], { k: K, y: "#ffcd75", w: "#f4f4f4", o: "#ef7d57" }, 1);
+  var BENZIN = Px.sprite([
+    "..kkk...", "..kgk...", ".kkkkkk.", "krrrrrrk", "krwwwwrk", "krwrrwrk", "krwwwwrk", "krrrrrrk", "kkkkkkkk"],
+    { k: K, r: "#ef4d5e", w: "#f4f4f4", g: "#38b764" }, 1);
+  var AGAC = Px.sprite([
+    "...kkkk...", "..kggggk..", ".kgGgggGk.", "kggggGgggk", "kgGggggggk", ".kgggGggk.", "..kkkkkk..", "....kbk...", "....kbk..."],
+    { k: K, g: "#38b764", G: "#a7f070", b: "#a05b53" }, 1);
+
+  var o, ol, v, mesafe, jeton, puan, yakit, calis, geri, patla, nesne, agac, yazi, par, ser, hedef, sars, dist, bolge, ptrSon, sure;
+  try { document.getElementById("rekor").textContent = Skor.rekor("araba"); } catch (e) { }
+  function ya() { document.getElementById("puan").textContent = puan; document.getElementById("jeton").textContent = jeton; }
+  function yeni() {
+    ser = 1; hedef = 1; o = { x: MER[1], y: H - 40, tilt: 0 };
+    v = 2.4; dist = 0; jeton = 0; puan = 0; yakit = 100; calis = false; patla = 0; sars = 0; sure = 0; bolge = 60;
+    nesne = []; agac = []; yazi = []; par = []; yol = 0;
+    for (var k = 0; k < 7; k++) { agac.push({ x: Px.tamsayi(0, 1) ? 140 + Px.tamsayi(2, 4) : Px.tamsayi(0, 3), y: k * 38 + Px.tamsayi(0, 12) }); }
+    geri = 180; document.getElementById("bitti").hidden = true; ya();
+  }
+  function lane(d) { var n = Px.sinir(hedef + d, 0, 3); if (n !== hedef) { hedef = n; Px.ses("tik"); } }
+  function sayi(n) { var m = 0, k; for (k = 0; k < 4; k++) if (n[k]) m++; return m; }
+  function satir() {
+    var d = Px.sinir(sure / 90, 0, 1), r = Math.random(), s = [0, 0, 0, 0], k, a, b;
+    var n = Math.random() < .25 + d * .3 ? 2 : 1;
+    var cift = [[0, 2], [0, 3], [1, 2], [1, 3]];
+    var L = n === 2 ? cift[Px.tamsayi(0, 3)] : [Px.tamsayi(0, 3)];
+    L.forEach(function (ln) {
+      var q = Math.random(), t;
+      if (q < .30) t = "araba"; else if (q < .50) t = "yavas"; else if (q < .60 + d * .1) t = "kamyon";
+      else if (q < .82) t = "koni"; else t = "cukur";
+      var ob = { ln: ln, x: MER[ln], y: -40, t: t };
+      if (t === "araba") { ob.s = DUSMAN[Px.tamsayi(0, 3)]; ob.ev = 1.2 + d * 1.2; ob.w = 14; ob.h = 22; }
+      else if (t === "yavas") { ob.s = YAVAS[Px.tamsayi(0, 1)]; ob.ev = -v * .45; ob.w = 14; ob.h = 22; }
+      else if (t === "kamyon") { ob.s = KAMYON; ob.ev = .8; ob.w = 14; ob.h = 38; ob.y = -56; }
+      else if (t === "koni") { ob.s = KONI; ob.ev = 0; ob.w = 8; ob.h = 7; ob.y = -12; }
+      else { ob.s = CUKUR; ob.ev = 0; ob.w = 14; ob.h = 6; ob.y = -10; }
+      nesne.push(ob); s[ln] = 1;
+    });
+    // jeton / benzin boş şeritlere
+    var bos = []; for (k = 0; k < 4; k++) if (!s[k]) bos.push(k);
+    var ln2 = bos[Px.tamsayi(0, bos.length - 1)];
+    if (r < .35) { nesne.push({ ln: ln2, x: MER[ln2], y: -60, t: "jeton", w: 8, h: 8, ev: 0 }); if (Math.random() < .5) nesne.push({ ln: ln2, x: MER[ln2], y: -75, t: "jeton", w: 8, h: 8, ev: 0 }); }
+    else if (r < .43 && yakit < 85) nesne.push({ ln: ln2, x: MER[ln2], y: -60, t: "benzin", w: 8, h: 9, ev: 0 });
+  }
+  function patlat(px, py, r, n) { for (var k = 0; k < n; k++) par.push({ x: px, y: py, vx: Px.rastgele(-2.4, 2.4), vy: Px.rastgele(-2.4, 2.4), r: r, o: 26 }); }
+  function carpti() {
+    calis = false; patla = 1; sars = 18; Px.ses("patlama");
+    patlat(o.x, o.y, "#ef7d57", 14); patlat(o.x, o.y, "#ffcd75", 10); patlat(o.x, o.y, "#f4f4f4", 6);
+  }
+  function guncelle() {
+    var k = Px.k, p = Px.p, a, b;
+    par.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.o--; }); par = par.filter(function (q) { return q.o > 0; });
+    yazi.forEach(function (t) { t.y -= .6; t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
+    if (sars) sars--;
+    if (patla) { patla++; if (patla === 50) { Skor.oyunBitti("araba", puan); } return; }
+    if (geri > 0) { geri--; if (geri % 60 === 59) Px.ses("tik"); if (geri === 0) { calis = true; Px.ses("puan"); } }
+    var h = geri > 0 ? 1.2 : v;
+    // şerit değiştirme (tuş basma anı) ve akıcı kayma
+    if (p.ArrowLeft || p.KeyA) lane(-1);
+    if (p.ArrowRight || p.KeyD) lane(1);
+    var dx = Px.sinir(MER[hedef] - o.x, -4, 4); o.x += dx; o.tilt = dx / 4;
+    // yol kayması
+    dist += h * (geri > 0 ? 0 : 1);
+    yol += h;
+    agac.forEach(function (g) { g.y += h; if (g.y > H + 4) { g.y = -16 - Px.tamsayi(0, 20); g.x = Px.tamsayi(0, 1) ? 140 + Px.tamsayi(2, 4) : Px.tamsayi(0, 3); } });
+    if (geri > 0) return;
+    sure += 1 / 60;
+    v = Math.min(7.4, 2.4 + sure * .05);
+    yakit -= .02 + v * .0035; // saniyede ~%1.7-2.7
+    if (yakit <= 0) { yakit = 0; carpti(); yazi.push({ t: "BENZİN BİTTİ", x: W / 2, y: 100, r: "#ef4d5e", o: 60 }); }
+    // nesne üret
+    bolge -= v; if (bolge <= 0) { satir(); bolge = Px.rastgele(84, 120) - Px.sinir(sure / 90, 0, 1) * 8; if (v > 6) bolge += 10; }
+    for (a = 0; a < nesne.length; a++) {
+      b = nesne[a]; b.y += v + b.ev;
+      if (b.y > H + 60) { nesne.splice(a, 1); a--; continue; }
+      if (Math.abs(b.x - o.x) < (b.w + 12) / 2 - 1 && Math.abs(b.y - o.y) < (b.h + 22) / 2 - 2) {
+        if (b.t === "jeton") { jeton++; Px.ses("para"); yazi.push({ t: "+25", x: b.x, y: o.y - 14, r: "#ffcd75", o: 30 }); nesne.splice(a, 1); a--; }
+        else if (b.t === "benzin") { yakit = Math.min(100, yakit + 35); Px.ses("al"); yazi.push({ t: "BENZİN!", x: b.x, y: o.y - 14, r: "#73eff7", o: 36 }); nesne.splice(a, 1); a--; }
+        else { carpti(); break; }
+      }
+    }
+    var np = Math.min(SINIR, Math.floor(dist / 12) + jeton * 25);
+    if (np !== puan) { puan = np; ya(); }
+  }
+  var yol = 0;
+  function ciz() {
+    x.save();
+    if (sars) x.translate(Px.tamsayi(-3, 3), Px.tamsayi(-3, 3));
+    // çimen
+    x.fillStyle = "#3a8a3a"; x.fillRect(0, 0, W, H);
+    x.fillStyle = "#4aa84a"; for (var i = 0; i < 30; i++) { x.fillRect((i * 29) % 16 + (i % 2 ? 140 : 0), ((i * 37 + yol) % H + H) % H, 2, 2); }
+    // yol
+    x.fillStyle = K; x.fillRect(YOL0 - 4, 0, 4, H); x.fillRect(W - YOL0, 0, 4, H);
+    x.fillStyle = "#3a3f58"; x.fillRect(YOL0, 0, W - 2 * YOL0, H);
+    x.fillStyle = "#333852"; for (i = 0; i < 24; i++) x.fillRect(YOL0 + ((i * 47) % 116) + 2, (((i * 61 + yol) % H) + H) % H, 3, 2);
+    // kenar şeritleri (kırmızı-beyaz)
+    var off = Math.floor(yol) % 16;
+    for (i = -2; i < 32; i++) {
+      x.fillStyle = (i & 1) ? "#ef4d5e" : "#f4f4f4";
+      var yy = i * 8 + off; // 8px bloklar
+      x.fillRect(YOL0 - 4 + 1, yy, 2, 8); x.fillRect(W - YOL0 + 1, yy, 2, 8);
+    }
+    x.fillStyle = "#f4f4f4"; x.fillRect(YOL0 + 2, 0, 1, H); x.fillRect(W - YOL0 - 3, 0, 1, H);
+    // şerit çizgileri (kesikli)
+    var o2 = Math.floor(yol) % 24;
+    x.fillStyle = "#ffcd75";
+    for (var l = 1; l < 4; l++) for (i = -1; i < 11; i++) x.fillRect(YOL0 + l * SER - 1, i * 24 + o2, 2, 12);
+    // ağaçlar
+    agac.forEach(function (g) { x.drawImage(AGAC, g.x, Math.round(g.y)); });
+    // nesneler
+    nesne.forEach(function (b) {
+      var by = Math.round(b.y);
+      if (b.t === "jeton") { var f = Math.abs(Math.sin(by / 14)); x.drawImage(JETON, Math.round(b.x - 3), by - 3 + Math.round(f * 2)); return; }
+      if (b.t === "benzin") { x.drawImage(BENZIN, Math.round(b.x - 4), by - 5); return; }
+      if (b.t === "cukur") { x.drawImage(b.s, Math.round(b.x - 7), by - 3); return; }
+      if (b.t === "koni") { x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(Math.round(b.x - 3), by + 2, 8, 3); x.drawImage(b.s, Math.round(b.x - 4), by - 4); return; }
+      x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(Math.round(b.x - 7) + 2, by - Math.round(b.h / 2) + 2, 14, b.h);
+      x.drawImage(b.s, Math.round(b.x - 7), by - Math.round(b.h / 2));
+    });
+    // oyuncu
+    if (!patla) {
+      x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(Math.round(o.x - 7) + 2, o.y - 9, 14, 22);
+      x.save(); x.translate(Math.round(o.x), o.y); x.rotate(o.tilt * .16);
+      x.drawImage(OYN, -7, -11); x.restore();
+      if (geri === 0 || geri > 0) { x.fillStyle = "rgba(255,205,117,.35)"; x.fillRect(Math.round(o.x - 6), o.y - 28, 3, 16); x.fillRect(Math.round(o.x + 3), o.y - 28, 3, 16); }
+    }
+    par.forEach(function (q) { x.fillStyle = q.r; x.fillRect(Math.round(q.x), Math.round(q.y), 3, 3); });
+    if (patla && patla < 20) { x.fillStyle = "rgba(255,255,255," + (.6 - patla / 40) + ")"; x.fillRect(0, 0, W, H); }
+    x.restore();
+    yazi.forEach(function (t) { Px.yazi(x, t.t, Math.round(t.x), Math.round(t.y), 9, t.r, "center"); });
+    // yakıt göstergesi
+    x.fillStyle = K; x.fillRect(5, 6, 52, 9);
+    x.fillStyle = "#566c86"; x.fillRect(7, 8, 48, 5);
+    x.fillStyle = yakit > 25 ? "#38b764" : "#ef4d5e"; x.fillRect(7, 8, Math.round(48 * yakit / 100), 5);
+    Px.yazi(x, "BENZİN", 60, 4, 9, "#f4f4f4", "left");
+    if (geri > 0) Px.yazi(x, geri > 120 ? "HAZIRLAN 3" : geri > 60 ? "HAZIRLAN 2" : "HAZIRLAN 1", W / 2, 90, 13, "#ffcd75", "center");
+    if (puan >= SINIR) Px.yazi(x, "MAKS!", W / 2, 30, 12, "#ffcd75", "center");
+  }
+  // Dokunmatik: sol/sağ yarıya dokun -> bir şerit kay
+  C.addEventListener("pointerdown", function (e) {
+    e.preventDefault(); var kt = C.getBoundingClientRect();
+    if (calis || geri > 0) lane((e.clientX - kt.left) < kt.width / 2 ? -1 : 1);
+  });
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni(); Px.dongu(guncelle, ciz);
+})();
+</script>
+</body>
+</html>

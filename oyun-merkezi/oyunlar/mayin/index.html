@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mayın Tarlası — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+</head>
+<body data-oyun="mayin">
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>MAYIN TARLASI</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne">
+  <div class="puanlar">Mayın <b id="kalan">0</b> · Süre <b id="sure">0</b> sn</div>
+  <canvas id="c" class="cv" width="160" height="160" style="--mw:440px;touch-action:none"></canvas>
+  <div class="kontrol">
+    <button class="btn" id="mod" type="button">MOD: KAZ</button>
+    <button class="btn ikinci" id="menuBtn" type="button">MENÜ</button>
+  </div>
+  <p class="ipucu">Tıkla = kaz. Sağ tık ya da uzun bas = bayrak (veya BAYRAK modu). Sayı, çevresindeki mayın sayısıdır. İlk tıklama her zaman güvenli!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
+<script>
+// Mayın Tarlası: hücre 16 piksel, tuval tahtaya göre boyutlanır
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), CS = 16;
+  var ZOR = [
+    { ad: "KOLAY", n: 8, m: 8, taban: 300, sinir: 180 },
+    { ad: "ORTA", n: 10, m: 15, taban: 600, sinir: 300 },
+    { ad: "ZOR", n: 12, m: 30, taban: 1000, sinir: 480 }
+  ];
+  var RENK = ["", "#41a6f6", "#38b764", "#ef4d5e", "#b55088", "#ffcd75", "#73eff7", "#f4f4f4", "#94b0c2"];
+  var MAYIN = Px.sprite([
+    ".....##.....", ".#...##...#.", "..#.####.#..", "...######...", "..##WW####..", "####WW######",
+    "..########..", "..########..", "...######...", "..#.####.#..", ".#...##...#.", ".....##....."
+  ], { "#": "#0d0e1a", W: "#f4f4f4" }, 1);
+  var BAYRAK = Px.sprite([
+    "....#RRRRR..", "....#RRRRRR.", "....#RRRRR..", "....#RRR....", "....#R......", "....#.......",
+    "....#.......", "...###......", "..#####.....", "..#####.....", "............", "............"
+  ], { "#": "#0d0e1a", R: "#ef4d5e" }, 1);
+  var z = 0, N = 8, M = 8, g, durum = "menu", ilk, bayrakMod = false, t0 = 0, sure = 0, kalan = 0;
+  var par = [], patlat = [], zaman = 0, imlec = null, patX = -1, patY = -1, sarsin = 0, acik = 0, tebrik = 0;
+  try { document.getElementById("rekor").textContent = Skor.rekor("mayin"); } catch (e) { }
+  var $ = function (i) { return document.getElementById(i); };
+
+  function yeni(zi) {
+    z = zi; N = ZOR[z].n; M = ZOR[z].m; g = [];
+    for (var j = 0; j < N; j++) { g[j] = []; for (var i = 0; i < N; i++) g[j][i] = { m: false, a: false, f: false, s: 0 }; }
+    C.width = C.height = N * CS; ilk = true; durum = "oyun"; par = []; patlat = []; sure = 0; acik = 0; patX = patY = -1;
+    sarsin = 0; tebrik = 0; kalan = M; imlec = null; bayrakMod = false; modYaz();
+    $("puan").textContent = 0; $("bitti").hidden = true; yazBilgi();
+  }
+  function modYaz() { $("mod").textContent = "MOD: " + (bayrakMod ? "BAYRAK" : "KAZ"); $("mod").className = "btn " + (bayrakMod ? "kirmizi" : ""); }
+  function yazBilgi() { $("kalan").textContent = kalan; $("sure").textContent = Math.floor(sure); }
+  function komsu(i, j, fn) {
+    for (var b = -1; b <= 1; b++) for (var a = -1; a <= 1; a++) {
+      if (!a && !b) continue;
+      var u = i + a, v = j + b;
+      if (u >= 0 && v >= 0 && u < N && v < N) fn(u, v, g[v][u]);
+    }
+  }
+  function mayinKoy(ci, cj) {
+    var k = 0;
+    while (k < M) {
+      var i = Px.tamsayi(0, N - 1), j = Px.tamsayi(0, N - 1);
+      if (g[j][i].m || (Math.abs(i - ci) <= 1 && Math.abs(j - cj) <= 1)) continue;
+      g[j][i].m = true; k++;
+    }
+    for (j = 0; j < N; j++) for (i = 0; i < N; i++) {
+      var s = 0; komsu(i, j, function (u, v, h) { if (h.m) s++; }); g[j][i].s = s;
+    }
+    t0 = performance.now();
+  }
+  function parcala(i, j, renk, n) {
+    for (var k = 0; k < n; k++) par.push({ x: i * CS + CS / 2, y: j * CS + CS / 2, vx: Px.rastgele(-2.2, 2.2), vy: Px.rastgele(-2.6, 1), r: renk, o: 26 });
+  }
+  function ac(i, j) {
+    var st = [[i, j]];
+    while (st.length) {
+      var p = st.pop(), h = g[p[1]][p[0]];
+      if (h.a || h.f) continue;
+      h.a = true; acik++;
+      if (h.s === 0) komsu(p[0], p[1], function (u, v, k) { if (!k.a && !k.f) st.push([u, v]); });
+    }
+  }
+  function kaz(i, j) {
+    var h = g[j][i];
+    if (h.f) return;
+    if (h.a) { // sayıya tıkla: bayraklar eşitse çevreyi aç
+      var f = 0; komsu(i, j, function (u, v, k) { if (k.f) f++; });
+      if (h.s > 0 && f === h.s) {
+        var pat = null;
+        komsu(i, j, function (u, v, k) { if (!k.f && !k.a) { if (k.m) pat = pat || [u, v]; else ac(u, v); } });
+        if (pat) { patla(pat[0], pat[1]); return; }
+        Px.ses("kaz"); bitisKontrol();
+      }
+      return;
+    }
+    if (ilk) { mayinKoy(i, j); ilk = false; }
+    if (h.m) { patla(i, j); return; }
+    var onceki = acik; ac(i, j);
+    Px.ses(acik - onceki > 3 ? "al" : "kaz"); if (acik - onceki > 3) parcala(i, j, "#94b0c2", 6);
+    bitisKontrol();
+  }
+  function bayrak(i, j) {
+    var h = g[j][i];
+    if (h.a) return;
+    if (!h.f && kalan <= 0) { Px.ses("hata"); return; }
+    h.f = !h.f; kalan += h.f ? -1 : 1; yazBilgi(); Px.ses("tik");
+  }
+  function bitisKontrol() {
+    if (acik === N * N - M) {
+      durum = "kazandi"; sure = (performance.now() - t0) / 1000; yazBilgi();
+      for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) if (g[j][i].m && !g[j][i].f) { g[j][i].f = true; }
+      kalan = 0; yazBilgi();
+      var zd = ZOR[z], oran = Math.max(0, 1 - sure / zd.sinir);
+      var puan = Math.min(1000, Math.max(1, Math.round(zd.taban * (0.4 + 0.6 * oran))));
+      $("puan").textContent = puan; tebrik = 90; Px.ses("kazan");
+      for (var k = 0; k < 40; k++) par.push({ x: Px.rastgele(0, N * CS), y: Px.rastgele(0, N * CS), vx: Px.rastgele(-1, 1), vy: Px.rastgele(-2, 0), r: RENK[Px.tamsayi(1, 6)], o: 50 });
+      setTimeout(function () { Skor.oyunBitti("mayin", puan); }, 900);
+    }
+  }
+  function patla(ci, cj) {
+    durum = "patladi"; sonZ = 0; patX = ci; patY = cj; sure = (performance.now() - t0) / 1000;
+    var l = [];
+    for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) if (g[j][i].m && !g[j][i].f) l.push([i, j, Math.hypot(i - ci, j - cj)]);
+    l.sort(function (a, b) { return a[2] - b[2]; });
+    var aralik = Math.max(1, Math.min(5, Math.floor(70 / Math.max(1, l.length))));
+    l.forEach(function (e, n) { if (e[0] === ci && e[1] === cj) return; patlat.push({ i: e[0], j: e[1], z: n * aralik }); });
+    zaman = 0; sarsin = 24; Px.ses("bomba");
+    patlat.push({ i: ci, j: cj, z: 0, ana: true });
+  }
+  function sonDurum() {
+    durum = "bitti";
+    Px.sonuc2("Patladın! Sorun değil, tekrar dene. (" + ZOR[z].ad + ")");
+  }
+  function ciz() {
+    Px.temizle();
+    var W = N * CS, ox = 0, oy = 0;
+    if (sarsin > 0) { ox = Px.tamsayi(-2, 2); oy = Px.tamsayi(-2, 2); }
+    x.setTransform(1, 0, 0, 1, ox, oy);
+    x.fillStyle = "#1a1c2c"; x.fillRect(-4, -4, W + 8, W + 8);
+    for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+      var h = g[j][i], px = i * CS, py = j * CS;
+      var gor = h.a || (durum === "patladi" || durum === "bitti") && h.m && patlayanMi(i, j);
+      if (h.a && !h.m) {
+        x.fillStyle = "#262b44"; x.fillRect(px, py, CS, CS);
+        x.fillStyle = "#1a1c2c"; x.fillRect(px, py, CS, 1); x.fillRect(px, py, 1, CS);
+        if (h.s) Px.yazi(x, String(h.s), px + CS / 2, py + 2, 12, RENK[h.s], "center");
+      } else if (gor) {
+        var ana = (i === patX && j === patY);
+        x.fillStyle = ana ? "#b13e53" : "#5a3a4a"; x.fillRect(px, py, CS, CS);
+        x.fillStyle = "#1a1c2c"; x.fillRect(px, py, CS, 1); x.fillRect(px, py, 1, CS);
+        x.drawImage(MAYIN, px + 2, py + 2);
+      } else {
+        x.fillStyle = "#0d0e1a"; x.fillRect(px, py, CS, CS);
+        x.fillStyle = "#6f86a2"; x.fillRect(px + 1, py + 1, CS - 2, CS - 2);
+        x.fillStyle = "#a9bdd3"; x.fillRect(px + 1, py + 1, CS - 2, 2); x.fillRect(px + 1, py + 1, 2, CS - 2);
+        x.fillStyle = "#43566f"; x.fillRect(px + 1, py + CS - 3, CS - 2, 2); x.fillRect(px + CS - 3, py + 1, 2, CS - 2);
+        if (h.f) {
+          x.drawImage(BAYRAK, px + 2, py + 2);
+          if (durum === "bitti" && !h.m) { x.fillStyle = "#0d0e1a"; x.fillRect(px + 3, py + 3, 10, 10); Px.yazi(x, "X", px + CS / 2, py + 2, 12, "#ef4d5e", "center"); }
+        }
+      }
+    }
+    if (imlec && durum === "oyun") {
+      x.strokeStyle = "#ffcd75"; x.lineWidth = 2; x.strokeRect(imlec[0] * CS + 1, imlec[1] * CS + 1, CS - 2, CS - 2);
+    }
+    par.forEach(function (p) { x.fillStyle = p.r; x.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); });
+    x.setTransform(1, 0, 0, 1, 0, 0);
+    if (tebrik > 0) Px.yazi(x, "TEMİZLENDİ!", W / 2, W / 2 - 10, 16, "#ffcd75", "center");
+  }
+  var patlayan = {}, sonZ = 0;
+  function patlayanMi(i, j) { return patlayan[i + "," + j]; }
+  function guncelle() {
+    par.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += .1; p.o--; });
+    par = par.filter(function (p) { return p.o > 0; });
+    if (sarsin > 0) sarsin--;
+    if (tebrik > 0) tebrik--;
+    if (durum === "oyun" && !ilk) { sure = (performance.now() - t0) / 1000; $("sure").textContent = Math.floor(sure); }
+    if (durum === "patladi") {
+      zaman++;
+      var kalanP = 0;
+      patlat.forEach(function (e) {
+        if (e.bitti) return;
+        if (zaman >= e.z) {
+          e.bitti = true; patlayan[e.i + "," + e.j] = true;
+          parcala(e.i, e.j, e.ana ? "#ffcd75" : "#ef7d57", e.ana ? 16 : 8); parcala(e.i, e.j, "#ef4d5e", 6);
+          if (!e.ana) { Px.ses("patla"); sarsin = Math.max(sarsin, 6); }
+        } else kalanP++;
+      });
+      if (!kalanP && !par.length && zaman > 30) { if (!sonZ) sonZ = zaman; if (zaman - sonZ > 40) sonDurum(); }
+      else if (zaman > 150) sonDurum();
+    }
+  }
+  function kare() { if (g) { guncelle(); ciz(); } requestAnimationFrame(kare); }
+
+  // ---- Girdi ----
+  var basZ = null, basH = null, uzun = false;
+  function hucre(e) {
+    var k = C.getBoundingClientRect();
+    var i = Math.floor((e.clientX - k.left) * N / k.width), j = Math.floor((e.clientY - k.top) * N / k.height);
+    return (i < 0 || j < 0 || i >= N || j >= N) ? null : [i, j];
+  }
+  function islem(h, bayrakIstek) {
+    if (!h || durum !== "oyun") return;
+    var c = g[h[1]][h[0]];
+    if (bayrakIstek) bayrak(h[0], h[1]); else if (c.a) kaz(h[0], h[1]); else if (bayrakMod) bayrak(h[0], h[1]); else kaz(h[0], h[1]);
+  }
+  C.addEventListener("pointerdown", function (e) {
+    e.preventDefault(); imlec = null;
+    if (durum !== "oyun") return;
+    if (e.button === 2) { islem(hucre(e), true); basH = null; return; }
+    basH = hucre(e); uzun = false; clearTimeout(basZ);
+    basZ = setTimeout(function () { uzun = true; if (basH) { islem(basH, true); if (navigator.vibrate) try { navigator.vibrate(30); } catch (x2) { } } }, 420);
+  });
+  C.addEventListener("pointermove", function (e) { if (basH) { var h = hucre(e); if (!h || h[0] !== basH[0] || h[1] !== basH[1]) { clearTimeout(basZ); basH = null; } } });
+  C.addEventListener("pointerup", function (e) {
+    e.preventDefault(); clearTimeout(basZ);
+    if (basH && !uzun) { var h = basH; basH = null; islem(h, false); }
+    basH = null;
+  });
+  C.addEventListener("pointercancel", function () { clearTimeout(basZ); basH = null; });
+  C.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  window.addEventListener("keydown", function (e) {
+    if (durum !== "oyun") return;
+    var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1], KeyA: [-1, 0], KeyD: [1, 0], KeyW: [0, -1], KeyS: [0, 1] }[e.code];
+    if (d) { imlec = imlec || [0, 0]; imlec = [Px.sinir(imlec[0] + d[0], 0, N - 1), Px.sinir(imlec[1] + d[1], 0, N - 1)]; return; }
+    if (!imlec) return;
+    if (e.code === "Space" || e.code === "Enter") islem(imlec, false);
+    else if (e.code === "KeyF" || e.code === "KeyB") islem(imlec, true);
+  });
+  $("mod").addEventListener("click", function () { bayrakMod = !bayrakMod; modYaz(); Px.ses("tik"); });
+  var menu = Px.menu({ baslik: "MAYIN TARLASI", not: "Mayınlara basmadan tüm güvenli kareleri aç!", secenekler: ZOR.map(function (d, k) {
+    return { ad: d.ad, alt: d.n + "x" + d.n + " · " + d.m + " mayın", fn: function () { patlayan = {}; yeni(k); } };
+  }) });
+  $("menuBtn").addEventListener("click", function () { durum = "menu"; menu.ac(); });
+  $("tekrar").addEventListener("click", function () { patlayan = {}; yeni(z); });
+  g = null; requestAnimationFrame(kare);
+})();
+</script>
+</body>
+</html>
