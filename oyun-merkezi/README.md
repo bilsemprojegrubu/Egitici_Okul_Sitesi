@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.61** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.62** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -144,6 +144,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.59 | Dans oyunu: tema Kaktüs Dansı (çöl gün batımı, dikenli kaktüs dansçı) |
 | 1.9.60 | Kaktüs Dansı: dansçı tam piksel Spike tarzı (kısa-geniş gövde, çiçek, dikenler, geniş gözler, gülümseme) |
 | 1.9.61 | Kaktüs Dansı: Spike daha benzer (büyük pembe çiçek, tamamen siyah gözler, lacivert şort, ayakkabı) + kombo 10 katlarında ikonik dönme dansı |
+| 1.9.62 | Kaktüs Dansı: dansçı artık piksel değil, referanstaki gibi vektör Spike (kırmızı çiçek, koyu gözler/ağız, mor yelek, yumruklar, şort) |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |

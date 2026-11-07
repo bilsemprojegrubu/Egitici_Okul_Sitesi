@@ -97,53 +97,50 @@
     x.fillStyle = "rgba(255,255,255,.5)"; x.fillRect(-4, 1, 3, 12);
     x.restore();
   }
-  // ---- Spike tarzı piksel kaktüs (24x36): büyük çiçek, siyah gözler, şort, ayakkabı ----
-  var SP = (function () {
-    var NW = 24, NH = 36, g = [], r, c; for (r = 0; r < NH; r++) { g.push([]); for (c = 0; c < NW; c++) g[r].push("."); }
-    function put(c, r, ch) { if (r >= 0 && r < NH && c >= 0 && c < NW) g[r][c] = ch; }
-    var OY = 9;
-    for (r = OY; r < NH; r++) for (c = 0; c < NW; c++) { var dx = (c - 11.5) / 10.5, dy = (r - (OY + 11)) / 11.5; if (dx * dx + dy * dy <= 1) put(c, r, "g"); }
-    for (r = OY; r < NH; r++) for (c = 0; c < NW; c++) if (g[r][c] === "g") { if (c <= 5) g[r][c] = "G"; else if (c >= 18) g[r][c] = "d"; }
-    for (r = OY + 2; r < NH - 1; r++) { put(8, r, "d"); put(15, r, "d"); }
-    [[1, 14], [0, 20], [2, 26], [22, 14], [23, 20], [21, 26], [4, 11], [19, 11]].forEach(function (t) { put(t[0], t[1], "w"); });
-    [[3, 16], [20, 17], [4, 23], [19, 23]].forEach(function (t) { put(t[0], t[1], "w"); });
-    // gözler: tamamen siyah oval
-    for (r = OY + 3; r <= OY + 9; r++) for (c = 5; c <= 10; c++) { put(c, r, "k"); put(c + 8, r, "k"); }
-    [[5, OY + 3], [10, OY + 3], [13, OY + 3], [18, OY + 3], [5, OY + 9], [10, OY + 9], [13, OY + 9], [18, OY + 9]].forEach(function (t) { put(t[0], t[1], "g"); });
-    // gülümseme
-    for (c = 7; c <= 16; c++) { put(c, OY + 11, "k"); put(c, OY + 15, "k"); }
-    for (r = OY + 12; r <= OY + 14; r++) { put(6, r, "k"); put(17, r, "k"); for (c = 7; c <= 16; c++) put(c, r, r === OY + 12 ? "t" : (r === OY + 14 && c > 8 && c < 15 ? "L" : "m")); }
-    // KIYAFET: lacivert şort + sarı şerit + sarı kemer
-    for (r = 28; r < NH; r++) for (c = 0; c < NW; c++) if (g[r][c] !== ".") g[r][c] = "n";
-    for (c = 0; c < NW; c++) if (g[27][c] !== ".") g[27][c] = "y";
-    for (r = 28; r < NH; r++) { if (g[r][11] !== ".") g[r][11] = "y"; if (g[r][12] !== ".") g[r][12] = "y"; }
-    // BÜYÜK ÇİÇEK (kafanın üstünde): pembe taç yapraklar + sarı göbek
-    var pet = [[6, 1], [7, 0], [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0], [16, 1], [5, 2], [17, 2], [5, 3], [17, 3], [5, 4], [17, 4], [6, 5], [16, 5], [7, 6], [15, 6]];
-    for (r = 1; r <= 5; r++) for (c = 6; c <= 16; c++) put(c, r, "p");
-    pet.forEach(function (t) { put(t[0], t[1], "p"); });
-    for (r = 2; r <= 4; r++) for (c = 9; c <= 13; c++) put(c, r, "y");
-    for (r = 1; r <= 5; r++) { put(6, r, "P"); put(7, r, "P"); }
-    put(11, 6, "d"); put(11, 7, "g"); put(10, 7, "g"); put(12, 7, "g"); put(11, 8, "g");
-    var cp = g.map(function (row) { return row.slice(); });
-    for (r = 0; r < NH; r++) for (c = 0; c < NW; c++) if (g[r][c] === ".") { var nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(function (d) { var rr = r + d[1], cc = c + d[0]; return rr >= 0 && rr < NH && cc >= 0 && cc < NW && g[rr][cc] !== "." && g[rr][cc] !== "k"; }); if (nb) cp[r][c] = "k"; }
-    var pal = { k: "#0d0e1a", g: "#38b764", G: "#a7f070", d: "#257179", w: "#fff8d0", e: "#ffffff", p: "#ff4fd8", P: "#ff9aee", y: "#ffe14d", t: "#ffffff", m: "#5d1030", L: "#ef4d5e", n: "#2b3a9a" };
-    var kol = ["kkkkkk", "kGgggk", "kGgdwk", "kGgggk", "kGgdwk", "kGggdk", "kGgggk", "kkgggk", ".kkkk."];
-    var ayak = [".kkkkkkk.", "kyyyyyyyk", "kgggggddk", "kkkkkkkkk"];
-    ayak = [".kkkkkkk.", "kWWWWWWWk", "kRRRRRRRk", "kkkkkkkkk"]; pal.W = "#fff"; pal.R = "#ef4d5e";
-    return { b: Px.sprite(cp.map(function (r) { return r.join(""); }), pal, 3), a: Px.sprite(kol, pal, 3), f: Px.sprite(ayak, pal, 3) };
-  })();
+  // ---- Spike (Brawl Stars) vektör çizim: açık yeşil kubbe gövde, kırmızı çiçek, koyu gözler/ağız, mor yelek, yumruk, kahverengi şort ----
+  var OUT = "#10200a";
+  function el(cx, cy, rx, ry, fill, rot) { x.beginPath(); x.ellipse(cx, cy, rx, ry, rot || 0, 0, 6.2832); x.fillStyle = fill; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke(); }
+  function govde() {
+    var gr = x.createLinearGradient(-42, 0, 42, 0); gr.addColorStop(0, "#b5e84a"); gr.addColorStop(.45, "#8fd22a"); gr.addColorStop(1, "#5fa31e");
+    x.beginPath(); x.moveTo(-40, 46); x.bezierCurveTo(-46, 10, -44, -44, -10, -50); x.bezierCurveTo(10, -53, 44, -42, 41, 10); x.bezierCurveTo(40, 30, 40, 40, 40, 46);
+    x.quadraticCurveTo(0, 56, -40, 46); x.closePath(); x.fillStyle = gr; x.fill(); x.lineWidth = 3.5; x.strokeStyle = OUT; x.lineJoin = "round"; x.stroke();
+    x.beginPath(); x.moveTo(0, -50); x.quadraticCurveTo(-4, -34, 0, -22); x.strokeStyle = "#6aa81e"; x.lineWidth = 3; x.stroke();
+    // şort
+    x.save(); x.beginPath(); x.moveTo(-40, 46); x.bezierCurveTo(-46, 10, -44, -44, -10, -50); x.bezierCurveTo(10, -53, 44, -42, 41, 10); x.bezierCurveTo(40, 30, 40, 40, 40, 46); x.quadraticCurveTo(0, 56, -40, 46); x.closePath(); x.clip();
+    x.fillStyle = "#9a5c2a"; x.fillRect(-50, 24, 100, 40); x.fillStyle = "#c98a46"; x.fillRect(-50, 22, 100, 6);
+    x.fillStyle = "#6f3a1c"; x.beginPath(); x.moveTo(-5, 28); x.lineTo(5, 28); x.lineTo(3, 36); x.lineTo(-3, 36); x.fill(); x.restore();
+    x.beginPath(); x.moveTo(-42, 26); x.quadraticCurveTo(0, 32, 42, 26); x.lineWidth = 2.5; x.strokeStyle = OUT; x.stroke();
+    // gözler + ağız
+    el(-17, -16, 11, 13, "#1f4a14"); el(17, -16, 11, 13, "#1f4a14");
+    x.beginPath(); x.moveTo(-20, 5); x.bezierCurveTo(-22, -4, 22, -4, 20, 5); x.bezierCurveTo(24, 22, -24, 22, -20, 5); x.closePath(); x.fillStyle = "#1f4a14"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
+    x.beginPath(); x.ellipse(0, 16, 11, 4, 0, 0, 6.2832); x.fillStyle = "#2f6a1c"; x.fill();
+    // çiçek (kırmızı taç)
+    el(-13, -54, 14, 11, "#e8453c", -.3); el(5, -60, 17, 13, "#e8453c", .1); el(18, -52, 12, 10, "#e8453c", .5);
+    x.beginPath(); x.ellipse(2, -64, 8, 4, .1, 0, 6.2832); x.fillStyle = "#f56a55"; x.fill();
+    // yapraklar
+    el(-44, -22, 7, 3.5, "#4f9a2a", -.5); el(30, -42, 7, 3.5, "#4f9a2a", .5);
+  }
+  function yelek(sg) {
+    x.beginPath(); x.moveTo(sg * 30, -10); x.quadraticCurveTo(sg * 50, -4, sg * 50, 20); x.quadraticCurveTo(sg * 50, 40, sg * 34, 42); x.quadraticCurveTo(sg * 28, 20, sg * 30, -10); x.closePath();
+    x.fillStyle = "#a43be0"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
+  }
+  function kolcuk(sg, a) {
+    x.save(); x.translate(sg * 42, 0); x.rotate(a);
+    x.beginPath(); x.ellipse(0, 4, 9, 14, 0, 0, 6.2832); x.fillStyle = "#a43be0"; x.fill(); x.lineWidth = 3; x.strokeStyle = OUT; x.stroke();
+    el(0, 30, 16, 14, "#8fd22a");
+    x.beginPath(); x.moveTo(-8, 24); x.lineTo(-8, 34); x.moveTo(0, 22); x.lineTo(0, 35); x.moveTo(8, 24); x.lineTo(8, 34); x.lineWidth = 2; x.strokeStyle = "#4f8a1a"; x.stroke();
+    x.restore();
+  }
   var dnT = 0;
   function dansci() {
     // ikonik dans: kombo 10'un katlarında Spike dönerek kollarını sallar
     if (kombo > 0 && kombo % 10 === 0 && dnT === 0 && !bitti) dnT = 70;
     if (dnT > 0) dnT--;
-    var cx = 200, cy = 112 + poz.bob * 1.2, sp = Math.round(Math.sin(kare / 5) * 4), sx = 1, a1 = poz.a1, a2 = poz.a2, zp = 0;
-    if (dnT > 0) { var ph = (70 - dnT) / 70; sx = Math.cos(ph * Math.PI * 6); a1 = -2.6 + Math.sin(kare / 2) * .5; a2 = 2.6 - Math.sin(kare / 2) * .5; zp = -Math.abs(Math.sin(ph * Math.PI * 6)) * 14; sp = Math.round(Math.sin(kare / 2) * 6); }
-    x.save(); x.imageSmoothingEnabled = false; x.translate(cx, cy + zp); x.rotate(dnT > 0 ? 0 : poz.lean); x.scale(sx, 1);
-    x.drawImage(SP.f, -27 + sp, 48); x.drawImage(SP.f, 0 - sp, 48);
-    function kol(sx2, a) { x.save(); x.translate(sx2, 4); x.rotate(a); x.drawImage(SP.a, -9, -3); x.restore(); }
-    kol(-37, a1); kol(37, a2);
-    x.drawImage(SP.b, -36, -62 + (Math.floor(kare / 8) % 2));
+    var cx = 200, cy = 118 + poz.bob * 1.2, sp = Math.sin(kare / 5) * 4, sx = 1, a1 = poz.a1, a2 = poz.a2, zp = 0, sq = 1 + (Math.floor(kare / 8) % 2) * .02;
+    if (dnT > 0) { var ph = (70 - dnT) / 70; sx = Math.cos(ph * Math.PI * 6); a1 = -2.6 + Math.sin(kare / 2) * .5; a2 = 2.6 - Math.sin(kare / 2) * .5; zp = -Math.abs(Math.sin(ph * Math.PI * 6)) * 14; sp = Math.sin(kare / 2) * 6; }
+    x.save(); x.translate(cx, cy + zp); x.rotate(dnT > 0 ? 0 : poz.lean); x.scale(sx, sq); x.lineJoin = "round";
+    el(-20 + sp, 54, 17, 9, "#7fc21e"); el(20 - sp, 54, 17, 9, "#7fc21e");
+    govde(); yelek(-1); yelek(1); kolcuk(-1, a1); kolcuk(1, a2);
     x.restore();
   }
   function ciz() {
