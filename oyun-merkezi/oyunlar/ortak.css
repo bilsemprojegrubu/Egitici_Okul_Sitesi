@@ -53,6 +53,8 @@ body.tam canvas.cv{max-width:none;margin:0 auto}
 body.tam .sahne{max-width:none;padding-bottom:4px;gap:6px}
 body.tam .ust{max-width:none}
 .kaplama{overscroll-behavior:contain}
+html:has(body.tam){overflow:hidden}
+body.tam .sahne{overflow-x:clip}
 @media (max-width:520px){.ust h1{font-size:1rem}}
 /* Kısa ekranlar (yatay telefon): her şey sığsın diye sıkıştır */
 @media (max-height:560px){
