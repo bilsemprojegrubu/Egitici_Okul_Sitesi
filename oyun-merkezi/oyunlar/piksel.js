@@ -385,6 +385,7 @@
     function kare(t) {
       if (!calisiyor) return;
       if (!onceki) onceki = t;
+      Px.joy();
       if (bekle || Px.mBekle) { onceki = t; Px.temizle(); ciz(); Px.son(); requestAnimationFrame(kare); return; }
       birik += Math.min(100, t - onceki) * Px.hiz; onceki = t;
       var n = 0;
@@ -395,5 +396,39 @@
     requestAnimationFrame(kare);
     return { dur: function () { calisiyor = false; } };
   };
+  // ---- Joystick / gamepad (Gamepad API): çubuk ve yön tuşları + düğmeler klavye tuşlarına çevrilir ----
+  var OK = { u: "ArrowUp", d: "ArrowDown", l: "ArrowLeft", r: "ArrowRight", b: { 0: "Space", 1: "KeyZ", 2: "KeyX", 3: "KeyC" } };
+  var JOY = {
+    futbol: [{ u: "KeyW", d: "KeyS", l: "KeyA", r: "KeyD", b: { 0: "KeyE", 1: "KeyQ", 2: "KeyX", 3: "KeyC", 4: "KeyZ", 5: "KeyV" } },
+             { u: "KeyO", d: "KeyK", l: "Semicolon", r: "KeyL", b: { 0: "KeyP", 1: "KeyI", 2: "Comma", 3: "Period", 4: "KeyM", 5: "Slash" } }],
+    basket: [{ u: "KeyW", d: "KeyS", l: "KeyA", r: "KeyD", b: { 0: "KeyW", 1: "KeyF", 2: "KeyQ", 3: "KeyE" } },
+             { u: "ArrowUp", d: "ArrowDown", l: "ArrowLeft", r: "ArrowRight", b: { 0: "ArrowUp", 1: "Enter", 2: "KeyP", 3: "KeyI" } }],
+    voleybol: [{ u: "KeyW", d: "KeyS", l: "KeyA", r: "KeyD", b: { 0: "KeyW", 1: "KeyW" } },
+               { u: "ArrowUp", d: "ArrowDown", l: "ArrowLeft", r: "ArrowRight", b: { 0: "ArrowUp", 1: "ArrowUp" } }],
+    pong: [{ u: "KeyW", d: "KeyS", b: {} }, { u: "ArrowUp", d: "ArrowDown", b: {} }]
+  };
+  var joyAd = (location.pathname.match(/\/oyunlar\/([^\/]+)/) || [])[1], joyHaritasi = JOY[joyAd] || [OK], joyOnce = {};
+  Px.joy = function () {
+    if (!navigator.getGamepads) return;
+    var pads = navigator.getGamepads(), hepsi = {}, i, j, gp, m, tus, b;
+    for (i = 0; i < pads.length; i++) {
+      gp = pads[i]; if (!gp || !gp.connected) continue;
+      m = joyHaritasi[Math.min(gp.index, joyHaritasi.length - 1)] || joyHaritasi[0];
+      if (joyHaritasi.length > 1 && gp.index >= joyHaritasi.length) continue;
+      tus = {}; b = gp.buttons;
+      var ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
+      if (m.l && (ax < -.5 || (b[14] && b[14].pressed))) tus[m.l] = 1;
+      if (m.r && (ax > .5 || (b[15] && b[15].pressed))) tus[m.r] = 1;
+      if (m.u && (ay < -.5 || (b[12] && b[12].pressed))) tus[m.u] = 1;
+      if (m.d && (ay > .5 || (b[13] && b[13].pressed))) tus[m.d] = 1;
+      for (j in m.b) if (b[j] && b[j].pressed) tus[m.b[j]] = 1;
+      if (b[9] && b[9].pressed) tus.Space = 1;
+      for (j in tus) hepsi[j] = 1;
+    }
+    for (j in hepsi) if (!joyOnce[j]) bas(j);
+    for (j in joyOnce) if (!hepsi[j]) birak(j);
+    joyOnce = hepsi;
+  };
+
   g.Px = Px;
 })(window);

@@ -210,8 +210,8 @@
     if (!sut_ && h.onceSut) { if (mesafe(c, top) < 14 && c.cd === 0) sut(c, Math.max(.3, h.sarj)); h.sarj = 0; }
     h.onceSut = sut_;
     var pas_ = bas(t, "pas");
-    if ((pas_ && !h.oncePas || bas1(t, "pas") || pres(t, "sk")) && mesafe(c, top) < 14 && c.cd === 0) pas(c, 0);
-    else if (pres(t, "sh") && mesafe(c, top) < 14 && c.cd === 0 && top.z < 3) pas(c, 1);
+    if ((pas_ && !h.oncePas || bas1(t, "pas") || pres(t, "sk")) && mesafe(c, top) < 22 && c.cd === 0) pas(c, 0);
+    else if (pres(t, "sh") && mesafe(c, top) < 22 && c.cd === 0 && top.z < 3) pas(c, 1);
     if (pres(t, "sb") && top.z >= 3 && top.z <= 15 && mesafe(c, top) < 9 && c.cd === 0) kafa(c, uy);
     else if (pres(t, "sr") && top.z >= 4 && top.z <= 16 && mesafe(c, top) < 11 && c.cd === 0) rovesata(c);
     h.oncePas = pas_;
