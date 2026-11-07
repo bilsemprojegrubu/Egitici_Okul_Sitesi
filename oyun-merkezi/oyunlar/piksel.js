@@ -293,7 +293,13 @@
     (o.secenekler || []).forEach(function (s) {
       var b = document.createElement("button"); b.type = "button"; b.className = "btn buyuk";
       b.textContent = s.ad; if (s.alt) { var k = document.createElement("small"); k.textContent = s.alt; b.appendChild(k); }
-      b.addEventListener("click", function () { Px.ses("tik"); m.hidden = true; s.fn(); });
+      b.addEventListener("click", function () {
+        Px.ses("tik"); m.hidden = true; s.fn();
+        // Mod seçildi ve oyun fiilen başlıyorsa (başka menü açılmadıysa): oyun, BAŞLA'ya basılana kadar bekler
+        if (Px.donguVar && !document.querySelector(".kaplama.menu:not([hidden]):not(#baslaKapi)")) {
+          Px.mBekle = true; Px.kapi(function () { Px.mBekle = false; });
+        }
+      });
       m.appendChild(b);
     });
     if (o.ek) o.ek(m);
@@ -358,12 +364,12 @@
   // Sabit adımlı oyun döngüsü (60 fps mantık, ekran hızından bağımsız)
   Px.dongu = function (guncelle, ciz) {
     var onceki = 0, birik = 0, calisiyor = true, bekle = false;
-    Px.hizGerek = true; hizEkle();
+    Px.hizGerek = true; Px.donguVar = true; hizEkle();
     if (!Px.menuVar) { bekle = true; Px.kapi(function () { bekle = false; onceki = 0; birik = 0; }); }
     function kare(t) {
       if (!calisiyor) return;
       if (!onceki) onceki = t;
-      if (bekle) { onceki = t; Px.temizle(); ciz(); Px.son(); requestAnimationFrame(kare); return; }
+      if (bekle || Px.mBekle) { onceki = t; Px.temizle(); ciz(); Px.son(); requestAnimationFrame(kare); return; }
       birik += Math.min(100, t - onceki) * Px.hiz; onceki = t;
       var n = 0;
       while (birik >= 16.667 && n < 5 * Px.hiz) { guncelle(); birik -= 16.667; n++; }
