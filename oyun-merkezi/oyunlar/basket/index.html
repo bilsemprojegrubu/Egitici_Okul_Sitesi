@@ -191,9 +191,10 @@
     p.landed = 0; p.av = 0; var hedefA = Px.sinir(p.vx * .35, -.4, .4); // yerde yaylanma yok: yumuşakça hedef eğime gelir
     p.ang = Px.sinir((p.ang || 0) + (hedefA - (p.ang || 0)) * .25, -1.1, 1.1);
     if (!p.yer) { p.av = 0; p.ang += ((p.ja || 0) - p.ang) * .18; } // zıplarken basılan yöne yatık kalır, havada değişmez // havada sallanma yok: gittiği yöne doğru yatar
+    if (p.hold && !p.dunk && (!p.yer || p.chg > 0)) p.ang += (-p.face * (p.yer ? .3 : .5) - p.ang) * .2; // topla şut hazırlığında / havada geriye eğilir
     p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) ;
     if (p.stl > 0) p.stl--; if (p.swp > 0) { p.sw += Math.sin(p.swp / 8 * Math.PI) * 90; p.swp--; }
-    p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = 70; p.th += (hedef - p.th) * .3;
+    p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = -25; p.th += (hedef - p.th) * (p.chg > 0 ? .18 : .3);
     if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
     if (p.cd) p.cd--;
   }
@@ -217,7 +218,7 @@
   function topFizik() {
     if (top.pro > 0) top.pro--;
     if (top.h && faz === 0 && !(top.pro > 0)) { pl.forEach(function (p) { if (top.h && p.t !== top.h.t && p.cd === 0 && yakinlik(p) < V.r + 12 && Math.random() < (p.yer ? .1 : .35)) { top.h.hold = false; top.h.cd = 30; top.h = p; p.hold = true; top.pro = 40; Px.ses("al"); } }); }
-    if (top.h) { var e = el(top.h); top.x = e.x + e.dx * 2; top.y = e.y + e.dy * 2; top.vx = top.vy = 0; return; }
+    if (top.h) { var e = el(top.h); top.x = Px.sinir(e.x + e.dx * 2, V.r, W - V.r); top.y = e.y + e.dy * 2; top.vx = top.vy = 0; return; }
     var r = V.r, py = top.y;
     top.vy += V.g; top.vx += V.w || 0; top.x += top.vx; top.y += top.vy; top.vx *= .999; top.d += top.vx * 12;
     if (top.y > ZEMIN - r) { top.y = ZEMIN - r; if (V.tc === 2) { top.vy = 0; top.vx *= .85; } else { top.vy = -Math.abs(top.vy) * (V.tc === 1 ? .8 : (V.bn || (V.g > .13 ? .35 : .55))); top.vx *= V.kar ? .99 : .92; if (Math.abs(top.vy) > .8) Px.ses("tik"); if (Math.abs(top.vy) < (V.tc === 1 ? .6 : 1.1)) top.vy = 0; } }
@@ -250,9 +251,9 @@
     });
     // sıkışma koruması: top havada/bir yerde ~1.5 sn neredeyse kıpırdamıyorsa ortaya doğru it
     if (!top.h && faz === 0) {
-      var yerde = top.y >= ZEMIN - r - 1.5;
-      if (Math.abs(top.vx) + Math.abs(top.vy) < .35 && !yerde) top.st = (top.st || 0) + 1; else top.st = 0;
-      if (top.st > 90) { top.st = 0; top.vx = (top.x < W / 2 ? 1 : -1) * 1.4; top.vy = -2.2; }
+      var yerde = top.y >= ZEMIN - r - 1.5, kenarda = top.x < 22 || top.x > W - 22;
+      if (Math.abs(top.vx) + Math.abs(top.vy) < .35 && (!yerde || kenarda)) top.st = (top.st || 0) + 1; else top.st = 0;
+      if (top.st > (kenarda ? 40 : 90)) { top.st = 0; top.vx = (top.x < W / 2 ? 1 : -1) * 1.4; top.vy = -2.2; }
     }
     if (top.cd) top.cd--;
   }
@@ -263,7 +264,7 @@
     var a = ag[t]; a.sv += 9; a.rv += 6; a.p = 60;
     for (var i = 0; i < 24; i++) parc.push({ x: h.tipx, y: h.y + 6, vx: Px.rastgele(-2, 2), vy: Px.rastgele(-3, 0), o: 40, c: ["#ffcd75", "#fff", "#ef7d57"][i % 3] });
     faz = 2; kut = KUTLAMA; msayac = KUTLAMA + 10; top.vx *= .3;
-    if (altin) bitir();
+    if (skor[t] >= 5) { mesaj = (t === 0 ? "KIRMIZI" : "MAVİ") + " KAZANDI!"; msayac = 80; bitir(); }
   }
   function topuBirak() {
     top = { x: W / 2, y: 30, vx: 0, vy: 0, h: null, cd: 0, d: 0 };
@@ -306,7 +307,7 @@
       if (kut <= 0) kutlamaBitti();
       return;
     }
-    if (!bitis) { sure--; if (sure <= 0) { if (skor[0] === skor[1]) { altin = true; sure = 0; mesaj = "ALTIN BASKET!"; msayac = 80; } else { mesaj = "MAÇ BİTTİ"; msayac = 80; bitir(); } } }
+    if (false) { sure--; if (sure <= 0) { if (skor[0] === skor[1]) { altin = true; sure = 0; mesaj = "ALTIN BASKET!"; msayac = 80; } else { mesaj = "MAÇ BİTTİ"; msayac = 80; bitir(); } } }
     if (bitis) return;
     insan(0); if (mod === 2) insan(1); else pl.forEach(function (p) { if (p.t === 1) botGuncelle(p, zor === 0 ? .42 : (zor === 2 ? .8 : .58)); });
     pl.forEach(function (p) { if (p.auto && p.hold && !p.yer && p.vy > -.8) { atGuc(p); p.auto = false; } });
@@ -443,7 +444,7 @@
     x.restore();
     var sn = Math.ceil(sure / 60), dk = Math.floor(sn / 60), sc = sn % 60;
     Px.yazi(x, skor[0] + "", 70, 4, 18, "#ffb0b0", "center"); Px.yazi(x, skor[1] + "", 170, 4, 18, "#b0d8ff", "center");
-    Px.yazi(x, altin ? "ALTIN" : dk + ":" + (sc < 10 ? "0" : "") + sc, 120, 6, 12, "#ffcd75", "center");
+    Px.yazi(x, "İLK 5", 120, 6, 12, "#ffcd75", "center");
     if (V && V.n !== "NORMAL") Px.yazi(x, V.n, 120, 22, 8, "#a7f070", "center");
     Px.yazi(x, "KIRMIZI", 42, 10, 6, "#ffb0b0", "center"); Px.yazi(x, "MAVİ", 198, 10, 6, "#b0d8ff", "center");
     if (calis && faz === 1) { // HAZIRLAN 3-2-1-BAŞLA!
@@ -471,7 +472,7 @@
   }
   function basla(m, z) {
     mod = m; zor = z;
-    var ek = " Her sayıdan sonra komik bir değişiklik gelir (2x puan, kar, ağır top...)! 90 saniye." + (m === 2 ? " (Sıralamaya yazılmaz)" : "");
+    var ek = " Her sayıdan sonra komik bir değişiklik gelir (2x puan, kar, ağır top...)! İlk 5 sayıyı yapan kazanır (süre yok)." + (m === 2 ? " (Sıralamaya yazılmaz)" : "");
     document.getElementById("ipucu").textContent = (tek
       ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır."
         : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): bas = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
