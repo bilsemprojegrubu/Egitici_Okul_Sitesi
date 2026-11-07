@@ -11,7 +11,7 @@
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
-  <p class="ipucu">Hep zıplarsın! ◀ ▶ / A D ile yön ver (dokunmatikte ekranın sol/sağ yarısına bas). Kahverengi kırılan tahta seni bir kere zıplatır, sonra parçalanır. Yay seni uçurur. Canavara üstten bas!</p>
+  <p class="ipucu">Uzaylı hep zıplar! ◀ ▶ / A D ile yön ver (dokunmatikte ekranın sol/sağ yarısına bas). Gri platformlar sağlam, mavi olanlar kayar, kahverengi göktaşı seni bir kere zıplatır sonra parçalanır. Yay ve roket seni uçurur. Yeşil canavara üstten bas!</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Düştün!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -28,14 +28,14 @@
   var SINIR = 20000, ESIK = 100;
   var K = "#0d0e1a";
   var OYUNCU = Px.sprite([
-    "...kkkkkk...", "..kwwwwwwk..", ".kwkkkkkkwk.", ".kwkbcbbkwk.", ".kwkbbbbkwk.", ".kwkkkkkkwk.",
-    "..kwwwwwwk..", ".kwwwrrwwwk.", ".kwwwwwwwwk.", "..kwwkkwwk..", "..kgk..kgk..", ".kkgk..kgkk."],
-    { k: K, w: "#f4f4f4", b: "#41a6f6", c: "#73eff7", r: "#ef4d5e", g: "#94b0c2" }, 1);
+    "..y......y..", "...k....k...", "..kkkkkkkk..", ".kcccccccck.", "kckkkcckkkck", "kckwkcckwkck",
+    ".kcccckccck.", "..kcccccck..", "..kddddddk..", "..kckkkkck..", "..kk....kk..", ".kkk....kkk."],
+    { k: K, c: "#c58cf0", d: "#8a5fc0", w: "#f4f4f4", y: "#ffcd75" }, 1);
   var OYUNCU_S = Px.cevir(OYUNCU);
   var CANAVAR = Px.sprite([
     "..k......k..", "...k....k...", "..kkkkkkkk..", ".kppppppppk.", "kppwkppwkppk", "kppppppppppk",
     "kpkkkkkkkkpk", ".kpwpwpwpk..", "..kkkkkkkk..", ".k..k..k..k."],
-    { k: K, p: "#b55088", w: "#f4f4f4" }, 1);
+    { k: K, p: "#38b764", w: "#f4f4f4" }, 1);
   var ROKET = Px.sprite([
     "..kk..", ".krrk.", ".kwwk.", ".kwbk.", ".kwwk.", "kkwwkk", "kr.kkr", "ky..yk"],
     { k: K, r: "#ef4d5e", w: "#f4f4f4", b: "#41a6f6", y: "#ffcd75" }, 1);
@@ -168,7 +168,7 @@
   }
   function govde(y0) { // yüksekliğe göre gökyüzü rengi
     var t = Px.sinir(hgt / 12000, 0, 1);
-    var r = Math.round(60 - 50 * t), g = Math.round(130 - 110 * t), b = Math.round(220 - 150 * t);
+    var r = Math.round(30 - 20 * t), g = Math.round(28 - 18 * t), b = Math.round(78 - 48 * t);
     return "rgb(" + r + "," + g + "," + b + ")";
   }
   function platCiz(p) {
@@ -179,9 +179,9 @@
       x.fillStyle = "#a05b53"; x.fillRect(px + 1, py + 1, w / 2 - 3, 4); x.fillRect(px + w / 2 + 3, py + 3, w / 2 - 4, 4);
       x.restore(); return;
     }
-    var c1 = p.tip === 1 ? "#41a6f6" : p.tip === 2 ? "#a05b53" : "#38b764";
-    var c2 = p.tip === 1 ? "#a8e0ff" : p.tip === 2 ? "#d08a70" : "#a7f070";
-    var c3 = p.tip === 1 ? "#2a6fc0" : p.tip === 2 ? "#6e3a35" : "#257b43";
+    var c1 = p.tip === 1 ? "#41a6f6" : p.tip === 2 ? "#a05b53" : "#94b0c2";
+    var c2 = p.tip === 1 ? "#a8e0ff" : p.tip === 2 ? "#d08a70" : "#dbe4ee";
+    var c3 = p.tip === 1 ? "#2a6fc0" : p.tip === 2 ? "#6e3a35" : "#566c86";
     x.fillStyle = K; x.fillRect(px - 1, py - 1, w + 2, 8);
     x.fillStyle = c1; x.fillRect(px, py, w, 6);
     x.fillStyle = c2; x.fillRect(px, py, w, 2);
@@ -198,10 +198,11 @@
   function ciz() {
     x.save();
     x.fillStyle = govde(); x.fillRect(0, 0, W, H);
-    var a = Px.sinir(hgt / 8000 - .3, 0, 1);
-    if (a > 0) { x.globalAlpha = a; yildiz.forEach(function (s) { x.fillStyle = s.b > 1 ? "#f4f4f4" : "#ffcd75"; x.fillRect(Math.round(s.x), Math.round(s.y), s.b, s.b); }); x.globalAlpha = 1; }
-    x.globalAlpha = 1 - a * .8;
-    bulut.forEach(function (c) { x.fillStyle = "#f4f4f4"; x.fillRect(Math.round(c.x), Math.round(c.y), c.w, 5); x.fillRect(Math.round(c.x) + 4, Math.round(c.y) - 3, c.w - 10, 4); });
+    yildiz.forEach(function (s) { x.fillStyle = s.b > 1 ? "#f4f4f4" : "#ffcd75"; x.fillRect(Math.round(s.x), Math.round(s.y), s.b, s.b); });
+    // uzak gezegenler / nebula
+    x.globalAlpha = .35;
+    bulut.forEach(function (c, n) { var cx = Math.round(c.x), cy = Math.round(c.y), r = Math.round(c.w / 4) + 3;
+      x.fillStyle = n % 2 ? "#b55088" : "#3b5dc9"; x.fillRect(cx - r, cy - r + 2, r * 2, r * 2 - 4); x.fillRect(cx - r + 2, cy - r, r * 2 - 4, r * 2); });
     x.globalAlpha = 1;
     pl.forEach(platCiz);
     jt.forEach(function (j) { var f = Math.abs(Math.sin(j.t / 14)); x.drawImage(JETON, Math.round(j.x - 3), Math.round(j.y - 3 + f * 2)); });
