@@ -30,7 +30,12 @@
 <script>
 // Uygulama olarak yükleme (PWA) + çevrimdışı çalışma
 (function(){
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
+  if ("serviceWorker" in navigator) {
+    var varDi = !!navigator.serviceWorker.controller, yenilendi = false;
+    // Yeni sürüm devreye girince sayfa bir kez kendiliğinden yenilenir
+    navigator.serviceWorker.addEventListener("controllerchange", function(){ if (varDi && !yenilendi) { yenilendi = true; location.reload(); } });
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function(r){ r.update(); }).catch(function(){});
+  }
   var b = document.getElementById("yukleBtn"), ist = null;
   var kurulu = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
   if (kurulu) return;
