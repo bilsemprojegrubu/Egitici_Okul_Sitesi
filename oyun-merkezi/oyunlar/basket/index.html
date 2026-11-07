@@ -174,7 +174,7 @@
     if (p.cd) p.cd--;
   }
   function ayrisma() {
-    for (var it = 0; it < 4; it++) for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 17 && Math.abs(a.y - b.y) < 40) { var m = (17 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x -= m; b.x += m; } }
+    for (var it = 0; it < 4; it++) for (var i = 0; i < pl.length; i++) for (var j = i + 1; j < pl.length; j++) { var a = pl[i], b = pl[j], dx = b.x - a.x; if (Math.abs(dx) < 26) { var m = (26 - Math.abs(dx)) / 2 * (dx < 0 ? -1 : 1); a.x = Px.sinir(a.x - m, 8, W - 8); b.x = Px.sinir(b.x + m, 8, W - 8); } }
   }
   // Otomatik top alma: oyuncunun eli, gövdesi, kafası ve ayakları (yerdeki top için) topa yeterince yakınsa top alınır.
   function yakalanabilir(p) { return faz === 0 && !top.h && !p.cd && !top.cd; }
