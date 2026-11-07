@@ -337,6 +337,22 @@
       e.preventDefault(); e.stopImmediatePropagation(); t.click();
     }, true);
   })();
+  // Geri sayımı (HAZIRLAN 3-2-1) beklemek istemeyenler için: herhangi bir tuşa basınca ya da ekrana dokununca atlanır.
+  // bekliyor(): geri sayım sürüyor mu?  bitir(): geri sayımı hemen bitir.  (Menü / BAŞLA kapısı açıkken çalışmaz.)
+  Px.atla = function (bekliyor, bitir) {
+    function dene() {
+      try { if (bekliyor() && !document.getElementById("baslaKapi") && !document.querySelector(".kaplama.menu:not([hidden])")) bitir(); } catch (e) { }
+    }
+    document.addEventListener("pointerdown", dene, true);
+    document.addEventListener("keydown", function (e) {
+      if (!e.repeat && ["Shift", "Control", "Alt", "Meta", "CapsLock", "Tab"].indexOf(e.key) < 0) dene();
+    }, true);
+  };
+  // Geri sayım ipucu: tuvale iki satır (tek satıra sığmıyor)
+  Px.atlaYazi = function (x, cx, y) {
+    Px.yazi(x, "Beklemeden başlamak için", cx, y, 8, "#f4f4f4", "center");
+    Px.yazi(x, "bir tuşa bas / dokun", cx, y + 12, 8, "#f4f4f4", "center");
+  };
   // BAŞLA kapısı: menüsü olmayan oyunlar, oyuncu bir butona basana kadar bekler
   var kapiAcik = false;
   Px.kapi = function (devam) {

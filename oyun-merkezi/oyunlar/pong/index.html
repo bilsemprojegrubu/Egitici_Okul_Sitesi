@@ -29,6 +29,7 @@
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, H = 150;
   var RH = 28, RW = 4, SOL = 8, SAG = W - 8 - RW, HEDEF = 7;
   var ADLAR = ["KOLAY", "ORTA", "ZOR"];
+  Px.atla(function () { return durum === "hazir" && say > 1; }, function () { say = 1; });
   var mod = 1, sev = 0, durum = "menu", say = 0, sk = [0, 0], r = [H / 2, H / 2], top, aiHedef = 0, aiHata = 0;
   var galip = 0, seri = 0, fark = 0, puan = 0, yazi = "", iz = [], par = [], hedefY = [null, null];
   var padSol = null, padSag = null, calis = true;
@@ -184,6 +185,7 @@
       var n = Math.ceil(say / 50);
       Px.yazi(x, "HAZIRLAN", W / 2, 52, 11, "#f4f4f4", "center");
       Px.yazi(x, String(n), W / 2, 66, 26, "#ffcd75", "center");
+      Px.atlaYazi(x, W / 2, 100);
     }
     if (durum === "gol") Px.yazi(x, "SAYI!", W / 2, 70, 14, "#ffcd75", "center");
     if (durum === "macson") Px.yazi(x, yazi, W / 2, 66, 14, "#ffcd75", "center");
