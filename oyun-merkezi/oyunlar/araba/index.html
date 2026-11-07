@@ -11,7 +11,8 @@
 <div class="puanlar">Puan <b id="puan">0</b> · Jeton <b id="jeton">0</b> · Rekor <b id="rekor">0</b></div></header>
 <main class="sahne">
   <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
-  <p class="ipucu">◀ ▶ / A D ile şerit değiştir (dokunmatikte ekranın sol/sağ yarısına dokun). Araba, kamyon, koni ve çukurdan kaç; jeton ve benzin topla!</p>
+  <div class="pad"><button class="btn" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn" id="asagi" type="button" aria-label="Geri">▼ GERİ</button></div>
+  <p class="ipucu">◀ ▶ / A D ile şerit değiştir, ▲ ▼ / W S ile ileri-geri git (dokunmatikte ekranın sol/sağ yarısına dokun, ileri-geri için butonlar). Araba, kamyon, koni ve çukurdan kaç; jeton ve benzin topla!</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Kaza yaptın!</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -25,7 +26,7 @@
 // Araba Kaçış: üstten görünüşlü şerit oyunu, 160x240 düşük çözünürlük
 (function () {
   var C = document.getElementById("c"), x = C.getContext("2d"), W = 160, H = 240;
-  var SINIR = 5000, YOL0 = 20, SER = 30, MER = [35, 65, 95, 125], K = "#0d0e1a";
+  var OY0 = H - 40, YMIN = 70, YMAX = H - 16, SINIR = 5000, YOL0 = 20, SER = 30, MER = [35, 65, 95, 125], K = "#0d0e1a";
   function ters(s) { return s.slice().reverse(); }
   var ARABA = [
     "...kkkkkkkk...", "..kbbbbbbbbk..", ".kbbbbbbbbbbk.", ".kbbhhhhhhbbk.", "kbbbbbbbbbbbbk", "kkggggggggggkk",
@@ -61,12 +62,12 @@
     "...kkkk...", "..kggggk..", ".kgGgggGk.", "kggggGgggk", "kgGggggggk", ".kgggGggk.", "..kkkkkk..", "....kbk...", "....kbk..."],
     { k: K, g: "#38b764", G: "#a7f070", b: "#a05b53" }, 1);
 
-  var o, ol, v, mesafe, jeton, puan, yakit, calis, geri, patla, nesne, agac, yazi, par, ser, hedef, sars, dist, bolge, ptrSon, sure;
+  var tus = { u: 0, d: 0 }, o, ol, v, mesafe, jeton, puan, yakit, calis, geri, patla, nesne, agac, yazi, par, ser, hedef, sars, dist, bolge, ptrSon, sure;
   try { document.getElementById("rekor").textContent = Skor.rekor("araba"); } catch (e) { }
   function ya() { document.getElementById("puan").textContent = puan; document.getElementById("jeton").textContent = jeton; }
   function yeni() {
-    ser = 1; hedef = 1; o = { x: MER[1], y: H - 40, tilt: 0 };
-    v = 2.4; dist = 0; jeton = 0; puan = 0; yakit = 100; calis = false; patla = 0; sars = 0; sure = 0; bolge = 60;
+    ser = 1; hedef = 1; o = { x: MER[1], y: OY0, tilt: 0 }; tus.u = tus.d = 0;
+    v = 1.3; dist = 0; jeton = 0; puan = 0; yakit = 100; calis = false; patla = 0; sars = 0; sure = 0; bolge = 60;
     nesne = []; agac = []; yazi = []; par = []; yol = 0;
     for (var k = 0; k < 7; k++) { agac.push({ x: Px.tamsayi(0, 1) ? 140 + Px.tamsayi(2, 4) : Px.tamsayi(0, 3), y: k * 38 + Px.tamsayi(0, 12) }); }
     geri = 180; document.getElementById("bitti").hidden = true; ya();
@@ -89,6 +90,7 @@
       else if (t === "kamyon") { ob.s = KAMYON; ob.ev = .8; ob.w = 14; ob.h = 38; ob.y = -56; }
       else if (t === "koni") { ob.s = KONI; ob.ev = 0; ob.w = 8; ob.h = 7; ob.y = -12; }
       else { ob.s = CUKUR; ob.ev = 0; ob.w = 14; ob.h = 6; ob.y = -10; }
+      if (ob.h > 8 && nesne.some(function (q) { return q.ln === ln && q.h > 8 && q.t !== "jeton" && q.t !== "benzin" && q.y - q.h / 2 < ob.y + ob.h / 2 + 4; })) return;
       nesne.push(ob); s[ln] = 1;
     });
     // jeton / benzin boş şeritlere
@@ -113,17 +115,27 @@
     // şerit değiştirme (tuş basma anı) ve akıcı kayma
     // (şerit tuşları aşağıdaki keydown dinleyicisinde anında işlenir, kare atlasa da kaybolmaz)
     var dx = Px.sinir(MER[hedef] - o.x, -6, 6); o.x += dx; o.tilt = dx / 4;
+    o.y = Px.sinir(o.y + (tus.d - tus.u) * 2.6, YMIN, YMAX); // ileri / geri
     // yol kayması
     dist += h * (geri > 0 ? 0 : 1);
     yol += h;
     agac.forEach(function (g) { g.y += h; if (g.y > H + 4) { g.y = -16 - Px.tamsayi(0, 20); g.x = Px.tamsayi(0, 1) ? 140 + Px.tamsayi(2, 4) : Px.tamsayi(0, 3); } });
     if (geri > 0) return;
     sure += 1 / 60;
-    v = Math.min(7.4, 2.4 + sure * .05);
+    v = Math.min(7.4, 1.3 + sure * .065); // yavaş başlar, yavaş yavaş hızlanır
     yakit -= .02 + v * .0035; // saniyede ~%1.7-2.7
     if (yakit <= 0) { yakit = 0; carpti(); yazi.push({ t: "BENZİN BİTTİ", x: W / 2, y: 100, r: "#ef4d5e", o: 60 }); }
     // nesne üret
     bolge -= v; if (bolge <= 0) { satir(); bolge = Px.rastgele(84, 120) - Px.sinir(sure / 90, 0, 1) * 8; if (v > 6) bolge += 10; }
+    // araçlar birbirinin içinden geçmesin: arkadaki, öndeki araca çarpmadan onun hızına uyar
+    var arac = nesne.filter(function (q) { return q.t === "araba" || q.t === "yavas" || q.t === "kamyon"; });
+    arac.forEach(function (q) {
+      arac.forEach(function (f) {
+        if (f === q || f.ln !== q.ln || f.y <= q.y) return; // f, q'nun önünde (ekranda daha aşağıda)
+        var bos = (f.y - f.h / 2) - (q.y + q.h / 2) - 3;
+        if (bos < 0) { q.y += bos; q.ev = Math.min(q.ev, f.ev); }
+      });
+    });
     for (a = 0; a < nesne.length; a++) {
       b = nesne[a]; b.y += v + b.ev;
       if (b.y > H + 60) { nesne.splice(a, 1); a--; continue; }
@@ -191,7 +203,15 @@
     if (puan >= SINIR) Px.yazi(x, "MAKS!", W / 2, 30, 12, "#ffcd75", "center");
   }
   // Klavye: capture aşamasında yakala (isim kutusu odakta kalsa da, kare atlasa da çalışır)
+  function dikey(e, ac) {
+    var yu = e.code === "ArrowUp" || e.code === "KeyW", as = e.code === "ArrowDown" || e.code === "KeyS";
+    if (!yu && !as) return false;
+    e.preventDefault(); if (yu) tus.u = ac; else tus.d = ac; return true;
+  }
+  document.addEventListener("keyup", function (e) { dikey(e, 0); }, true);
+  window.addEventListener("blur", function () { tus.u = tus.d = 0; });
   document.addEventListener("keydown", function (e) {
+    if (dikey(e, 1)) return;
     var sol = e.code === "ArrowLeft" || e.code === "KeyA", sag = e.code === "ArrowRight" || e.code === "KeyD";
     if (!sol && !sag) return;
     if (e.repeat) { e.preventDefault(); return; }
@@ -204,6 +224,11 @@
   C.addEventListener("pointerdown", function (e) {
     e.preventDefault(); var kt = C.getBoundingClientRect();
     if (calis || geri > 0) lane((e.clientX - kt.left) < kt.width / 2 ? -1 : 1);
+  });
+  [["yukari", "u"], ["asagi", "d"]].forEach(function (p) {
+    var el = document.getElementById(p[0]);
+    el.addEventListener("pointerdown", function (e) { e.preventDefault(); tus[p[1]] = 1; });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function (n) { el.addEventListener(n, function () { tus[p[1]] = 0; }); });
   });
   document.getElementById("tekrar").addEventListener("click", yeni);
   yeni(); Px.dongu(guncelle, ciz);
