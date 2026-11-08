@@ -465,7 +465,7 @@
       if (h === 1 && mod === 1) return;
       var d = document.createElement("div"); py.appendChild(d); var K = keys(h), dz = [];
       d.className = (h === 0 && !(tek && mod === 1)) ? "k-sol" : "k-sag";
-      if (!tek && mod === 1) { var dm = document.createElement("div"); dm.className = "k-sol"; py.insertBefore(dm, d); Px.pad(dm, [{ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] }]); d.className = "k-sag"; }
+      if (!tek && mod === 1) { var dm = document.createElement("div"); dm.className = "k-sol"; py.insertBefore(dm, d); Px.pad(dm, [{ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] }], "yatay"); d.className = "k-sag"; }
       else if (!tek) dz.push({ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] });
       dz.push({ t: tek ? "BASILI TUT" : "ZIPLA", k: K.z[0], a: "Zıpla" });
       if (!tek) dz.push({ t: "ŞUT", k: K.a[0] });
