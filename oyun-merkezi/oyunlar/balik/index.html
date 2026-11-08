@@ -118,7 +118,7 @@
     if (bekle > 0) bekle--;
     while (oy.length < 30 + Math.min(8, Math.floor(bal.s / 20))) yarat(false);
     // kamera: balık ekranı çok kaplayınca BİR KADEME uzaklaşır (sürekli küçülme yok)
-    if (bal.s * 2 > vg * .3) { vg *= 1.9; zb = 100; Px.ses("kazan"); }
+    if (bal.s * 2 > vg * .3) { vg *= 1.9; Px.ses("kazan"); }
     var hz = W / vg; kam.z += (hz - kam.z) * .05;
     kam.x += (bal.x - kam.x) * .1; kam.y += (bal.y - kam.y) * .1;
     par.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.o--; }); par = par.filter(function (p) { return p.o > 0; });
@@ -143,7 +143,6 @@
     x.restore();
     yazi.forEach(function (t) { Px.yazi(x, t.t, W / 2 + (t.x - kam.x) * kam.z, H / 2 + (t.y - kam.y) * kam.z - 8, 9, "#ffcd75", "center"); });
     // boyut çubuğu
-    if (zb > 0) { x.globalAlpha = Math.min(1, zb / 30); Px.yazi(x, "UZAKLAŞTI!", W / 2, H / 2 - 30 - (100 - zb) * .12, 16, "#ffcd75", "center"); x.globalAlpha = 1; }
     Px.yazi(x, "BOYUT " + Math.round(bal.s / 6 * 10) / 10 + "x", 4, 3, 8, "#f4f4f4", "left");
     if (kombo > 1) Px.yazi(x, "KOMBO x" + kombo, W - 4, 3, 8, "#ffcd75", "right");
   }
