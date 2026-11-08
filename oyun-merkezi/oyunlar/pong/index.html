@@ -9,9 +9,9 @@
 <body data-oyun="pong">
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>PONG</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
-<main class="sahne">
+<main class="sahne yan">
   <canvas id="c" class="cv" width="240" height="150" style="--mw:520px;touch-action:none"></canvas>
-  <div id="padyer" class="pad-ikili"></div>
+  <div id="padyer" class="pad-ikili pad-yan"></div>
   <p class="ipucu" id="ipucu">Sol raket: W / S ya da ↑ / ↓ (dokunmatikte ekranı sürükle). 7 sayıya ilk ulaşan kazanır. Bilgisayarı yendikçe zorlaşır!</p>
   <button class="btn ikinci" id="menuBtn" type="button">MENÜ</button>
   <div id="bitti" class="kaplama" hidden>
@@ -206,7 +206,7 @@
   var yer = document.getElementById("padyer");
   padSol = Px.pad(yer, [{ t: "▲", k: "KeyW", a: "Sol yukarı" }, { t: "▼", k: "KeyS", a: "Sol aşağı" }]);
   padSag = Px.pad(yer, [{ t: "▲", k: "ArrowUp", a: "Sağ yukarı" }, { t: "▼", k: "ArrowDown", a: "Sağ aşağı" }]);
-  padSag.style.display = "none";
+  padSol.classList.add("k-sol"); padSag.classList.add("k-sag"); padSag.style.display = "none";
   document.getElementById("menuBtn").addEventListener("click", function () { calis = false; durum = "menu"; menu.ac(); });
   document.getElementById("tekrar").addEventListener("click", function () { document.getElementById("bitti").hidden = true; menu.ac(); durum = "menu"; });
   topKoy(1); r = [H / 2, H / 2];

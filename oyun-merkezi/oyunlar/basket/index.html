@@ -9,10 +9,10 @@
 <body data-oyun="basket">
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>BASKET</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
-<main class="sahne">
+<main class="sahne yan">
   <canvas id="c" class="cv" width="240" height="150" style="--mw:760px"></canvas>
   <p class="ipucu" id="ipucu"></p>
-  <div id="padyer" style="display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);flex-wrap:wrap"></div>
+  <div id="padyer" class="pad-yan" style="display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);flex-wrap:wrap"></div>
   <div id="bitti" class="kaplama" hidden>
     <h2>Maç bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -464,7 +464,9 @@
     [0, 1].forEach(function (h) {
       if (h === 1 && mod === 1) return;
       var d = document.createElement("div"); py.appendChild(d); var K = keys(h), dz = [];
-      if (!tek) dz.push({ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] });
+      d.className = h === 0 ? "k-sol" : "k-sag";
+      if (!tek && mod === 1) { var dm = document.createElement("div"); dm.className = "k-sol"; py.insertBefore(dm, d); Px.pad(dm, [{ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] }]); d.className = "k-sag"; }
+      else if (!tek) dz.push({ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] });
       dz.push({ t: tek ? "BASILI TUT" : "ZIPLA", k: K.z[0], a: "Zıpla" });
       if (!tek) dz.push({ t: "ŞUT", k: K.a[0] });
       dz.push({ t: "SMAÇ", k: K.s[0] }, { t: "ÇAL", k: K.c[0] });

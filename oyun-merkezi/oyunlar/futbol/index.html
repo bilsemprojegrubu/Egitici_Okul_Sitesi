@@ -15,11 +15,11 @@
 <body data-oyun="futbol">
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>FUTBOL</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
-<main class="sahne">
+<main class="sahne yan">
   <canvas id="c" class="cv" width="240" height="160" style="--mw:760px"></canvas>
   <div id="kalbar"><label class="kbar" id="kb1">Kaleci <input type="range" id="kr1" min="0" max="100" value="50"></label><label class="kbar" id="kb2">Kaleci <input type="range" id="kr2" min="0" max="100" value="50"></label></div>
   <p class="ipucu" id="ipucu"></p>
-  <div id="padyer" style="display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);flex-wrap:wrap"></div>
+  <div id="padyer" class="pad-yan" style="display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);flex-wrap:wrap"></div>
   <div id="bitti" class="kaplama" hidden>
     <h2>Maç bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -496,11 +496,14 @@
   function kurPad() {
     var py = document.getElementById("padyer"); py.innerHTML = "";
     function ekle(t) {
-      var d = document.createElement("div"); py.appendChild(d); var K = KEY[t];
+      var d = document.createElement("div"); var K = KEY[t];
+      if (mod === 1) { d.style.display = "contents"; } else { d.className = t === 0 ? "k-sol" : "k-sag"; } py.appendChild(d);
       var sut = K.sut[0], pas_ = K.pas[0], u = K.u[0], dd = K.d[0], l = K.l[0], r = K.r[0];
       if (t === 0 && mod === 1) { /* tek kişilikte aynı tuş kodları (WASD) kullanılır */ }
-      d.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1 1 300px;min-width:0";
+      if (mod !== 1) d.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1 1 300px;min-width:0";
+      else py.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;width:min(100%,760px)";
       var yon = document.createElement("div"), ak = document.createElement("div"); d.appendChild(yon); d.appendChild(ak);
+      if (mod === 1) { yon.className = "k-sol"; ak.className = "k-sag"; }
       Px.joystick(yon, { u: u, d: dd, l: l, r: r });
       Px.pad(ak, [{ t: "ŞUT", k: sut, a: "Şut" }, { t: "PAS", k: pas_, a: "Pas" }, { t: "HAVA", k: K.sh[0], a: "Havadan pas" }, { t: "KAFA", k: K.sb[0], a: "Kafa vuruşu" }, { t: "RÖVEŞATA", k: K.sr[0], a: "Röveşata" }, { t: "TAÇ", k: K.st[0], a: "Taç at" }], "fut-ak");
     }

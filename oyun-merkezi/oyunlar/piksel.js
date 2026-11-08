@@ -83,7 +83,7 @@
   Px.pad = function (kap, dizi, sinif) {
     var d = document.createElement("div"); d.className = "pad " + (sinif || "");
     dizi.forEach(function (o) {
-      var b = document.createElement("button"); b.type = "button"; b.className = "btn pad-d";
+      var b = document.createElement("button"); b.type = "button"; b.className = "btn pad-d" + (o.c ? " " + o.c : "");
       b.textContent = o.t; b.setAttribute("aria-label", o.a || o.t);
       var kodlar = [].concat(o.k);
       function ac(e) { e.preventDefault(); kodlar.forEach(bas); b.classList.add("bas"); try { b.setPointerCapture(e.pointerId); } catch (x) { } }
