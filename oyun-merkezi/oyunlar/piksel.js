@@ -259,7 +259,7 @@
     if (cv.length === 1) {
       var c = cv[0], cw = c.width, chh = c.height, dogal = c.getBoundingClientRect().width;
       // yan yerleşim: yan kontroller tuvalin satırını yüksek yapmasın (geçici gizle), genişlikleri ayrılsın
-      var yanlar = sahne.classList.contains("yan") ? [].slice.call(sahne.querySelectorAll(".k-sol,.k-sag")) : [], yanEn = 0, yd = [];
+      var yanlar = sahne.classList.contains("yan") && iw >= 640 ? [].slice.call(sahne.querySelectorAll(".k-sol,.k-sag")) : [], yanEn = 0, yd = [];
       yanlar.forEach(function (el) { var r = el.getBoundingClientRect(); if (r.width) yanEn += r.width + 14; });
       yanlar.forEach(function (el) { yd.push(el.style.display); el.style.display = "none"; });
       c.style.width = "1px";
