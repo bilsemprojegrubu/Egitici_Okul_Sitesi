@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.84** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.85** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -167,6 +167,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.82 | Basket: tek tuşta yön oku kaldırıldı |
 | 1.9.83 | Basket tek tuş: ◀ ▶ geri alındı; topla kısa bas = sallan, basılı tut = zıpla |
 | 1.9.84 | Yan kontroller ekranın dibinden yukarı alındı |
+| 1.9.85 | Her maç sonunda puan direkt sıralamaya gider; takma ad yoksa otomatik "Oyuncu1234" verilir |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |
 | 1.9 | Araba: Engelli (dubalı, çukurlu, sıralamalı) ve Engelsiz (sadece trafik) mod seçimi; tüm oyunlarda oyun bitince Boşluk (Space) ile tekrar oyna |
