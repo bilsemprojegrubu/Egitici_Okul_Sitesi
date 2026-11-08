@@ -76,7 +76,7 @@
     return { sx: sx, sy: sy, x: sx + p.face * Math.sin(a) * V.L, y: sy + Math.cos(a) * V.L };
   }  function zipla(p, vx, pw) { if (!p.yer) return; pw = pw === undefined ? .8 : pw; p.pw = pw; p.vy = -(3.0 + 1.9 * pw) * V.jm * .85; p.yer = false; p.ja = vx ? Math.sign(vx) * 1.0 : (Math.abs(p.vx) > .3 ? Math.sign(p.vx) * 1.0 : 0); p.av = (p.av || 0) + (vx ? Math.sign(vx) : p.face) * .12; if (vx !== undefined) p.vx = vx; Px.ses("zipla"); }
   function at(p, vx, vy) {
-    if (!p.hold) return; p.hold = false; top.h = null; top.vx = vx; top.vy = vy; top.cd = 20; p.cd = 24; Px.ses("sut");
+    if (!p.hold) return; p.hold = false; top.h = null; top.vx = vx; top.vy = vy; top.cd = 20; top.sk = 80; p.cd = 24; Px.ses("sut");
   }
   function atGuc(p) { // zıplamadaki güce göre pota yönünde at
     if (!p.hold) return;
@@ -170,7 +170,7 @@
       var zp = function () { jm[hi] = 1; ch[hi] = 0; bk[hi] = 0; tak.forEach(function (q) { q.jh = q.yer && q.hold; var dr = q.swy ? Math.sign(q.swy) : yon(q); zipla(q, dr * 1.2, .8); q.auto = false; }); };
       if (basil) zp();
       // Elde top yoksa ve topa yakınsak top bize doğru gelir (çekim)
-      if (!top.h && !(top.cd > 0) && !tak.some(function (q) { return q.hold; })) {
+      if (!top.h && !(top.cd > 0) && !(top.sk > 0) && Math.hypot(top.vx, top.vy) < 3.2 && !tak.some(function (q) { return q.hold; })) {
         var yk = tak.slice().sort(function (a, b) { return Math.hypot(top.x - el(a).x, top.y - el(a).y) - Math.hypot(top.x - el(b).x, top.y - el(b).y); })[0], e0 = el(yk);
         var dd = Math.hypot(e0.x - top.x, e0.y - top.y);
         if (dd < 90 && dd > 1) { top.vx += (e0.x - top.x) / dd * .35; top.vy += (e0.y - top.y) / dd * .25; top.vx *= .96; top.vy *= .96; }
@@ -234,6 +234,7 @@
     if (top.h && faz === 0 && !(top.pro > 0)) { pl.forEach(function (p) { if (top.h && p.t !== top.h.t && p.cd === 0 && yakinlik(p) < V.r + 12 && Math.random() < (p.yer ? .1 : .35)) { top.h.hold = false; top.h.cd = 30; top.h = p; p.hold = true; top.pro = 40; Px.ses("al"); } }); }
     if (top.h) { var e = el(top.h); top.x = Px.sinir(e.x + e.dx * 2, V.r, W - V.r); top.y = e.y + e.dy * 2; top.vx = top.vy = 0; return; }
     var r = V.r, py = top.y;
+    if (top.sk > 0) top.sk--;
     top.vy += V.g; top.vx += V.w || 0; top.x += top.vx; top.y += top.vy; top.vx *= .999; top.d += top.vx * 12;
     if (top.y > ZEMIN - r) { top.y = ZEMIN - r; if (V.tc === 2) { top.vy = 0; top.vx *= .85; } else { top.vy = -Math.abs(top.vy) * (V.tc === 1 ? .8 : (V.bn || (V.g > .13 ? .35 : .55))); top.vx *= V.kar ? .99 : .92; if (Math.abs(top.vy) > .8) Px.ses("tik"); if (Math.abs(top.vy) < (V.tc === 1 ? .6 : 1.1)) top.vy = 0; } }
     if (top.y < r) { top.y = r; top.vy = Math.abs(top.vy) * .6; }
