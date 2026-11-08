@@ -433,7 +433,7 @@
         var ee = el(q), tx = ee.x, ty = ee.y, tvx = f * Math.cos(a) * sp, tvy = -Math.sin(a) * sp;
         for (var st = 0; st < 46; st++) { tvy += V.g; tx += tvx; ty += tvy; if (st % 4 === 3 && ty < ZEMIN) { x.fillStyle = "rgba(255,255,255," + (0.8 - st / 70).toFixed(2) + ")"; x.fillRect(Math.round(tx), Math.round(ty), 2, 2); } }
       }
-      if (tek && q.yer && !q.hold && !q.hold) { var dr = yon(q); if (dr) { var ax2 = Math.round(q.x) + dr * 12, ay2 = Math.round(q.y) - 26; x.fillStyle = "#0d0e1a"; x.fillRect(ax2 - 4, ay2 - 3, 8, 7); x.fillStyle = "#ffcd75"; x.fillRect(ax2 - 3, ay2 - 1, 6, 3); x.fillRect(ax2 + dr * 2 - (dr > 0 ? 1 : 0), ay2 - 2, 2, 5); } }
+      
     });
     // yönetilen oyuncu oku
     if (calis) pl.forEach(function (c) { if (c.t === 1 && mod === 1) return; var ax = Math.round(c.x), ay = Math.max(1, Math.round(c.y - 40 - BOY - (V.hr > 4 ? V.hr - 4 : 0) + Math.sin(tik / 6) * 1.5)); x.fillStyle = "#0d0e1a"; x.fillRect(ax - 4, ay - 1, 9, 3); x.fillRect(ax - 3, ay + 2, 7, 2); x.fillRect(ax - 1, ay + 4, 3, 2); x.fillStyle = c.t === 0 ? "#ffb0b0" : "#b0d8ff"; x.fillRect(ax - 3, ay, 7, 1); x.fillRect(ax - 2, ay + 2, 5, 1); x.fillRect(ax, ay + 4, 1, 1); });
