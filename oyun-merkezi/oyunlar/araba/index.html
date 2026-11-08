@@ -12,6 +12,7 @@
 <main class="sahne yan">
   <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
   <div class="pad-ikili pad-yan"><div class="pad yatay k-sol" id="yonpad"><button class="btn l" id="solb" type="button" aria-label="Sol">◀ SOL</button><button class="btn r" id="sagb" type="button" aria-label="Sağ">SAĞ ▶</button></div><div class="pad k-sag"><button class="btn u" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn d" id="asagi" type="button" aria-label="Geri">▼ GERİ</button></div></div>
+  <div class="k-sag" id="joyk" hidden></div><button class="btn ikinci" id="kontrolb" type="button" style="align-self:center;justify-self:center;margin-top:8px">🕹 JOYSTICK</button>
   <p class="ipucu">◀ ▶ / A D ile şerit değiştir, ▲ ▼ / W S ile ileri-geri git (dokunmatikte ekranın sol/sağ yarısına dokun, ileri-geri için butonlar). Araba, kamyon, koni ve çukurdan kaç; jeton ve benzin topla!</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Kaza yaptın!</h2><p id="sonuc"></p>
@@ -115,6 +116,7 @@
   }
   function guncelle() {
     var k = Px.k, p = Px.p, a, b;
+    if (calis || geri > 0) { if (p.JoyL) lane(-1); if (p.JoyR) lane(1); }
     par.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.o--; }); par = par.filter(function (q) { return q.o > 0; });
     yazi.forEach(function (t) { t.y -= .6; t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
     if (sars) sars--;
@@ -132,7 +134,7 @@
     // şerit değiştirme (tuş basma anı) ve akıcı kayma
     // (şerit tuşları aşağıdaki keydown dinleyicisinde anında işlenir, kare atlasa da kaybolmaz)
     var dx = Px.sinir(MER[hedef] - o.x, -6, 6); o.x += dx; o.tilt = dx / 4;
-    o.y = Px.sinir(o.y + (tus.d - tus.u) * 2.6, YMIN, YMAX); // ileri / geri
+    o.y = Px.sinir(o.y + ((tus.d || k.JoyD ? 1 : 0) - (tus.u || k.JoyU ? 1 : 0)) * 2.6, YMIN, YMAX); // ileri / geri
     // yol kayması
     dist += h * (geri > 0 ? 0 : 1);
     yol += h;
@@ -248,6 +250,19 @@
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (n) { el.addEventListener(n, function () { tus[p[1]] = 0; }); });
   });
   [["solb", -1], ["sagb", 1]].forEach(function (p) { document.getElementById(p[0]).addEventListener("pointerdown", function (e) { e.preventDefault(); if (calis || geri > 0) lane(p[1]); }); });
+
+  // Kontrol seçeneği: BUTONLAR / JOYSTICK (seçim hatırlanır)
+  (function () {
+    var yp = document.getElementById("yonpad"), sag = yp.nextElementSibling, jk = document.getElementById("joyk"), kb = document.getElementById("kontrolb"), joy = null;
+    function uygula(j) {
+      if (j && !joy) joy = Px.joystick(jk, { l: "JoyL", r: "JoyR", u: "JoyU", d: "JoyD" });
+      yp.style.display = sag.style.display = j ? "none" : ""; jk.hidden = !j; if (jk.style) jk.style.display = j ? "flex" : "none";
+      kb.textContent = j ? "🔘 BUTONLAR" : "🕹 JOYSTICK";
+      if (!j) { ["JoyL","JoyR","JoyU","JoyD"].forEach(function (c) { Px.k[c] = false; }); }
+    }
+    kb.addEventListener("click", function () { var j = jk.hidden; Px.yaz("kontrol_araba", j ? "joy" : "btn"); uygula(j); });
+    uygula(Px.oku("kontrol_araba", "btn") === "joy");
+  })();
   document.getElementById("tekrar").addEventListener("click", yeni);
   var menu = Px.menu({ baslik: "ARABA KAÇIŞ", not: "Hangi yolda yarışmak istersin?", secenekler: [
     { ad: "Engelli", alt: "Dubalar ve çukurlar var · sıralamaya girer", fn: function () { engelli = true; modSecildi = true; rekorGoster(); yeni(); } },
