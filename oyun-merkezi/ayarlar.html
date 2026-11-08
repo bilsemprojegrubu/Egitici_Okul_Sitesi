@@ -65,6 +65,13 @@
     ad.appendChild(ai); ad.appendChild(ab); ad.appendChild(am); kok.appendChild(ad);
   }
 
+  kok.appendChild(el("h2", "", "Kontrol yerleşimi"));
+  kok.appendChild(secim("Joystick yeri", "Joystick ekranın neresinde dursun", "ayar_joy_taraf", [["sol", "Sol"], ["orta", "Orta"], ["sag", "Sağ"]], "sag"));
+  kok.appendChild(aralik("Joystick boyutu", "Büyük/küçük joystick", "ayar_joy_boyut", 50, 170, 10, 100, yuz));
+  kok.appendChild(secim("Düğme yeri", "◀ ▶ düğmeleri solda, ▲ ▼ sağda (normal) ya da tersi", "ayar_btn_yer", [["normal", "Normal (◀ ▶ solda)"], ["ters", "Ters (◀ ▶ sağda)"]], "normal"));
+  kok.appendChild(aralik("Düğme boyutu", "Yön düğmelerinin büyüklüğü", "ayar_btn_boyut", 60, 160, 10, 100, yuz));
+  var dene = satir("Dene", "Değişiklikleri Piksel Balık'ta hemen gör"), da = el("a", "btn kucuk yesil", "Piksel Balık'ı aç"); da.href = "oyunlar/balik/index.html"; dene.appendChild(da); kok.appendChild(dene);
+
   kok.appendChild(el("h2", "", "Oyunlara özel"));
   var adlar = (window.Skor && Skor.OYUN_ADLARI) || {};
   var kontrol = { araba: 1, uzay: 1, balik: 1 };
