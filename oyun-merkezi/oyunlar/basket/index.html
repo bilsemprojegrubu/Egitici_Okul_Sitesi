@@ -176,7 +176,7 @@
       });
       if (dn && jm[hi]) ch[hi] = Math.min(ch[hi] + 1, CH);
       if (birak) {
-        if (jm[hi]) { var pw1 = Math.max(.3, ch[hi] / CH); tak.forEach(function (q) { if (q.jh && q.hold && !q.yer) { q.pw = pw1; atGuc(q); } q.jh = false; }); }
+        var pw1 = Math.max(.3, ch[hi] / CH); tak.forEach(function (q) { if (q.hold) { q.pw = pw1; atGuc(q); } q.jh = false; }); // tuşu bırakınca topu tutan şutlar
         jm[hi] = 0; ch[hi] = 0;
       }
     } else if (dn && !ign[hi]) ch[hi] = Math.min(ch[hi] + 1, CH);
