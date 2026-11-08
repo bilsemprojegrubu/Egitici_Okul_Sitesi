@@ -97,9 +97,9 @@
 
   // ---- Ekranda dokunmatik joystick: sürükleyince yön tuşları basılı sayılır ----
   Px.joystick = function (kap, m) {
-    var d = document.createElement("div"), top = document.createElement("div"), R = 46, bas_ = {};
+    var d = document.createElement("div"), top = document.createElement("div"), R = 62, bas_ = {};
     d.className = "joy"; d.style.cssText = "position:relative;width:" + R * 2 + "px;height:" + R * 2 + "px;border-radius:50%;background:rgba(255,255,255,.12);border:4px solid #0d0e1a;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25);touch-action:none;user-select:none;-webkit-user-select:none;flex:none";
-    top.style.cssText = "position:absolute;left:" + (R - 20) + "px;top:" + (R - 20) + "px;width:32px;height:32px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
+    top.style.cssText = "position:absolute;left:" + (R - 24) + "px;top:" + (R - 24) + "px;width:40px;height:40px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
     d.appendChild(top); d.setAttribute("aria-label", "Joystick");
     function ayarla(t) {
       ["u", "d", "l", "r"].forEach(function (y) { if (!m[y]) return; if (t[y] && !bas_[y]) bas(m[y]); if (!t[y] && bas_[y]) birak(m[y]); bas_[y] = !!t[y]; });
