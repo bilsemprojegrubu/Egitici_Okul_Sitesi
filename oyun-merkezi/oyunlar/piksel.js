@@ -107,8 +107,15 @@
   };
 
   // ---- Ekranda dokunmatik joystick: sürükleyince yön tuşları basılı sayılır ----
+  // Kontrol yerleşimi (Ayarlar sayfasından): joystick tarafı/boyutu, düğme tarafı/boyutu
+  var jBoy = Math.max(50, Math.min(170, parseInt(oku("ayar_joy_boyut"), 10) || 100)) / 100;
+  (function () {
+    var de = document.documentElement, jt = oku("ayar_joy_taraf"), bt = oku("ayar_btn_yer"), bb = Math.max(60, Math.min(160, parseInt(oku("ayar_btn_boyut"), 10) || 100)) / 100;
+    de.setAttribute("data-joy", jt === "sol" || jt === "orta" ? jt : "sag"); de.setAttribute("data-btn", bt === "ters" ? "ters" : "normal");
+    if (bb !== 1) { de.style.setProperty("--bo", String(bb)); de.setAttribute("data-bo", "1"); }
+  })();
   Px.joystick = function (kap, m) {
-    var d = document.createElement("div"), top = document.createElement("div"), R = Math.round(Math.max(44, Math.min(84, Math.min(window.innerWidth, window.innerHeight) * .14))), bas_ = {};
+    var d = document.createElement("div"), top = document.createElement("div"), R = Math.round(Math.max(44, Math.min(84, Math.min(window.innerWidth, window.innerHeight) * .14)) * jBoy), bas_ = {};
     d.className = "joy"; d.style.cssText = "position:relative;width:" + R * 2 + "px;height:" + R * 2 + "px;border-radius:50%;background:rgba(255,255,255,.12);border:4px solid #0d0e1a;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25);touch-action:none;user-select:none;-webkit-user-select:none;flex:none";
     top.style.cssText = "position:absolute;left:" + (R - Math.round(R * .65 / 2) - 4) + "px;top:" + (R - Math.round(R * .65 / 2) - 4) + "px;width:" + Math.round(R * .65) + "px;height:" + Math.round(R * .65) + "px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
     d.appendChild(top); d.setAttribute("aria-label", "Joystick");
