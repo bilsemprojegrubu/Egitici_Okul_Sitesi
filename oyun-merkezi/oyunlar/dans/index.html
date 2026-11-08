@@ -66,9 +66,13 @@
     document.getElementById("puan").textContent = sk;
     if (hitSay % 16 === 0) { lvl++; judge("HIZLANDI!", "#73eff7"); }
   }
+  var kuyruk = [];
+  function tusla(l) { kuyruk.push({ l: l, t: performance.now() }); }
+  document.addEventListener("keydown", function (e) { if (e.repeat) return; for (var l = 0; l < 4; l++) if (e.code === KOD[l][0] || e.code === KOD[l][1]) tusla(l); });
   function guncelle() {
     var i, l;
-    for (l = 0; l < 4; l++) if (Px.p[KOD[l][0]] || Px.p[KOD[l][1]]) { if (!bitti) bas_(l); }
+    var simdi = performance.now(), q = kuyruk; kuyruk = [];
+    q.forEach(function (e) { if (simdi - e.t < 200 && !bitti) bas_(e.l); });
     if (!bas || bitti) { yaz0(); return; }
     kare++; bf++;
     if (bf >= 3600 / bpm()) { bf = 0; beat++; vurus(); }
@@ -178,9 +182,9 @@
   }
   document.addEventListener("keydown", function (e) { if (/^(Arrow|Key[ASWD]|Space)/.test(e.code)) { if (e.code.indexOf("Arrow") === 0 || e.code === "Space") e.preventDefault(); } });
   [].forEach.call(document.querySelectorAll("[data-k]"), function (b) {
-    b.addEventListener("pointerdown", function (e) { e.preventDefault(); Px.p[KOD[+b.getAttribute("data-k")][0]] = true; });
+    b.addEventListener("pointerdown", function (e) { e.preventDefault(); tusla(+b.getAttribute("data-k")); });
   });
-  C.addEventListener("pointerdown", function (e) { var r = C.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W, l = Math.floor((px - LX) / LW); if (!bas) Px.p.ArrowLeft = true; else if (l >= 0 && l < 4) Px.p[KOD[l][0]] = true; });
+  C.addEventListener("pointerdown", function (e) { var r = C.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W, l = Math.floor((px - LX) / LW); if (!bas) tusla(0); else if (l >= 0 && l < 4) tusla(l); });
   document.getElementById("tekrar").addEventListener("click", function () { clearTimeout(bitisT); yeni(); });
   yeni(); Px.dongu(guncelle, ciz);
 })();
