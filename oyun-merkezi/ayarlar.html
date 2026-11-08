@@ -67,12 +67,11 @@
 
   kok.appendChild(el("h2", "", "Oyunlara özel"));
   var adlar = (window.Skor && Skor.OYUN_ADLARI) || {};
-  var kontrol = { araba: 1, uzay: 1, balik: 1 }, can = { uzay: 1, balik: 1 };
+  var kontrol = { araba: 1, uzay: 1, balik: 1 };
   Object.keys(adlar).forEach(function (id) {
     var d = el("details", "oyun"); d.appendChild(el("summary", "", adlar[id]));
     d.appendChild(aralik("Oyun hızı", "Bu oyunun hız çarpanı (%100 normal)", "ayar_" + id + "_hiz", 50, 200, 10, 100, yuz));
     if (kontrol[id]) d.appendChild(secim("Kontrol", "Başlangıçta kullanılacak kontrol", "kontrol_" + id, [["btn", "Butonlar"], ["joy", "Joystick"]], "btn"));
-    if (can[id]) d.appendChild(aralik("Başlangıç canı", "Oyuna kaç canla başlanır", "ayar_" + id + "_can", 1, 9, 1, 3, say));
     kok.appendChild(d);
   });
 
