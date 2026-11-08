@@ -1,3 +1,3 @@
 # Egitici_Okul_Sitesi
 
-Oyun Merkezi sürümü: **1.9.71** (sürüm geçmişi: [oyun-merkezi/README.md](oyun-merkezi/README.md#sürüm-geçmişi))
+Oyun Merkezi sürümü: **1.9.72** (sürüm geçmişi: [oyun-merkezi/README.md](oyun-merkezi/README.md#sürüm-geçmişi))
