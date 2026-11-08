@@ -167,12 +167,12 @@
     }
     if (tek) {
       // TEK TUŞ: basınca zıpla (top elde yerdeyken), bırakınca şut. Havada/basılıyken gelen top şutlanmaz.
-      var zp = function () { jm[hi] = 1; ch[hi] = 0; bk[hi] = 0; tak.forEach(function (q) { q.jh = q.yer && q.hold; var dr = yon(q); zipla(q, dr * 1.2, .8); q.auto = false; }); };
+      var zp = function () { jm[hi] = 1; ch[hi] = 0; bk[hi] = 0; tak.forEach(function (q) { q.jh = q.yer && q.hold; var dr = q.swy ? Math.sign(q.swy) : yon(q); zipla(q, dr * 1.2, .8); q.auto = false; }); };
       if (basil) zp();
       // Otomatik sallanma: takımın İKİ adamı da yerdeyken yavaşça sağa-sola sallanır (gövde yatar, hafif kayar)
       bk[hi] += .035;
       tak.forEach(function (q, qi) {
-        if (q.yer && !dn) { q.vx = Math.cos(bk[hi] + qi * 1.2) * .55; q.swy = Math.sin(bk[hi] + qi * 1.2); } else q.swy = 0;
+        if (q.yer && !dn) { q.swy = Math.cos(bk[hi] + qi * 1.2); q.vx = q.swy * .55; } else q.swy = 0;
       });
       if (dn && jm[hi]) ch[hi] = Math.min(ch[hi] + 1, CH);
       if (birak) {
@@ -484,7 +484,7 @@
     mod = m; zor = z;
     var ek = " Her sayıdan sonra komik bir değişiklik gelir (2x puan, kar, ağır top...)! İlk 5 sayıyı yapan kazanır (süre yok)." + (m === 2 ? " (Sıralamaya yazılmaz)" : "");
     document.getElementById("ipucu").textContent = (tek
-      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır. Adamlar kendiliğinden yavaşça sağa-sola sallanır (finta); tuşa basınca zıplarlar."
+      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır. Adamlar kendiliğinden yavaşça sağa-sola sallanır (finta); tuşa basınca yattıkları yöne doğru zıplarlar."
         : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): top elindeyken adam kendiliğinden sallanır; bas = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
       : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). İki adam birlikte hareket eder."
         : "Kırmızı: A D yürü, W zıpla (havada tekrar W veya F = ŞUT) · Mavi: ← → yürü, ↑ zıpla (havada tekrar ↑ veya Enter = ŞUT). Basılı tutup bırakmak = daha güçlü zıplama.")) + " SMAÇ: Q (mavi: P) = topla pota sıçra, çembere ulaşırsan basarsın · TOP ÇAL: E (mavi: I) = rakibin topunu kap." + ek;
