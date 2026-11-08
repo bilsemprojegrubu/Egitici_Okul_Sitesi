@@ -9,9 +9,9 @@
 <body data-oyun="uzay">
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>UZAY SAVAŞI</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Can <b id="can">3</b> · Rekor <b id="rekor">0</b></div></header>
-<main class="sahne">
+<main class="sahne yan">
   <canvas id="c" class="cv" width="200" height="260" style="--mw:400px;touch-action:none"></canvas>
-  <div class="pad"><button class="btn" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn" id="asagi" type="button" aria-label="Geri">▼ GERİ</button></div>
+  <div class="pad dpad k-sol" id="yonpad"><button class="btn u" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn d" id="asagi" type="button" aria-label="Geri">▼ GERİ</button><button class="btn l" id="solb" type="button" aria-label="Sol">◀</button><button class="btn r" id="sagb" type="button" aria-label="Sağ">▶</button></div>
   <p class="ipucu">Gemi otomatik ateş eder. Sağa-sola kaydır (veya ◀ ▶ / A D), ileri-geri git (▲ ▼ / W S ya da butonlar) ve uzaylıları vur! Üstteki büyük patron dalgası zorludur. Çarpışırsan can gider.</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Oyun bitti</h2><p id="sonuc"></p>
@@ -136,6 +136,7 @@
     el.addEventListener("pointerdown", function (e) { e.preventDefault(); tus[p[1]] = 1; });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (n) { el.addEventListener(n, function () { tus[p[1]] = 0; }); });
   });
+  [["solb", "ArrowLeft"], ["sagb", "ArrowRight"]].forEach(function (p) { var el = document.getElementById(p[0]); el.addEventListener("pointerdown", function (e) { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) { } Px.k[p[1]] = true; hedef = null; }); ["pointerup", "pointercancel"].forEach(function (n) { el.addEventListener(n, function () { Px.k[p[1]] = false; }); }); });
   window.addEventListener("blur", function () { tus.u = tus.d = 0; });
   document.getElementById("tekrar").addEventListener("click", yeni);
   yeni(); Px.dongu(guncelle, ciz);

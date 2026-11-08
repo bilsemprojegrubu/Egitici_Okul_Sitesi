@@ -9,10 +9,10 @@
 <body data-oyun="voleybol">
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>VOLEYBOL</h1>
 <div class="puanlar"><span id="etiket">Puan</span> <b id="puan">0</b> · Rakip <b id="rakip">0</b> · Rekor <b id="rekor">0</b></div></header>
-<main class="sahne">
+<main class="sahne yan">
   <canvas id="c" class="cv" width="240" height="150" style="--mw:760px"></canvas>
   <p class="ipucu" id="ipucu"></p>
-  <div id="padyer" style="display:flex;justify-content:space-between;gap:12px;width:min(100%,760px)"></div>
+  <div id="padyer" class="pad-yan" style="display:flex;justify-content:space-between;gap:12px;width:min(100%,760px)"></div>
   <div id="bitti" class="kaplama" hidden>
     <h2>Maç bitti</h2><p id="sonuc"></p>
     <div id="siralama" class="siralama" hidden></div>
@@ -188,12 +188,14 @@
     var py = document.getElementById("padyer"); py.innerHTML = "";
     if (mod === 1) {
       var l1 = document.createElement("div"), r1 = document.createElement("div"); py.appendChild(l1); py.appendChild(r1);
+      l1.className = "k-sol"; r1.className = "k-sag";
       Px.pad(l1, [{ t: "◀", k: "KeyA" }, { t: "▶", k: "KeyD" }]); Px.pad(r1, [{ t: "⤒", k: "KeyW" }]);
     }
     else {
       var l = document.createElement("div"), r = document.createElement("div"); py.appendChild(l); py.appendChild(r);
-      Px.pad(l, [{ t: "◀", k: "KeyA" }, { t: "⤒", k: "KeyW" }, { t: "▶", k: "KeyD" }]);
-      Px.pad(r, [{ t: "◀", k: "ArrowLeft" }, { t: "⤒", k: "ArrowUp" }, { t: "▶", k: "ArrowRight" }]);
+      l.className = "k-sol"; r.className = "k-sag";
+      Px.pad(l, [{ t: "◀", k: "KeyA", c: "l" }, { t: "⤒", k: "KeyW", c: "u" }, { t: "▶", k: "KeyD", c: "r" }], "dpad");
+      Px.pad(r, [{ t: "◀", k: "ArrowLeft", c: "l" }, { t: "⤒", k: "ArrowUp", c: "u" }, { t: "▶", k: "ArrowRight", c: "r" }], "dpad");
     }
   }
   var menu = Px.menu({ baslik: "VOLEYBOL", not: "Nasıl oynayacaksın?", secenekler: [

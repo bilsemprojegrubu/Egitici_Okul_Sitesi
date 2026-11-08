@@ -76,31 +76,33 @@
   var mod = 1, cam = 0, tik = 0, calis = false, S, U, P, F, wv, kills, sars, idc = 0, mesaj = "", msayac = 0, over = 0, wq, wt, wsp, wi, wf, sonPuan = -1, tab = 0;
   // ---- birlikler ----  (c: fiyat, hp, d: hasar, r: menzil, cd: bekleme, sp: hız, ok: 1 ok / 2 büyü / 3 kaya, arm: ok zırhı)
   var UK = [
-    { n: "KILIÇ", c: 25, hp: 42, d: 6, r: 9, cd: 30, sp: .38, rol: "Ön saf" },
-    { n: "MIZRAK", c: 32, hp: 34, d: 5.5, r: 18, cd: 28, sp: .4, rol: "Uzun dürtme" },
-    { n: "OKÇU", c: 42, hp: 20, d: 4.5, r: 56, cd: 44, sp: .3, ok: 1, rol: "Menzilli" },
-    { n: "BÜYÜCÜ", c: 90, hp: 20, d: 11, r: 80, cd: 80, sp: .26, ok: 2, rol: "Alan hasarı" },
-    { n: "KALKANLI", c: 60, hp: 120, d: 4, r: 9, cd: 38, sp: .28, arm: .5, rol: "Tank (oka dayanıklı)" },
-    { n: "SÜVARİ", c: 75, hp: 72, d: 9, r: 12, cd: 30, sp: .75, hunt: 1, rol: "Menzilli avcısı" },
+    { n: "KILIÇ", c: 25, hp: 42, d: 6, r: 9, cd: 30, sp: .38, ct: { R: 1.3, H: 1.5 }, rol: "Ön saf" },
+    { n: "MIZRAK", c: 32, hp: 34, d: 5.5, r: 18, cd: 28, sp: .4, ct: { C: 1.9, A: 1.5 }, rol: "Süvari/uçan avcısı" },
+    { n: "OKÇU", c: 42, hp: 20, d: 4.5, r: 56, cd: 44, sp: .3, ok: 1, ct: { L: 1.3, A: 1.4 }, rol: "Hafif birlik avcısı" },
+    { n: "BÜYÜCÜ", c: 90, hp: 20, d: 11, r: 80, cd: 80, sp: .26, ok: 2, rol: "Alan hasarı, golem kırar" },
+    { n: "KALKANLI", c: 60, hp: 120, d: 4, r: 9, cd: 38, sp: .28, arm: .5, ct: { C: 1.6, L: 1.25 }, rol: "Tank (oka dayanıklı)" },
+    { n: "SÜVARİ", c: 75, hp: 72, d: 9, r: 12, cd: 30, sp: .75, hunt: 1, ct: { R: 1.8, S: 2.2, H: 1.8, T: .7 }, rol: "Menzilli/kuşatma avcısı" },
     { n: "ŞİFACI", c: 70, hp: 30, d: 0, r: 0, cd: 50, sp: .3, heal: 7, rol: "İyileştirir" },
-    { n: "MANCINIK", c: 120, hp: 45, d: 22, r: 130, cd: 150, sp: .14, ok: 3, rol: "Kuşatma, alan hasarı" },
-    { n: "GOLEM", c: 170, hp: 250, d: 11, r: 11, cd: 64, sp: .18, arm: .2, rol: "Dev tank" },
-    { n: "BOMBACI", c: 55, hp: 18, d: 48, r: 8, cd: 20, sp: .6, bomb: 1, rol: "Patlar (alan hasarı)" }
+    { n: "MANCINIK", c: 140, hp: 34, d: 17, r: 130, cd: 190, sp: .14, ok: 3, rol: "Kuşatma (yakını göremez)" },
+    { n: "GOLEM", c: 170, hp: 250, d: 11, r: 11, cd: 64, sp: .18, arm: .2, ct: { L: 1.3, C: 1.4 }, rol: "Dev tank, sürü ezer" },
+    { n: "BOMBACI", c: 55, hp: 18, d: 48, r: 8, cd: 20, sp: .6, bomb: 1, rol: "Patlar (tank/kule kırar)" },
+    { n: "ÇEKİÇÇİ", c: 85, hp: 70, d: 12, r: 10, cd: 44, sp: .3, pr: 1, ct: { T: 2.2, B: 1.6 }, rol: "Zırh kıran (tank/boss)" },
+    { n: "ARBALETÇİ", c: 95, hp: 26, d: 15, r: 72, cd: 70, sp: .28, ok: 1, pr: 1, ct: { A: 2.2, C: 1.7 }, rol: "Uçan/hızlı avcısı" }
   ];
   var EK = [
-    { n: "GOBLIN", hp: 22, d: 3, r: 8, cd: 32, sp: .45, g: 4 },
+    { n: "GOBLIN", hp: 22, d: 3, r: 8, cd: 32, sp: .45, g: 4, ct: { R: 1.3, H: 1.4 } },
     { n: "ORK", hp: 60, d: 7, r: 10, cd: 38, sp: .3, g: 8 },
     { n: "İSKELET OKÇU", hp: 20, d: 4, r: 52, cd: 48, sp: .3, g: 7, ok: 1 },
-    { n: "YARASA", hp: 14, d: 3, r: 7, cd: 26, sp: .85, g: 5, fly: 1, hunt: 1 },
-    { n: "DEV", hp: 170, d: 15, r: 12, cd: 55, sp: .2, g: 22 },
+    { n: "YARASA", hp: 14, d: 3, r: 7, cd: 26, sp: .85, g: 5, fly: 1, hunt: 1, ct: { R: 1.6, H: 1.7, S: 2 } },
+    { n: "DEV", hp: 170, d: 15, r: 12, cd: 55, sp: .2, g: 22, ct: { L: 1.3 } },
     { n: "KARA BÜYÜCÜ", hp: 40, d: 10, r: 75, cd: 70, sp: .25, g: 14, ok: 2 },
     { n: "ÖRÜMCEK", hp: 34, d: 5, r: 8, cd: 30, sp: .55, g: 8, psn: 1 },
-    { n: "ZIRHLI ORK", hp: 150, d: 8, r: 10, cd: 42, sp: .24, g: 14, arm: .45 },
+    { n: "ZIRHLI ORK", hp: 150, d: 8, r: 10, cd: 42, sp: .24, g: 14, arm: .45, ct: { R: 1.3 } },
     { n: "GOBLIN OKÇU", hp: 16, d: 3.5, r: 60, cd: 36, sp: .38, g: 6, ok: 1 },
     { n: "BUZ CADISI", hp: 34, d: 6, r: 80, cd: 80, sp: .24, g: 16, ok: 4 },
-    { n: "ORK MANCINIĞI", hp: 70, d: 22, r: 128, cd: 150, sp: .14, g: 24, ok: 3 },
-    { n: "KURT SÜVARİ", hp: 58, d: 9, r: 10, cd: 30, sp: .8, g: 14, hunt: 1 },
-    { n: "GARGOYL", hp: 75, d: 8, r: 9, cd: 34, sp: .5, g: 16, fly: 1, hunt: 1, arm: .3 },
+    { n: "ORK MANCINIĞI", hp: 56, d: 17, r: 128, cd: 190, sp: .14, g: 24, ok: 3 },
+    { n: "KURT SÜVARİ", hp: 58, d: 9, r: 10, cd: 30, sp: .8, g: 14, hunt: 1, ct: { R: 1.7, S: 2, H: 1.7 } },
+    { n: "GARGOYL", hp: 75, d: 8, r: 9, cd: 34, sp: .5, g: 16, fly: 1, hunt: 1, arm: .3, ct: { R: 1.5 } },
     // kule avcıları: askerlere bakmaz, doğrudan kuleye / kaleye yürür. res: gelen hasarın yalnız bu kadarı işler
     { n: "TAŞ GOLEM", hp: 380, d: 16, r: 11, cd: 60, sp: .27, g: 28, twh: 1, res: .38 },
     { n: "DEMİR GOLEM", hp: 680, d: 25, r: 12, cd: 68, sp: .23, g: 50, twh: 1, res: .26, arm: .3 },
@@ -137,7 +139,7 @@
   var KM1 = [["Digit1", "u0"], ["Digit2", "u1"], ["Digit3", "u2"], ["Digit4", "u3"], ["Digit5", "u4"], ["Digit6", "u5"], ["Digit7", "u6"], ["Digit8", "u7"], ["Digit9", "u8"], ["Digit0", "u9"],
     ["KeyQ", "mine"], ["KeyW", "mine2"], ["KeyE", "castle"], ["KeyZ", "up_d"], ["KeyX", "up_h"], ["KeyC", "up_s"], ["KeyV", "up_k"], ["KeyB", "up_b"], ["KeyN", "up_c"],
     ["KeyR", "rage"], ["KeyT", "rain"], ["KeyY", "repair"], ["KeyH", "freeze"], ["KeyJ", "shield"], ["KeyK", "gold"], ["KeyL", "reinf"], ["KeyF", "charge"], ["KeyG", "retreat"],
-    ["KeyU", "tw0"], ["KeyI", "tw1"], ["KeyO", "tw2"], ["KeyP", "tw3"], ["KeyM", "tw4"], ["KeyS", "tw5"]];
+    ["Minus", "u10"], ["Equal", "u11"], ["Comma", "up_t"], ["Period", "up_x"], ["Slash", "up_r"], ["Semicolon", "repair2"], ["KeyU", "tw0"], ["KeyI", "tw1"], ["KeyO", "tw2"], ["KeyP", "tw3"], ["KeyM", "tw4"], ["KeyS", "tw5"]];
   var TW = [
     { n: "ALTIN KULESİ", c: 120 }, { n: "OKÇU KULESİ", c: 95 }, { n: "ŞİFA KULESİ", c: 110 }, { n: "BUZ KULESİ", c: 100 },
     { n: "GÜÇ KULESİ", c: 130 }, { n: "HIZ KULESİ", c: 130 }
@@ -146,12 +148,12 @@
 
   function hasC(s) { return mod === 2 || s === 1; }
   function maxM() { return mod === 1 ? 20 : 3; } // 1 oyuncuda 4 kat x 5 maden
-  function maxL() { return mod === 1 ? 20 : 8; }
+  function maxL() { return mod === 1 ? 30 : 8; }
   function cw(s) { return 22 + Math.min(S[s].lv, 12) * 2; }
   function chh(s) { return 30 + Math.min(S[s].lv, 12) * 3; }
   function mhp(s) { return 200 + S[s].lv * 170; }
   function front(s) { return s === 0 ? S[0].cx + cw(0) / 2 : S[1].cx - cw(1) / 2; }
-  function mkS(cx, g) { return { cx: cx, g: g, lv: 0, hp: 200, mines: 1, ml: 0, em: 0, rg: 0, cr: 0, cs: 0, ch: 0, it: 0, tc: 30, cf: 0, ud: 0, uh: 0, us: 0, uk: 0, ub: 0, uc: 0, cz: 0, cy: 0, cg: 0, ct: 0, sA: 0, gr: 0, uy: 0, uq: 0, gd: 1, gs: 1, tw: [null, null, null, null, null, null, null, null, null, null, null, null] }; }
+  function mkS(cx, g) { return { cx: cx, g: g, lv: 0, hp: 200, mines: 1, ml: 0, em: 0, rg: 0, cr: 0, cs: 0, ch: 0, it: 0, tc: 30, cf: 0, ud: 0, uh: 0, us: 0, uk: 0, ub: 0, uc: 0, ut: 0, ucr: 0, ur: 0, ch2: 0, cz: 0, cy: 0, cg: 0, ct: 0, sA: 0, gr: 0, uy: 0, uq: 0, gd: 1, gs: 1, tw: [null, null, null, null, null, null, null, null, null, null, null, null] }; }
   // dalga ölçeği: eskisinden belirgin dik (enine büyüme + ikinci derece terim)
   function sc(n) { return 1 + .08 * n + .0006 * n * n; }
   function puan() { return mod === 1 ? Math.max(0, (wv - 1)) * 50 + kills : 0; }
@@ -164,7 +166,7 @@
   function twX(i) { return front(1) - 24 - (i >> 1) * 24 - (i & 1) * 12; }
   function twDy(i) { return i & 1 ? 32 : -13; }
   function ro(wx) { return mod === 1 ? Math.round(wx * SLP) : 0; } // yol bize doğru hafif eğik
-  function twHp(lv) { return 120 + lv * 70; }
+  function twHp(lv) { return Math.round((120 + lv * 70) * (1 + .25 * (S ? S[1].ut : 0))); }
   function twUp(t, lv) { return Math.round(TW[t].c * .85 * Math.pow(1.55, lv)); }
   function twSlots(s) { return 3 + S[s].uy; } // KAPASİTE sekmesinden 12'ye kadar
   function mkTw(t, lv, i) { return { t: t, lv: lv, i: i, dy: twDy(i), x: twX(i), hp: twHp(lv), mhp: twHp(lv), cd: 0, fl: 0, dead: 0, tw: 1, s: 1 }; }
@@ -184,7 +186,7 @@
   }
   function yapU(s, k, hm, dm) {
     var en = mod === 1 && s === 0, t = en ? EK[k] : UK[k], z = S[s];
-    var u = { id: ++idc, s: s, k: k, x: 0, hp: t.hp * hm * (en ? 1.2 : 1), mhp: t.hp * hm * (en ? 1.2 : 1), d: t.d * dm * (en ? 1.15 : 1), r: t.r, cd: 0, cdm: t.cd, sp: t.sp * (en ? 1 : 1 + .06 * z.us), ok: t.ok || 0, fl: 0, at: 0, w: 0, ly: (idc % 3 - 1) * 5, boss: 0, fly: t.fly || 0, g: en ? Math.ceil(t.g * (1 + wv * .04)) : Math.round(t.c * .5), dead: 0, bi: 0, arm: t.arm || 0, hunt: t.hunt || 0, heal: t.heal ? t.heal * hm : 0, bomb: t.bomb || 0, pz: t.psn || 0, pd: 0, psn: 0, slow: 0, slowf: .55, frz: 0, sh: 0, cy: 0, chg: 0, def: null, twh: t.twh || 0, res: t.res || 0, bd: 1, bsp: 1 };
+    var u = { id: ++idc, s: s, k: k, x: 0, hp: t.hp * hm * (en ? 1.2 : 1), mhp: t.hp * hm * (en ? 1.2 : 1), d: t.d * dm * (en ? 1.15 : 1), r: t.r, cd: 0, cdm: t.cd, sp: t.sp * (en ? 1 : 1 + .06 * z.us), ok: t.ok || 0, fl: 0, at: 0, w: 0, ly: (idc % 3 - 1) * 5, boss: 0, fly: t.fly || 0, g: en ? Math.ceil(t.g * (1 + wv * .04)) : Math.round(t.c * .5), dead: 0, bi: 0, arm: t.arm || 0, hunt: t.hunt || 0, heal: t.heal ? t.heal * hm : 0, bomb: t.bomb || 0, pz: t.psn || 0, pd: 0, psn: 0, slow: 0, slowf: .55, frz: 0, sh: 0, cy: 0, chg: 0, def: null, twh: t.twh || 0, res: t.res || 0, bd: 1, bsp: 1, ct: t.ct || null, pr: t.pr || 0 };
     u.x = s === 0 ? (mod === 1 ? 40 + Px.rastgele(0, 12) : front(0) + 4) : front(1) - 4;
     U.push(u); return u;
   }
@@ -212,7 +214,7 @@
       run: function (s) { var z = S[s]; yapU(s, k, hmul(z), dmul(z)); Px.ses("tik"); },
       info: function (s) {
         var z = S[s], hm = hmul(z), dm = dmul(z);
-        return t.heal ? "CAN " + Math.round(t.hp * hm) + " İYİLEŞTİR +" + Math.round(t.heal * hm) + " · " + t.rol : "CAN " + Math.round(t.hp * hm) + " HAS " + Math.round(t.d * dm * (t.bomb ? 1 : 1)) + (t.r > 20 ? " MNZ " + t.r : "") + " · " + t.rol;
+        return t.heal ? "CAN " + Math.round(t.hp * hm) + " İYİLEŞTİR +" + Math.round(t.heal * hm) + " · " + t.rol : "CAN " + Math.round(t.hp * hm) + " HAS " + Math.round(t.d * dm) + (t.r > 20 ? " MNZ " + t.r : "") + " · " + t.rol + ctYaz(t);
       }
     });
   });
@@ -221,7 +223,7 @@
     ek: function (s) { return " " + S[s].mines + "/" + maxM(); }, run: function (s) { S[s].mines++; Px.ses("kaz"); }, info: function () { return "Yeni maden: sürekli altın akışı"; }
   });
   reg("mine2", 1, {
-    n: "MADEN+", cost: function (s) { return Math.round(80 * Math.pow(mod === 1 ? 1.4 : 1.5, S[s].ml)); }, lim: function (s) { return S[s].ml >= (mod === 1 ? 14 : 9) ? "MAX" : ""; },
+    n: "MADEN+", cost: function (s) { return Math.round(80 * Math.pow(mod === 1 ? 1.4 : 1.5, S[s].ml)); }, lim: function (s) { return S[s].ml >= (mod === 1 ? 24 : 9) ? "MAX" : ""; },
     ek: function (s) { return " S" + (S[s].ml + 1); }, run: function (s) { S[s].ml++; Px.ses("para"); }, info: function () { return "Her madenden +1 altın"; }
   });
   reg("castle", 1, {
@@ -248,16 +250,19 @@
     reg(id, 1, {
       n: n, cost: function (s) { return Math.round(base * Math.pow(gr, S[s][field])); }, lim: function (s) { return S[s][field] >= max ? "MAX" : ""; },
       ek: function (s) { return " " + S[s][field] + "/" + max; },
-      run: function (s) { S[s][field]++; Px.ses("birles"); pf(front(s), GY - 16, 10, ["#ffcd75", "#fff", "#a7f070"], 24, 1.4); },
+      run: function (s) { S[s][field]++; if (field === "ut") S[s].tw.forEach(function (w) { if (w) { var r = w.hp / w.mhp; w.mhp = twHp(w.lv); w.hp = w.mhp * r; } }); Px.ses("birles"); pf(front(s), GY - 16, 10, ["#ffcd75", "#fff", "#a7f070"], 24, 1.4); },
       info: function (s) { return desc(S[s][field]); }
     });
   }
-  upg("up_d", "SİLAH", "ud", 10, 90, 1.55, function (n) { return "Asker hasarı +%12 (şu an +%" + n * 12 + ")"; });
-  upg("up_h", "ZIRH", "uh", 10, 90, 1.55, function (n) { return "Asker canı +%12 (şu an +%" + n * 12 + ")"; });
-  upg("up_s", "ÇEVİKLİK", "us", 6, 70, 1.6, function (n) { return "Asker hızı +%6 (şu an +%" + n * 6 + ")"; });
-  upg("up_k", "KALE OKU", "uk", 8, 100, 1.55, function (n) { return "Kale ve kule ok hasarı +%15 (+%" + n * 15 + ")"; });
-  upg("up_b", "HAZİNE", "ub", 5, 120, 1.7, function (n) { return "Maden/kule/ganimet altını +%8 (+%" + n * 8 + ")"; });
-  upg("up_c", "SOĞUMA", "uc", 5, 110, 1.7, function (n) { return "Booster bekleme süresi -%8 (-%" + n * 8 + ")"; });
+  upg("up_d", "SİLAH", "ud", 20, 90, 1.4, function (n) { return "Asker hasarı +%12 (şu an +%" + n * 12 + ")"; });
+  upg("up_h", "ZIRH", "uh", 20, 90, 1.4, function (n) { return "Asker canı +%12 (şu an +%" + n * 12 + ")"; });
+  upg("up_s", "ÇEVİKLİK", "us", 10, 70, 1.45, function (n) { return "Asker hızı +%6 (şu an +%" + n * 6 + ")"; });
+  upg("up_k", "KALE OKU", "uk", 16, 100, 1.4, function (n) { return "Kale ve kule ok hasarı +%15 (+%" + n * 15 + ")"; });
+  upg("up_b", "HAZİNE", "ub", 10, 120, 1.5, function (n) { return "Maden/kule/ganimet altını +%8 (+%" + n * 8 + ")"; });
+  upg("up_c", "SOĞUMA", "uc", 8, 110, 1.55, function (n) { return "Booster bekleme süresi -%8 (-%" + n * 8 + ")"; });
+  upg("up_t", "KULE ZIRHI", "ut", 10, 100, 1.45, function (n) { return "Kule canı +%25 (şu an +%" + n * 25 + ")"; });
+  upg("up_x", "KRİTİK", "ucr", 10, 140, 1.4, function (n) { return "Askerler %" + n * 5 + " şansla çift vurur"; });
+  upg("up_r", "YENİLENME", "ur", 8, 130, 1.45, function (n) { return "Askerler her sn canının %" + (n * .4).toFixed(1) + " kadar yenilenir"; });
   function bekle(f) { return function (s) { var v = S[s][f]; return v > 0 ? Math.ceil(v / 60) + "sn" : ""; }; }
   reg("rage", 2, {
     n: "ÖFKE", cost: function () { return 60; }, lim: bekle("cr"), info: function () { return "8 sn: askerler +%60 hasar, +%30 hız"; },
@@ -322,11 +327,15 @@
       run: function (s) { var w = S[s].tw[i]; if (!w || w.lv >= 5) return; w.lv++; w.mhp = twHp(w.lv); w.hp = w.mhp; Px.ses("birles"); pf(w.x, GY - 20 + w.dy, 10, ["#ffcd75", "#fff"], 24, 1.4); }
     });
   })(si);
+  function twHas(s) { return S[s].tw.some(function (w) { return w && !w.dead; }); }
+  function twHasar(s) { var m = 0, n = 0; S[s].tw.forEach(function (w) { if (w && !w.dead && w.hp < w.mhp) { m += w.mhp - w.hp; n++; } }); return { m: m, n: n }; }
   reg("repair2", 3, {
-    n: "KALE ONAR", cost: function () { return 80; }, lim: function (s) { var z = S[s]; return z.ch > 0 ? Math.ceil(z.ch / 60) + "sn" : (z.hp >= mhp(s) ? "TAM CAN" : ""); }, info: function () { return "Kaleyi %30 onarır"; },
-    run: function (s) { var z = S[s]; z.ch = cdv(z, 1500); z.hp = Math.min(mhp(s), z.hp + mhp(s) * .3); Px.ses("al"); }
+    n: "KULELERİ ONAR", cost: function (s) { var h = twHasar(s); return 30 + Math.round(h.m * .35); },
+    lim: function (s) { var z = S[s]; return z.ch2 > 0 ? Math.ceil(z.ch2 / 60) + "sn" : (!twHas(s) ? "KULE YOK" : (twHasar(s).n ? "" : "TAM CAN")); },
+    info: function (s) { var h = twHasar(s); return h.n ? h.n + " yan kuleyi %60 onarır" : "Yan kuleleri onarır (kale değil, kale için ONAR)"; },
+    run: function (s) { var z = S[s]; z.ch2 = cdv(z, 600); z.tw.forEach(function (w) { if (w && !w.dead) { w.hp = Math.min(w.mhp, w.hp + w.mhp * .6); pf(w.x, GY - 24 + w.dy, 4, ["#a7f070", "#fff"], 22, .8); } }); Px.ses("al"); }
   });
-  KM1.forEach(function (e) { if (A[e[1]]) A[e[1]].kl = e[0].replace("Digit", "").replace("Key", ""); });
+  KM1.forEach(function (e) { if (A[e[1]]) A[e[1]].kl = ({ Minus: "-", Equal: "=", Comma: ",", Period: ".", Slash: "/", Semicolon: ";" })[e[0]] || e[0].replace("Digit", "").replace("Key", ""); });
   function twAtk(w) { return (6 + 3.5 * w.lv) * (1 + .15 * S[1].uk) * S[1].gd; }
   function twSlow(w) { return Math.max(.28, .62 - .07 * w.lv); }
   function kul(s, id) { var a = A[id]; return a && a.lim(s) === "" && S[s].g >= a.cost(s); }
@@ -343,7 +352,7 @@
   function vur(tg, d, src, kind) {
     if (tg === "c") return;
     if (tg.sh > 0) d *= .25;
-    if (tg.res) d *= tg.res; // golemler hasarı pek umursamaz
+    if (tg.res && kind !== 5) d *= kind === 2 ? Math.min(1, tg.res * 1.9) : tg.res; // golemler hasarı pek umursamaz; büyü ve zırh kıran etkili
     var zs = S[tg.s]; if (zs && zs.sA > 0 && kind !== -1) d *= .45;
     if (tg.arm && kind === 1) d *= 1 - tg.arm;
     tg.hp -= d; tg.fl = 5; var i;
@@ -365,12 +374,13 @@
   }
   function kaleVur(s, d) { var z = S[s]; if (z.sA > 0) d *= .45; z.hp -= d; z.cf = 5; if (Math.random() < .2) Px.ses("vur"); for (var i = 0; i < 2; i++) F.push({ x: front(s), y: GY - Px.rastgele(4, chh(s)), vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1.5, 0), l: 16, c: "#94a0b8" }); }
   function splash(px, en, rad, d, src, kind) {
-    U.forEach(function (q) { if (q.s === en && !q.dead && Math.abs(q.x - px) < rad) vur(q, d, src, kind); });
+    U.forEach(function (q) { if (q.s === en && !q.dead && Math.abs(q.x - px) < rad) vur(q, kind === 3 && q.mhp < 100 && !q.boss ? d * .55 : d, src, kind); }); // kaya küçük hedefi ıskalar
     if (en === 1 && mod === 1) S[1].tw.forEach(function (w) { if (w && !w.dead && Math.abs(w.x - px) < rad) vur(w, d * .7, src, kind); });
   }
   function explode(u, dmg, en) {
     u.dead = 1; Px.ses("patlama"); sars = Math.max(sars, 6); pf(u.x, GY - 8, 16, ["#ef7d57", "#ffcd75", "#fff", "#566c86"], 24, 2.2);
-    splash(u.x + (u.s === 0 ? 4 : -4), en, 24, dmg, u.s, 0);
+    U.forEach(function (q) { if (q.s === en && !q.dead && Math.abs(q.x - (u.x + (u.s === 0 ? 4 : -4))) < 24) vur(q, q.mhp >= 100 || q.arm >= .2 || q.res ? dmg * 1.8 : dmg, u.s, 5); });
+    if (en === 1 && mod === 1) S[1].tw.forEach(function (w) { if (w && !w.dead && Math.abs(w.x - u.x) < 24) vur(w, dmg, u.s, 0); });
     if (hasC(en) && Math.abs(front(en) - u.x) < 26) kaleVur(en, dmg * .6);
   }
 
@@ -411,10 +421,19 @@
     if (u.s === 1 && fx === null) tx = front(1) - 70 - (u.id % 5) * 7;
     if (Math.abs(u.x - tx) > 3) { u.x += (u.x < tx ? 1 : -1) * u.sp * spm; u.w++; u.x = Px.sinir(u.x, 6, WW - 6); }
   }
+  // sınıf: C süvari, A uçan, R menzilli, T tank, L hafif, S kuşatma, H şifacı, B boss, W kule
+  function cls(o) {
+    if (o.tw) return "W"; if (o.boss) return "B"; if (o.ok === 3) return "S"; if (o.fly) return "A"; if (o.hunt) return "C"; if (o.heal) return "H";
+    if (o.ok || o.bomb) return "R"; if (o.arm >= .2 || o.res || o.mhp >= 100) return "T"; return "L";
+  }
+  function kx(u, tg) { return u.ct && tg && tg !== "c" ? (u.ct[cls(tg)] || 1) : 1; }
+  var CN = { C: "SÜVARİ", A: "UÇAN", R: "MENZİLLİ", T: "TANK", L: "HAFİF", S: "KUŞATMA", H: "ŞİFACI", B: "BOSS" };
+  function ctYaz(t) { if (!t.ct) return ""; var r = []; for (var k in t.ct) if (t.ct[k] > 1) r.push(CN[k]); return r.length ? " · İYİ: " + r.join("/") : ""; }
   function adim(u) {
     var dr = u.s === 0 ? 1 : -1, en = 1 - u.s, z = S[u.s], best = null, bd = 1e9, bs = 1e9, i, o, dd, scr;
     if (u.fl > 0) u.fl--; if (u.at > 0) u.at--; if (u.sh > 0) u.sh--;
     if (u.frz > 0) { u.frz--; return; }
+    if (u.s === 1 && S[1].ur && tik % 30 === 0 && u.hp < u.mhp) u.hp = Math.min(u.mhp, u.hp + u.mhp * .004 * S[1].ur);
     if (u.psn > 0) { u.psn--; if (tik % 30 === 0) { vur(u, u.pd, en, -1); if (u.dead) return; } }
     var slw = u.slow > 0; if (slw) u.slow--;
     var rage = z.rg > 0 && !(mod === 1 && u.s === 0), spm = (rage ? 1.3 : 1) * (slw ? u.slowf : 1);
@@ -435,14 +454,15 @@
     var dmg = u.d * (rage ? 1.6 : 1) * u.bd; spm *= u.bsp;
     var kacis = z.em === 2 && Math.abs(u.x - (front(u.s) + dr * (8 + (u.id % 5) * 5))) > 6;
     u.bk = tg && tg !== "c" && !tg.tw && (tg.x - u.x) * dr < -2 ? 1 : 0; // arkadaki düşmana döner
-    if (tg && td <= u.r && !kacis) {
+    if (tg && td <= u.r && !kacis && !(u.ok === 3 && td < 30)) {
       if (u.cd <= 0) {
-        u.cd = u.cdm * (u.boss && u.hp < u.mhp * .5 ? .8 : 1); u.at = 8;
+        u.cd = u.cdm * (u.boss && u.hp < u.mhp * .5 ? .8 : 1); u.at = 8; var dmg0 = dmg; if (u.ct && u.ok !== 2 && u.ok !== 3) dmg = dmg0 * kx(u, tg);
+        if (u.s === 1 && S[1].ucr && Math.random() < .05 * S[1].ucr) { dmg *= 2; pf(u.x, GY - 22, 3, ["#ffcd75", "#fff"], 14, 1); }
         if (u.bomb) { explode(u, dmg, en); return; }
-        if (u.ok) { P.push({ x: u.x + dr * 4, y: GY - 12 + (u.fly ? -10 : 0), vx: dr * (u.ok === 2 ? 2 : u.ok === 3 ? 1.7 : u.ok === 4 ? 2.1 : 2.6), s: u.s, d: dmg, k: u.ok, l: u.ok === 3 ? 130 : 120 }); Px.ses("ok"); }
+        if (u.ok) { P.push({ x: u.x + dr * 4, y: GY - 12 + (u.fly ? -10 : 0), vx: dr * (u.ok === 2 ? 2 : u.ok === 3 ? 1.7 : u.ok === 4 ? 2.1 : 2.6), s: u.s, d: dmg, k: u.ok, pr: u.pr, l: u.ok === 3 ? 130 : 120 }); Px.ses("ok"); }
         else if (tg === "c") { kaleVur(en, dmg); }
         else {
-          vur(tg, dmg, u.s, 0); Px.ses("kilic");
+          vur(tg, dmg, u.s, u.pr ? 5 : 0); Px.ses("kilic");
           if (u.pz && !tg.tw) { tg.psn = 240; tg.pd = Math.max(tg.pd || 0, dmg * .3); }
           if (u.boss) bossHit(u, tg, dmg);
         }
@@ -466,7 +486,7 @@
     if (p.k === 2) { splash(p.x, en, 16, p.d, p.s, 2); pf(p.x, p.y, 8, ["#b55ee0", "#73eff7"], 14, 1.5); }
     else if (p.k === 3) { splash(p.x, en, 22, p.d, p.s, 3); pf(p.x, GY - 6, 10, ["#94a0b8", "#566c86", "#ef7d57"], 18, 2); sars = Math.max(sars, 3); Px.ses("patla"); }
     else if (p.k === 4) { vur(o, p.d, p.s, 4); if (!o.tw) { o.slow = 150; o.slowf = .5; } pf(p.x, p.y, 6, ["#73eff7", "#fff"], 16, 1.2); }
-    else vur(o, p.d, p.s, p.k);
+    else vur(o, p.d, p.s, p.pr ? 5 : p.k);
   }
   function mermiler() {
     for (var i = P.length - 1; i >= 0; i--) {
@@ -516,6 +536,7 @@
         if (w.cd >= 48) {
           w.cd = 0; var n = 0, hl = Math.round((4 + 3 * l) * gd);
           U.forEach(function (u) { if (u.s === 1 && !u.dead && u.hp < u.mhp && n < 6 && Math.abs(u.x - w.x) < 85) { u.hp = Math.min(u.mhp, u.hp + hl); n++; pf(u.x, GY - 14, 2, ["#a7f070", "#fff"], 20, .5); } });
+          S[1].tw.forEach(function (w2) { if (w2 && !w2.dead && w2.hp < w2.mhp && Math.abs(w2.x - w.x) < 90) { w2.hp = Math.min(w2.mhp, w2.hp + hl * .6); } });
           if (z1.hp < mhp(1)) { z1.hp = Math.min(mhp(1), z1.hp + 2 + 2 * l); n++; }
           if (n) pf(w.x, GY - 30 + w.dy, 3, ["#a7f070", "#fff"], 20, .5);
         }
@@ -528,25 +549,38 @@
       }
     });
   }
-  function pick(arr, n) {
+  function pick(arr, n, pw) {
     var a = arr.filter(function (k) { return MINW[k] <= n; });
-    return a.length ? a[Math.floor(Math.pow(Math.random(), .7) * a.length)] : -1;
+    return a.length ? a[Math.floor(Math.pow(Math.random(), pw || 1) * a.length)] : -1;
   }
+  // özel dalga olayları: her 3. dalga (boss değilse) farklı bir saldırı türü; karşı birimleri öğretir
+  var OLAY = [
+    { ad: "SÜRÜ SALDIRISI!", ar: [0, 8, 6, 3, 0, 0], c: 1.9, sw: 1 },
+    { ad: "ZIRHLI ORDU!", ar: [7, 1, 4, 13, 7], c: .8 },
+    { ad: "HAVA SALDIRISI!", ar: [3, 3, 12, 15, 3], c: 1.1, sw: 1 },
+    { ad: "SÜVARİ BASKINI!", ar: [11, 3, 11, 0, 11], c: 1.0 },
+    { ad: "BÜYÜCÜ ORDUSU!", ar: [2, 8, 5, 9, 10, 2], c: .9 }
+  ];
   function dalgaBaslat() {
-    wv++; var n = wv, q = [], boss = n % 10 === 0, cnt = Math.min(60, Math.floor(4 + n * 1.5 + n * n * .012)), i;
-    var rp = Math.min(.48, .28 + n * .006), upp = n >= 5 ? Math.min(.22, .06 + n * .004) : 0, tp = n >= 7 ? Math.min(.14, .03 + n * .004) : 0;
-    if (boss) cnt = Math.min(cnt, 14) + 3;
+    wv++; var n = wv, q = [], boss = n % 10 === 0, cnt = Math.min(130, Math.floor(5 + n * 1.9 + n * n * .02)), i, ol = null;
+    var rp = Math.min(.4, .24 + n * .005), upp = n >= 5 ? Math.min(.2, .06 + n * .004) : 0, tp = n >= 7 ? Math.min(.12, .03 + n * .003) : 0;
+    var el = Math.min(.3, n * .006); // sonlara doğru elit payı yavaş artar; çoğunluk hep kalabalık hafif birlik
+    if (boss) cnt = Math.min(cnt, 22) + 3;
+    else if (n >= 3 && n % 3 === 0) ol = OLAY[(n / 3 - 1) % OLAY.length];
     for (i = 0; i < cnt; i++) {
       var r = Math.random(), e;
-      if (r < rp && (e = pick(RG, n)) >= 0) q.push({ k: e, t: 2 });
-      else if (r < rp + upp && (e = pick(RU, n)) >= 0) q.push({ k: e, t: 1 });
-      else if (tp && r < rp + upp + tp && (e = pick(TH, n)) >= 0) q.push({ k: e, t: 1 });
-      else q.push({ k: pick(FR, n), t: 0 });
+      if (ol) { e = pick(ol.ar, n, 1); if (e < 0) e = pick(FR, n, 1.3); q.push({ k: e, t: EK[e].ok ? 2 : (EK[e].hunt ? 1 : 0), sw: ol.sw && EK[e].hp < 60 ? 1 : 0 }); continue; }
+      if (r < rp && (e = pick(RG, n, 1.2)) >= 0) q.push({ k: e, t: 2 });
+      else if (r < rp + upp && (e = pick(RU, n, 1.1)) >= 0) q.push({ k: e, t: 1 });
+      else if (tp && r < rp + upp + tp && (e = pick(TH, n, .9)) >= 0) q.push({ k: e, t: 1 });
+      else if (Math.random() < el) q.push({ k: pick(FR, n, .6), t: 0 });
+      else { e = pick(FR, n, 1.8); q.push({ k: e, t: 0, sw: n >= 6 && EK[e].hp < 60 ? 1 : 0 }); }
     }
+    if (!boss && n >= 4) { var ex = Math.min(40, Math.floor(n * .8)); for (i = 0; i < ex; i++) { var w = pick([0, 3, 6, 8], n, 1.3); q.push({ k: w, t: 0, sw: 1 }); } } // her dalgada ekstra küçük sürü
     q.sort(function (a, b) { return a.t - b.t; }); // önde tank, ortada baskıncılar, arkada menzilliler
     if (boss) q.unshift({ b: Math.floor(n / 10) - 1 });
-    wq = q; wi = Math.max(14, 62 - n); wsp = 0; wf = 0; wt = 260;
-    mesaj = boss ? "BOSS DALGASI " + n : "DALGA " + n; msayac = 110; if (boss) Px.ses("boss"); else Px.ses("don");
+    wq = q; wi = Math.max(8, Math.round(56 - n * .8)); wsp = 0; wf = 0; wt = 260;
+    mesaj = boss ? "BOSS DALGASI " + n : ol ? ol.ad : "DALGA " + n; msayac = 110; if (boss) Px.ses("boss"); else Px.ses("don");
     S[1].hp = Math.min(mhp(1), S[1].hp + mhp(1) * .04); yaz();
     if (mod === 1) kaydet();
   }
@@ -554,7 +588,7 @@
   function dalgaGuncelle() {
     if (wq.length) {
       if (--wsp <= 0) {
-        var e = wq.shift(), m = sc(wv), u = e.b !== undefined ? yapB(e.b, m) : yapU(0, e.k, m, 1 + (m - 1) * .7);
+        var e = wq.shift(), m = sc(wv), u = e.b !== undefined ? yapB(e.b, m) : yapU(0, e.k, e.sw ? m * .6 : m, 1 + (m - 1) * (e.sw ? .5 : .7));
         wsp = wi; for (var i = 0; i < 6; i++) F.push({ x: u.x, y: GY - 6, vx: Px.rastgele(-1, 1), vy: Px.rastgele(-1, 0), l: 20, c: "#333c57" });
         if (u.boss) { mesaj = bossAd(u.bi); msayac = 130; }
       }
@@ -589,7 +623,7 @@
     // ekonomi
     [0, 1].forEach(function (s) {
       if (!hasC(s)) return; var z = S[s];
-      ["rg", "cr", "cs", "ch", "cf", "cz", "cy", "cg", "ct", "sA", "gr"].forEach(function (f) { if (z[f] > 0) z[f]--; });
+      ["rg", "cr", "cs", "ch", "ch2", "cf", "cz", "cy", "cg", "ct", "sA", "gr"].forEach(function (f) { if (z[f] > 0) z[f]--; });
       if (++z.it >= 90) { var gn = Math.round((z.mines * (2 + z.ml) + 1) * (z.gr > 0 ? 3 : 1) * (1 + .08 * z.ub)); z.it = 0; z.g += gn; for (var m = 0; m < z.mines; m++) F.push({ x: mineX(s, m), y: mineY(m) - 14, vx: 0, vy: -.7, l: 26, c: "#ffcd75" }); }
     });
     if (mod === 1) dalgaGuncelle();
@@ -654,6 +688,8 @@
       else if (k === 3) { R(4, -16, 1, 14, "#a47040"); R(3, -19, 3, 3, (tik >> 2) & 1 ? "#73eff7" : "#fff"); }
       else if (k === 4) { R(5 + a, -12, 1, 7, "#dfe9f5"); R(-8, -15, 5, 10, "#ffcd75"); R(-8, -15, 5, 1, "#fff"); R(-7, -12, 3, 4, c); }
       else if (k === 6) { R(4, -18, 1, 14, "#a47040"); R(3, -21, 3, 3, (t & 1) ? "#a7f070" : "#fff"); R(-1, -10, 2, 4, "#38b764"); R(-2, -9, 4, 2, "#38b764"); }
+      else if (k === 10) { R(4 + a, -15, 2, 10, "#7a4a2b"); R(2 + a, -17, 7, 4, "#94a0b8"); R(2 + a, -17, 7, 1, "#dfe9f5"); R(-5, -11, 2, 5, "#566c86"); }
+      else if (k === 11) { R(3, -11, 10, 2, "#a47040"); R(11, -14, 1, 8, "#7a4a2b"); R(4 - (a ? 1 : 0), -12, 9, 1, "#dfe9f5"); R(-5, -12, 2, 6, "#38b764"); }
       else if (k === 9) { R(4, -12, 5, 5, "#0d0e1a"); R(5, -11, 1, 1, "#566c86"); R(6, -14, 1, 2, "#a47040"); if (t & 1) R(6, -16, 2, 2, "#ffcd75"); R(-5, -11, 2, 5, "#7a4a2b"); }
     }
     if (S[u.s].rg > 0) { R(-5, -24 - ((tik >> 2) % 3), 2, 2, "#ef7d57"); R(3, -23 - ((tik >> 3) % 3), 2, 2, "#ffcd75"); }
@@ -807,7 +843,7 @@
     if (u.sh > 0) { R(-24, -56, 1, 56, "rgba(255,205,117,.8)"); R(23, -56, 1, 56, "rgba(255,205,117,.8)"); R(-24, -56, 48, 1, "rgba(255,205,117,.8)"); }
     if (en) { R(-14, -52 - (t % 3), 3, 3, "#e0344f"); R(10, -52 - ((t + 1) % 3), 3, 3, "#ef7d57"); }
   }
-  var HB = [-22, -22, -22, -24, -24, -22, -24, -16, -32, -20], HE = [-20, -22, -22, -30, -32, -26, -18, -24, -22, -26, -24, -24, -34, -34, -44, -30], HBS = [-36, -52, -50, -54, -58, -34, -56, -56, -40, -56];
+  var HB = [-22, -22, -22, -24, -24, -22, -24, -16, -32, -20, -22, -22], HE = [-20, -22, -22, -30, -32, -26, -18, -24, -22, -26, -24, -24, -34, -34, -44, -30], HBS = [-36, -52, -50, -54, -58, -34, -56, -56, -40, -56];
   function cizUnit(u) {
     var yy;
     FC = (u.s === 0 ? 1 : -1) * (u.bk ? -1 : 1); FLS = u.fl > 0; BX = Math.round(u.x); BY = GY + u.ly;

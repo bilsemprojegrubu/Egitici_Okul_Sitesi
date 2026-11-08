@@ -9,9 +9,9 @@
 <body data-oyun="araba">
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>ARABA KAÇIŞ</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Jeton <b id="jeton">0</b> · Rekor <b id="rekor">0</b></div></header>
-<main class="sahne">
+<main class="sahne yan">
   <canvas id="c" class="cv" width="160" height="240" style="--mw:300px;touch-action:none"></canvas>
-  <div class="pad"><button class="btn" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn" id="asagi" type="button" aria-label="Geri">▼ GERİ</button></div>
+  <div class="pad dpad k-sol" id="yonpad"><button class="btn u" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn d" id="asagi" type="button" aria-label="Geri">▼ GERİ</button><button class="btn l" id="solb" type="button" aria-label="Sol">◀</button><button class="btn r" id="sagb" type="button" aria-label="Sağ">▶</button></div>
   <p class="ipucu">◀ ▶ / A D ile şerit değiştir, ▲ ▼ / W S ile ileri-geri git (dokunmatikte ekranın sol/sağ yarısına dokun, ileri-geri için butonlar). Araba, kamyon, koni ve çukurdan kaç; jeton ve benzin topla!</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Kaza yaptın!</h2><p id="sonuc"></p>
@@ -247,6 +247,7 @@
     el.addEventListener("pointerdown", function (e) { e.preventDefault(); tus[p[1]] = 1; });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (n) { el.addEventListener(n, function () { tus[p[1]] = 0; }); });
   });
+  [["solb", -1], ["sagb", 1]].forEach(function (p) { document.getElementById(p[0]).addEventListener("pointerdown", function (e) { e.preventDefault(); if (calis || geri > 0) lane(p[1]); }); });
   document.getElementById("tekrar").addEventListener("click", yeni);
   var menu = Px.menu({ baslik: "ARABA KAÇIŞ", not: "Hangi yolda yarışmak istersin?", secenekler: [
     { ad: "Engelli", alt: "Dubalar ve çukurlar var · sıralamaya girer", fn: function () { engelli = true; modSecildi = true; rekorGoster(); yeni(); } },

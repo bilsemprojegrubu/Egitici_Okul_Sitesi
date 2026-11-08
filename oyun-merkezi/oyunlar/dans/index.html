@@ -9,14 +9,14 @@
 <body data-oyun="dans">
 <header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>KAKTÜS DANSI</h1>
 <div class="puanlar">Puan <b id="puan">0</b> · Rekor <b id="rekor">0</b></div></header>
-<main class="sahne">
+<main class="sahne yan">
   <canvas id="c" class="cv" width="400" height="520" style="--mw:400px"></canvas>
   <p class="ipucu">Oklar düşünce tuşa bas: ← ↓ ↑ → ya da A S W D</p>
-  <div class="kontrol" id="yonler">
-    <button class="btn" data-k="0" aria-label="Sol">◀</button>
-    <button class="btn" data-k="1" aria-label="Aşağı">▼</button>
-    <button class="btn" data-k="2" aria-label="Yukarı">▲</button>
-    <button class="btn" data-k="3" aria-label="Sağ">▶</button>
+  <div class="kontrol dpad k-sol" id="yonler">
+    <button class="btn l" data-k="0" aria-label="Sol">◀</button>
+    <button class="btn d" data-k="1" aria-label="Aşağı">▼</button>
+    <button class="btn u" data-k="2" aria-label="Yukarı">▲</button>
+    <button class="btn r" data-k="3" aria-label="Sağ">▶</button>
   </div>
   <div id="bitti" class="kaplama" hidden>
     <h2>Kaktüs yoruldu!</h2><p id="sonuc"></p>

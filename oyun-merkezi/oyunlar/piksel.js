@@ -83,7 +83,7 @@
   Px.pad = function (kap, dizi, sinif) {
     var d = document.createElement("div"); d.className = "pad " + (sinif || "");
     dizi.forEach(function (o) {
-      var b = document.createElement("button"); b.type = "button"; b.className = "btn pad-d";
+      var b = document.createElement("button"); b.type = "button"; b.className = "btn pad-d" + (o.c ? " " + o.c : "");
       b.textContent = o.t; b.setAttribute("aria-label", o.a || o.t);
       var kodlar = [].concat(o.k);
       function ac(e) { e.preventDefault(); kodlar.forEach(bas); b.classList.add("bas"); try { b.setPointerCapture(e.pointerId); } catch (x) { } }
@@ -97,9 +97,9 @@
 
   // ---- Ekranda dokunmatik joystick: sürükleyince yön tuşları basılı sayılır ----
   Px.joystick = function (kap, m) {
-    var d = document.createElement("div"), top = document.createElement("div"), R = 46, bas_ = {};
+    var d = document.createElement("div"), top = document.createElement("div"), R = Math.round(Math.max(44, Math.min(84, Math.min(window.innerWidth, window.innerHeight) * .14))), bas_ = {};
     d.className = "joy"; d.style.cssText = "position:relative;width:" + R * 2 + "px;height:" + R * 2 + "px;border-radius:50%;background:rgba(255,255,255,.12);border:4px solid #0d0e1a;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25);touch-action:none;user-select:none;-webkit-user-select:none;flex:none";
-    top.style.cssText = "position:absolute;left:" + (R - 20) + "px;top:" + (R - 20) + "px;width:32px;height:32px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
+    top.style.cssText = "position:absolute;left:" + (R - Math.round(R * .65 / 2) - 4) + "px;top:" + (R - Math.round(R * .65 / 2) - 4) + "px;width:" + Math.round(R * .65) + "px;height:" + Math.round(R * .65) + "px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
     d.appendChild(top); d.setAttribute("aria-label", "Joystick");
     function ayarla(t) {
       ["u", "d", "l", "r"].forEach(function (y) { if (!m[y]) return; if (t[y] && !bas_[y]) bas(m[y]); if (!t[y] && bas_[y]) birak(m[y]); bas_[y] = !!t[y]; });

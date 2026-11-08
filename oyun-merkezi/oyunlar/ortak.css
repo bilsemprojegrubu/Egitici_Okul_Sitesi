@@ -80,3 +80,18 @@ body.tam .sahne{overflow-x:clip}
   .arac-d{width:32px;height:32px}
 }
 @media (max-width:420px){.ust{padding-right:200px}.puanlar{font-size:.8rem}}
+/* Ters T ok tuşları (▲ üstte, ◀ ▼ ▶ altta) */
+.dpad,.kontrol.dpad,.pad.dpad{display:grid;grid-template-columns:repeat(3,auto);gap:6px;justify-content:center;flex-wrap:nowrap}
+.dpad .u{grid-area:1/2}.dpad .l{grid-area:2/1}.dpad .d{grid-area:2/2}.dpad .r{grid-area:2/3}
+/* Geniş ekran: kontroller oyunun iki yanında (solda hareket, sağda eylem) */
+@media (min-width:640px){
+  .sahne.yan{display:grid;grid-template-columns:1fr auto 1fr;column-gap:14px;justify-content:center;align-items:center}
+  .sahne.yan>*{grid-column:1/-1}
+  .sahne.yan>canvas{grid-column:2;grid-row:1;width:min(var(--mw,720px),calc(100vw - 460px));max-width:none}
+  .sahne.yan .k-sol{grid-column:1;grid-row:1;justify-self:end}
+  .sahne.yan .k-sag{grid-column:3;grid-row:1;justify-self:start}
+  .sahne.yan>.pad-yan{display:contents!important}
+  .sahne.yan .pad:not(.dpad){flex-direction:column;flex-wrap:nowrap}
+  .sahne.yan .k-sol,.sahne.yan .k-sag{display:flex;flex-direction:column;gap:10px;align-items:center}
+  .sahne.yan .k-sol.dpad,.sahne.yan .k-sag.dpad{display:grid}
+}
