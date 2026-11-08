@@ -114,9 +114,14 @@
     calis = false; patla = 1; sars = 18; Px.ses("patlama");
     patlat(o.x, o.y, "#ef7d57", 14); patlat(o.x, o.y, "#ffcd75", 10); patlat(o.x, o.y, "#f4f4f4", 6);
   }
+  var joyS = 0;
   function guncelle() {
     var k = Px.k, p = Px.p, a, b;
-    if (calis || geri > 0) { if (p.JoyL) lane(-1); if (p.JoyR) lane(1); }
+    if (calis || geri > 0) {
+      var jy = k.JoyL ? -1 : k.JoyR ? 1 : 0;
+      if (!jy) joyS = 0;
+      else { if (p.JoyL || p.JoyR) joyS = 0; if (joyS-- <= 0) { lane(jy); joyS = 16; } } // basılı tutunca sürekli kay
+    }
     par.forEach(function (q) { q.x += q.vx; q.y += q.vy; q.o--; }); par = par.filter(function (q) { return q.o > 0; });
     yazi.forEach(function (t) { t.y -= .6; t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
     if (sars) sars--;
