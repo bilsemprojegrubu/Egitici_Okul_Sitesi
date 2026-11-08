@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Piksel Balık — Oyun Merkezi</title>
+<link rel="stylesheet" href="../ortak.css">
+</head>
+<body data-oyun="balik">
+<header class="ust"><a class="geri" href="../../index.html">&lt; Merkez</a><h1>PİKSEL BALIK</h1>
+<div class="puanlar">Puan <b id="puan">0</b> · Can <b id="can">3</b> · Rekor <b id="rekor">0</b></div></header>
+<main class="sahne yan">
+  <canvas id="c" class="cv" width="240" height="160" style="--mw:480px;touch-action:none"></canvas>
+  <div class="pad-ikili pad-yan"><div class="pad dpad capraz k-sol" id="yonpad"><button class="btn u" id="yukari" type="button" aria-label="Yukarı">▲</button><button class="btn l" id="solb" type="button" aria-label="Sol">◀</button><button class="btn r" id="sagb" type="button" aria-label="Sağ">▶</button><button class="btn d" id="asagi" type="button" aria-label="Aşağı">▼</button></div></div>
+  <div class="k-sag" id="joyk" hidden></div><button class="btn ikinci" id="kontrolb" type="button" style="align-self:center;justify-self:center;margin-top:8px">🕹 JOYSTICK</button>
+  <p class="ipucu">Ekrana dokun/sürükle (veya ok tuşları / WASD / joystick) ile yüz. <b style="color:#38b764">Yeşil</b> çerçeveli küçük balıkları ye, büyü; <b style="color:#ef4d5e">kırmızı</b> çerçeveli büyüklerden kaç. Çok büyüyünce ekran bir kademe uzaklaşır!</p>
+  <div id="bitti" class="kaplama" hidden>
+    <h2>Oyun bitti</h2><p id="sonuc"></p>
+    <div id="siralama" class="siralama" hidden></div>
+    <button class="btn" id="tekrar">Tekrar oyna</button>
+  </div>
+</main>
+<script src="../../config.js"></script>
+<script src="../../skor.js"></script>
+<script src="../piksel.js"></script>
+<script>
+// Piksel Balık: sonsuz okyanus, kamera balık büyüdükçe uzaklaşır
+(function () {
+  var C = document.getElementById("c"), x = C.getContext("2d"), W = 240, H = 160;
+  var MINW = 150;                       // en yakın görüş genişliği (dünya birimi)
+  var vg = MINW, oy, bal, ak, kabarcik = [], par = [], yazi = [], puan, can, kombo, kombS, yan, kam, hedef, calis, bekle, zaman;
+  var renk = ["#73eff7", "#a7f070", "#ffcd75", "#ef7d57", "#b55088", "#f4f4f4"];
+  try { document.getElementById("rekor").textContent = Skor.rekor("balik"); } catch (e) { }
+  function ya() { document.getElementById("puan").textContent = puan; document.getElementById("can").textContent = can; }
+
+  var KOYU = { "#73eff7": "#3b9fc9", "#a7f070": "#4aa63c", "#ffcd75": "#e0953d", "#ef7d57": "#b13e53", "#b55088": "#6e2f66", "#f4f4f4": "#94b0c2", "#8b9bb4": "#566c86" };
+  function hs(i) { var t = Math.sin(i * 127.1 + 311.7) * 43758.5453; return t - Math.floor(t); }
+  // balık çizimi: s = gövde yarı uzunluğu (dünya birimi), des = desen (0 çizgili, 1 benekli, 2 sade)
+  var zb = 0;
+  function balikCiz(cx, cy, s, kol, yon, cerceve, kopek, des, yuz) {
+    var u = s / 4, w = 8 * u, h = 5 * u, ko = KOYU[kol] || "#566c86";
+    x.save(); x.translate(cx, cy); x.scale(yon, 1);
+    // kuyruk
+    x.fillStyle = ko; x.fillRect(-w / 2 - 2 * u, -h / 2 + u, 2 * u, h - 2 * u); x.fillRect(-w / 2 - 3.5 * u, -h / 2 - .2 * u, 1.6 * u, 1.4 * u); x.fillRect(-w / 2 - 3.5 * u, h / 2 - 1.2 * u, 1.6 * u, 1.4 * u);
+    // sırt ve karın yüzgeci
+    x.fillRect(-u, -h / 2 - 1.3 * u, 3 * u, 1.4 * u); x.fillRect(-1.5 * u, -h / 2 - .6 * u, 1 * u, .8 * u); x.fillRect(-u * 1.5, h / 2 - .2 * u, 2 * u, 1.1 * u);
+    // gövde
+    x.fillStyle = kol; x.fillRect(-w / 2, -h / 2 + u, w, h - 2 * u); x.fillRect(-w / 2 + u, -h / 2, w - 3 * u, h);
+    // karın açık rengi
+    x.fillStyle = "rgba(255,255,255,.35)"; x.fillRect(-w / 2 + u, h / 2 - 1.6 * u, w - 3.5 * u, 1.1 * u);
+    // desen
+    if (des === 0) { x.fillStyle = ko; x.fillRect(-1.2 * u, -h / 2, .9 * u, h); x.fillRect(.6 * u, -h / 2 + .2 * u, .8 * u, h - .4 * u); }
+    else if (des === 1) { x.fillStyle = ko; x.fillRect(-2 * u, -u, .9 * u, .9 * u); x.fillRect(-.2 * u, .3 * u, .9 * u, .9 * u); x.fillRect(.9 * u, -1.1 * u, .9 * u, .9 * u); x.fillRect(-3 * u, .5 * u, .8 * u, .8 * u); }
+    // yüzgeç (yan)
+    x.fillStyle = ko; x.fillRect(-.5 * u, .1 * u, 2 * u, 1.1 * u);
+    if (kopek) { x.fillStyle = "#f4f4f4"; x.fillRect(w / 2 - 2.6 * u, h / 2 - 2 * u, .6 * u, .8 * u); x.fillRect(w / 2 - 1.6 * u, h / 2 - 2 * u, .6 * u, .8 * u); x.fillRect(w / 2 - 3.6 * u, h / 2 - 2 * u, .6 * u, .8 * u); x.fillStyle = "#0d0e1a"; x.fillRect(-w / 2 + 3.2 * u, -.4 * u, .6 * u, 1.4 * u); x.fillRect(-w / 2 + 3.8 * u, -.4 * u, .6 * u, 1.4 * u); }
+    // göz
+    x.fillStyle = "#f4f4f4"; x.fillRect(w / 2 - 3 * u, -h / 2 + u, 1.7 * u, 1.7 * u);
+    x.fillStyle = "#0d0e1a"; x.fillRect(w / 2 - 2.3 * u, -h / 2 + 1.5 * u, 1 * u, 1 * u);
+    // ağız
+    x.fillStyle = "#0d0e1a"; x.fillRect(w / 2 - .9 * u, .5 * u, .9 * u, .45 * u);
+    if (yuz) { x.fillStyle = "#ef4d5e"; x.fillRect(w / 2 - 1.8 * u, 1.1 * u, 1.2 * u, .5 * u); }
+    x.restore();
+    if (cerceve) { x.strokeStyle = cerceve; x.lineWidth = Math.max(.6, 1.4 / kam.z); x.strokeRect(cx - w / 2 - 4 * u, cy - h / 2 - 1.5 * u, w + 5 * u, h + 3 * u); }
+  }
+
+  function yeni() {
+    bal = { x: 0, y: 0, s: 6, yon: 1, yf: 1, vx: 0, vy: 0 }; oy = [];
+    vg = MINW; kam = { x: 0, y: 0, z: W / MINW }; puan = 0; can = 3; kombo = 0; kombS = 0; yan = 0; hedef = null; calis = true; bekle = 30; zaman = 0; par = []; yazi = [];
+    kabarcik = []; for (var i = 0; i < 40; i++) kabarcik.push({ x: Px.rastgele(-400, 400), y: Px.rastgele(-300, 300), r: Px.rastgele(1, 3), v: Px.rastgele(.1, .6), p: Px.rastgele(.2, .9) });
+    for (i = 0; i < 30; i++) yarat(true);
+    document.getElementById("bitti").hidden = true; ya();
+  }
+  function gorus() { return vg; }
+  function yarat(ilk) {
+    var gw = gorus(), gh = gw * H / W, r = Math.random(), oran;
+    if (r < .58) oran = Px.rastgele(.3, .9); else if (r < .82) oran = Px.rastgele(.9, 1.3); else if (r < .96) oran = Px.rastgele(1.4, 2.4); else oran = Px.rastgele(2.8, 4.2);
+    var s = Math.max(1.5, bal.s * oran), yon = Math.random() < .5 ? -1 : 1, ax, ay;
+    if (ilk) { ax = bal.x + Px.rastgele(-gw, gw); ay = bal.y + Px.rastgele(-gh, gh); if (Math.abs(ax - bal.x) < gw * .3 && Math.abs(ay - bal.y) < gh * .3) { if (oran > 1.2) ax = bal.x + yon * gw * .75; } }
+    else { ax = bal.x + yon * -1 * (gw * .65 + s * 4); ay = bal.y + Px.rastgele(-gh * .8, gh * .8); }
+    oy.push({ x: ax, y: ay, s: s, yon: yon, v: Px.rastgele(.25, .7) * Math.sqrt(Math.max(1, s / 6)) * (oran > 2 ? .8 : 1), kol: oran > 2.6 ? "#8b9bb4" : renk[Px.tamsayi(0, renk.length - 1)], dal: Px.rastgele(0, 6), kopek: oran > 2.6, des: Px.tamsayi(0, 2) });
+  }
+  function patla(px, py, kol, n) { for (var i = 0; i < n; i++) par.push({ x: px, y: py, vx: Px.rastgele(-1, 1) * bal.s * .2, vy: Px.rastgele(-1, 1) * bal.s * .2, r: kol, o: 24 }); }
+
+  function guncelle() {
+    if (!calis) return;
+    zaman++;
+    var k = Px.k, dx = (k.ArrowRight || k.KeyD ? 1 : 0) - (k.ArrowLeft || k.KeyA ? 1 : 0), dy = (k.ArrowDown || k.KeyS ? 1 : 0) - (k.ArrowUp || k.KeyW ? 1 : 0);
+    var hiz = 1.9 * Math.pow(bal.s / 6, .55) * 0.9 + .6;
+    if (dx || dy) { hedef = null; var n = Math.sqrt(dx * dx + dy * dy); bal.vx += (dx / n * hiz - bal.vx) * .12; bal.vy += (dy / n * hiz - bal.vy) * .12; }
+    else if (hedef) {
+      var ex = hedef.x - bal.x, ey = hedef.y - bal.y, m = Math.sqrt(ex * ex + ey * ey);
+      if (m > bal.s * .5) { bal.vx += (ex / m * hiz - bal.vx) * .12; bal.vy += (ey / m * hiz - bal.vy) * .12; } else { bal.vx *= .85; bal.vy *= .85; }
+    } else { bal.vx *= .9; bal.vy *= .9; }
+    bal.x += bal.vx; bal.y += bal.vy; if (Math.abs(bal.vx) > .15) bal.yon = bal.vx > 0 ? 1 : -1;
+    bal.yf += (bal.yon - bal.yf) * .18; if (zb > 0) zb--;
+    if (yan) yan--; if (kombS > 0) { kombS--; if (!kombS) kombo = 0; }
+    var gw = gorus(), gh = gw * H / W;
+    // düşmanlar
+    for (var i = oy.length - 1; i >= 0; i--) {
+      var o = oy[i]; o.dal += .05; o.x += o.yon * o.v; o.y += Math.sin(o.dal) * .12 * o.s * .1;
+      if (Math.abs(o.x - bal.x) > gw * 1.7 || Math.abs(o.y - bal.y) > gh * 2.4) { oy.splice(i, 1); continue; }
+      if (bekle > 0) continue;
+      var d = Math.sqrt((o.x - bal.x) * (o.x - bal.x) + (o.y - bal.y) * (o.y - bal.y)), esik = (o.s + bal.s) * .55;
+      if (d < esik) {
+        if (bal.s >= o.s * 1.05) {
+          kombo = kombS > 0 ? Math.min(5, kombo + 1) : 1; kombS = 100;
+          var kz = Math.max(1, Math.round(o.s / bal.s * 10 + 1)) * kombo; puan += kz * 2; // büyük balık = daha çok puan
+          bal.s = Math.sqrt(bal.s * bal.s + o.s * o.s * .22);
+          patla(o.x, o.y, o.kol, 8); yazi.push({ t: "+" + kz * 2 + (kombo > 1 ? " x" + kombo : ""), x: o.x, y: o.y, o: 40 }); Px.ses("tik"); oy.splice(i, 1); ya();
+        } else if (o.s > bal.s * 1.05 && !yan) {
+          can--; yan = 110; patla(bal.x, bal.y, "#ef4d5e", 12); Px.ses("patlama"); ya();
+          var ang = Math.atan2(bal.y - o.y, bal.x - o.x); bal.vx = Math.cos(ang) * hiz * 2.5; bal.vy = Math.sin(ang) * hiz * 2.5; kombo = 0;
+          if (can <= 0) { calis = false; Px.ses("kaybet"); Skor.oyunBitti("balik", puan); return; }
+        }
+      }
+    }
+    if (bekle > 0) bekle--;
+    while (oy.length < 30 + Math.min(8, Math.floor(bal.s / 20))) yarat(false);
+    // kamera: balık ekranı çok kaplayınca BİR KADEME uzaklaşır (sürekli küçülme yok)
+    if (bal.s * 2 > vg * .3) { vg *= 1.9; Px.ses("kazan"); }
+    var hz = W / vg; kam.z += (hz - kam.z) * .05;
+    kam.x += (bal.x - kam.x) * .1; kam.y += (bal.y - kam.y) * .1;
+    par.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.o--; }); par = par.filter(function (p) { return p.o > 0; });
+    yazi.forEach(function (t) { t.y -= bal.s * .04; t.o--; }); yazi = yazi.filter(function (t) { return t.o > 0; });
+  }
+  function ciz() {
+    arka();
+    x.save(); x.translate(W / 2, H / 2); x.scale(kam.z, kam.z); x.translate(-kam.x, -kam.y);
+    // kabarcıklar (sonsuz döşeme)
+    var gw = W / kam.z, gh = H / kam.z, TW = 800, TH = 600;
+    x.fillStyle = "rgba(255,255,255,.35)";
+    kabarcik.forEach(function (b) {
+      b.y -= b.v; var px = b.x + Math.floor((kam.x - b.x) / TW + .5) * TW, py = b.y + Math.floor((kam.y - b.y) / TH + .5) * TH;
+      x.fillRect(px, py, b.r / Math.max(.5, kam.z * .8) * 1.2, b.r / Math.max(.5, kam.z * .8) * 1.2);
+    });
+    oy.slice().sort(function (a, b) { return a.s - b.s; }).forEach(function (o) {
+      var cer = bal.s >= o.s * 1.05 ? "#38b764" : o.s > bal.s * 1.05 ? "#ef4d5e" : "#ffcd75";
+      balikCiz(o.x, o.y, o.s, o.kol, o.yon, cer, o.kopek, o.des, o.kopek);
+    });
+    if (!yan || Math.floor(yan / 5) % 2 === 0) balikCiz(bal.x, bal.y, bal.s, "#ffcd75", Math.abs(bal.yf) < .12 ? (bal.yf < 0 ? -.12 : .12) : bal.yf, null, false, 0, false);
+    par.forEach(function (p) { x.fillStyle = p.r; var q = Math.max(1, bal.s * .12); x.fillRect(p.x, p.y, q, q); });
+    x.restore();
+    yazi.forEach(function (t) { Px.yazi(x, t.t, W / 2 + (t.x - kam.x) * kam.z, H / 2 + (t.y - kam.y) * kam.z - 8, 9, "#ffcd75", "center"); });
+    // boyut çubuğu
+    Px.yazi(x, "BOYUT " + Math.round(bal.s / 6 * 10) / 10 + "x", 4, 3, 8, "#f4f4f4", "left");
+    if (kombo > 1) Px.yazi(x, "KOMBO x" + kombo, W - 4, 3, 8, "#ffcd75", "right");
+  }
+  // ---- deniz arka planı: derinlik, ışık, uzak resif, yosun, mercan, denizanası, uzak balık sürüleri ----
+  function ofs(p) { return kam.x * kam.z * p; }
+  function dizi(p, aralik, f) { var o = ofs(p), b0 = Math.floor(o / aralik) - 1, n = Math.ceil(W / aralik) + 3; for (var i = b0; i < b0 + n; i++) f(i, i * aralik - o, hs(i + p * 100)); }
+  function yosun(sx, taban, yuk, sal, kol, kol2) {
+    for (var j = 0; j < yuk; j += 3) { var sw = Math.sin(zaman / 28 + sal + j * .35) * (1 + j * .12); x.fillStyle = j % 6 ? kol : kol2; x.fillRect(Math.round(sx + sw), Math.round(taban - j - 3), 3, 3); }
+  }
+  function mercan(sx, taban, boy, kol, kol2) {
+    x.fillStyle = kol; x.fillRect(sx - 1, taban - boy, 3, boy);
+    x.fillRect(sx - 5, taban - boy * .7, 3, boy * .5); x.fillRect(sx - 5, taban - boy * .7 - 4, 3, 5);
+    x.fillRect(sx + 3, taban - boy * .85, 3, boy * .6); x.fillRect(sx + 3, taban - boy * .85 - 4, 3, 5);
+    x.fillStyle = kol2; x.fillRect(sx - 1, taban - boy - 2, 3, 2); x.fillRect(sx - 5, taban - boy * .7 - 6, 3, 2); x.fillRect(sx + 3, taban - boy * .85 - 6, 3, 2);
+  }
+  function arka() {
+    var gr = x.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#2a86c4"); gr.addColorStop(.45, "#12599a"); gr.addColorStop(1, "#06213f"); x.fillStyle = gr; x.fillRect(0, 0, W, H);
+    // ışık huzmeleri
+    x.fillStyle = "rgba(255,255,255,.06)";
+    for (var j = 0; j < 6; j++) { var lx = ((j * 53 - ofs(.12)) % (W + 60) + W + 60) % (W + 60) - 30 + Math.sin(zaman / 90 + j) * 4; x.beginPath(); x.moveTo(lx, 0); x.lineTo(lx + 18 + j % 3 * 8, 0); x.lineTo(lx - 22, H); x.lineTo(lx - 50, H); x.fill(); }
+    // çok uzak: balık sürüsü gölgeleri
+    x.fillStyle = "rgba(8,40,74,.55)";
+    dizi(.06, 120, function (i, sx, r) {
+      if (r < .5) return; var yy = 30 + r * 50, g = zaman * .25 * (r > .75 ? -1 : 1);
+      for (var q = 0; q < 6; q++) { var fx = Math.round(sx + g % 100 + (q % 3) * 7 + hs(i * 7 + q) * 6), fy = Math.round(yy + Math.floor(q / 3) * 6 + hs(i * 3 + q) * 4); x.fillRect(fx, fy, 5, 2); x.fillRect(fx + (r > .75 ? 5 : -2), fy, 2, 3); }
+    });
+    // uzak resif tepeleri
+    [[.08, 40, "#0a3560"], [.16, 28, "#0c4676"]].forEach(function (L) {
+      var o = ofs(L[0]); x.fillStyle = L[2]; x.beginPath(); x.moveTo(0, H);
+      for (var xx = 0; xx <= W; xx += 4) x.lineTo(xx, H - L[1] * (.35 + .35 * Math.sin((xx + o) / 41) + .3 * Math.sin((xx + o) / 17 + 2)) - 6);
+      x.lineTo(W, H); x.fill();
+    });
+    // denizanaları
+    dizi(.2, 170, function (i, sx, r) {
+      if (r < .45) return; var yy = 22 + r * 70 + Math.sin(zaman / 40 + i) * 9, px = Math.round(sx + Math.sin(zaman / 70 + i) * 8), a = .55;
+      x.fillStyle = "rgba(255,150,200," + a + ")"; x.fillRect(px - 5, yy - 5, 11, 2); x.fillRect(px - 7, yy - 3, 15, 4); x.fillRect(px - 5, yy + 1, 11, 2);
+      x.fillStyle = "rgba(255,200,230," + (a * .8) + ")"; x.fillRect(px - 3, yy - 3, 3, 2);
+      for (var t = -4; t <= 4; t += 2) x.fillRect(px + t, yy + 3, 1, 6 + Math.round(2 * Math.sin(zaman / 12 + t + i)));
+    });
+    // orta plan: kayalar, yosunlar, mercanlar
+    dizi(.3, 26, function (i, sx, r) {
+      var taban = H - 7, t = hs(i * 5.3 + 1);
+      if (r < .25) { x.fillStyle = "#1a4a5e"; x.fillRect(Math.round(sx - 7), taban - 9, 15, 10); x.fillStyle = "#26687d"; x.fillRect(Math.round(sx - 5), taban - 12, 9, 5); x.fillStyle = "#0f3447"; x.fillRect(Math.round(sx - 7), taban, 15, 2); }
+      else if (r < .6) yosun(Math.round(sx), taban, 14 + Math.floor(t * 22), i, "#2f9e4f", "#6fd36a");
+      else if (r < .85) mercan(Math.round(sx), taban, 10 + Math.floor(t * 12), t > .5 ? "#e8627c" : "#ef8a45", "#ffd0d8");
+      else { x.fillStyle = "#ffcd75"; x.fillRect(Math.round(sx) - 3, taban - 2, 7, 3); x.fillStyle = "#ef7d57"; x.fillRect(Math.round(sx) - 1, taban - 3, 3, 2); x.fillRect(Math.round(sx) - 5, taban - 1, 2, 2); x.fillRect(Math.round(sx) + 4, taban - 1, 2, 2); } // denizyıldızı
+    });
+    // kum şeridi
+    x.fillStyle = "#c9a35a"; x.fillRect(0, H - 7, W, 7); x.fillStyle = "#e8c170"; x.fillRect(0, H - 7, W, 2);
+    x.fillStyle = "#a07f3d"; dizi(.45, 11, function (i, sx, r) { x.fillRect(Math.round(sx), H - 5 + Math.floor(r * 4), 2, 1); });
+    // yakın bitki (çok hafif, önde)
+    dizi(.5, 90, function (i, sx, r) { if (r > .6) yosun(Math.round(sx), H - 1, 18 + Math.floor(r * 20), i * 2, "#1f7a3c", "#46b35a"); });
+    // derinlik karartısı (yukarı bakınca açık, aşağı inince koyu)
+    var dk = Px.sinir(kam.y / 900, 0, .45); if (dk > 0) { x.fillStyle = "rgba(2,10,30," + dk + ")"; x.fillRect(0, 0, W, H); }
+    // plankton
+    x.fillStyle = "rgba(220,250,255,.35)"; dizi(.35, 14, function (i, sx, r) { x.fillRect(Math.round(sx), Math.round(((r * 997 + zaman * (.1 + r * .15)) % H)), 1, 1); });
+  }
+
+  function konum(e) { var k = C.getBoundingClientRect(); return { x: kam.x + ((e.clientX - k.left) / k.width * W - W / 2) / kam.z, y: kam.y + ((e.clientY - k.top) / k.height * H - H / 2) / kam.z }; }
+  C.addEventListener("pointerdown", function (e) { e.preventDefault(); hedef = konum(e); });
+  C.addEventListener("pointermove", function (e) { if (e.buttons || e.pointerType === "mouse") hedef = konum(e); });
+  [["solb", "ArrowLeft"], ["sagb", "ArrowRight"], ["yukari", "ArrowUp"], ["asagi", "ArrowDown"]].forEach(function (p) {
+    var el = document.getElementById(p[0]);
+    el.addEventListener("pointerdown", function (e) { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) { } Px.k[p[1]] = true; hedef = null; });
+    ["pointerup", "pointercancel"].forEach(function (n) { el.addEventListener(n, function () { Px.k[p[1]] = false; }); });
+  });
+  // Kontrol seçeneği: BUTONLAR / JOYSTICK (seçim hatırlanır)
+  (function () {
+    var yp = document.getElementById("yonpad"), jk = document.getElementById("joyk"), kb = document.getElementById("kontrolb"), joy = null;
+    function uygula(j) {
+      if (j && !joy) joy = Px.joystick(jk, { l: "ArrowLeft", r: "ArrowRight", u: "ArrowUp", d: "ArrowDown" });
+      yp.style.display = j ? "none" : ""; jk.hidden = !j; jk.style.display = j ? "flex" : "none";
+      kb.textContent = j ? "🔘 BUTONLAR" : "🕹 JOYSTICK";
+      if (!j) ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].forEach(function (c) { Px.k[c] = false; });
+    }
+    kb.addEventListener("click", function () { var j = jk.hidden; Px.yaz("kontrol_balik", j ? "joy" : "btn"); uygula(j); });
+    uygula(Px.oku("kontrol_balik", "btn") === "joy");
+  })();
+  document.getElementById("tekrar").addEventListener("click", yeni);
+  yeni(); Px.dongu(guncelle, ciz);
+})();
+</script>
+</body>
+</html>

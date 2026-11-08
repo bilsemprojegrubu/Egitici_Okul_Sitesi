@@ -18,6 +18,7 @@
   <nav class="menu">
     <!-- Sıralama kapalıysa (config.js boşsa) bu bağlantılar gizli kalır -->
     <a id="siralamaLink" href="siralama.html" hidden>Sıralama</a>
+    <a id="ayarLink" href="ayarlar.html">⚙ Ayarlar</a>
     <button id="yukleBtn" type="button" hidden>📲 Uygulama olarak yükle</button>
     <button id="adBtn" type="button" hidden>Takma ad: <span id="adYazi"></span></button>
   </nav>
@@ -112,6 +113,8 @@ var IK = {
   dans: { p: { k: K, y: "#ffcd75", r: "#ef4d5e", b: "#41a6f6" }, s: [
     "...kkkkkk...", "..kyyyyyyk..", "..kykkkkyk..", "..kyyyyyyk..", ".rrkrrrrkrr.", "r.krrrrrrk.r", "..krrrrrrk..",
     "...kbbbbk...", "...kb..bk...", "...kb..bk...", "..kkk..kkk..", "............"] },
+  balik: { p: { k: K, y: "#ffcd75", o: "#ef7d57", w: "#f4f4f4", b: "#41a6f6" }, s: [
+    "............", "............", "..........b.", "....kkkk.bb.", "..kkyyyykbb.", ".kyyyyywkb..", "kyyyyyykkk..", ".kyyyyyyykk.", "..kkyyyykbb.", "....kkkk.bb.", "..........b.", "............"] },
   voleybol: { p: { w: "#f4f4f4", b: "#41a6f6", y: "#ffcd75", k: K, g: "#94b0c2" }, s: [
     "............", "....kkkk....", "..kkwbbwkk..", ".kwwwbbwwwk.", ".kwbbbbbbwk.", "kwbbwwwwbbwk",
     "kbbwwkkwwbbk", ".kbwkyywkbk.", ".kwwkyykwwk.", "..kkwwwwkk..", "....kkkk....", "gggggggggggg"] }
@@ -137,7 +140,8 @@ var OYUNLAR = [
   ["mayin", "Mayın", "Mayınlara basmadan temizle", "mayin", ""],
   ["zipla", "Zıpla", "Zıpla, yükseğe çık", "zipla", ""],
   ["araba", "Araba Kaçış", "Trafikten kaç, jeton topla", "araba", ""],
-  ["dans", "Kaktüs Dansı", "Oklara tuşla, dikenli dansçıyı oynat", "dans", ""]
+  ["dans", "Kaktüs Dansı", "Oklara tuşla, dikenli dansçıyı oynat", "dans", ""],
+  ["balik", "Piksel Balık", "Küçükleri ye, büyü, kaç", "balik", ""]
 ];
 (function () {
   try {

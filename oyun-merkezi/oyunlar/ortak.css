@@ -84,6 +84,7 @@ body.tam .sahne{overflow-x:clip}
 @media (max-width:420px){.ust{padding-right:200px}.puanlar{font-size:.8rem}}
 /* Ters T ok tuşları (▲ üstte, ◀ ▼ ▶ altta) */
 .dpad,.kontrol.dpad,.pad.dpad{display:grid;grid-template-columns:repeat(3,auto);gap:6px;justify-content:center;flex-wrap:nowrap}
+.dpad.capraz .d{grid-area:3/2}.dpad.capraz .l{grid-area:2/1}.dpad.capraz .r{grid-area:2/3}.dpad.capraz .u{grid-area:1/2}
 .dpad .u{grid-area:1/2}.dpad .l{grid-area:2/1}.dpad .d{grid-area:2/2}.dpad .r{grid-area:2/3}
 /* Geniş ekran: kontroller oyunun iki yanında (solda hareket, sağda eylem) */
 @media (min-width:640px){
