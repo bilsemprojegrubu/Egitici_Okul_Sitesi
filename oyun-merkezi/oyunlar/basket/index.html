@@ -128,7 +128,7 @@
     if (tutan) return h.sol ? -1 : 1;
     var dx = top.x - q.x; return Math.abs(dx) < 8 ? 0 : (dx > 0 ? 1 : -1);
   }
-  var pS = [0, 0], pC = [0, 0], bk = [0, 0], sy = [1, 1];
+  var pS = [0, 0], pC = [0, 0], bk = [0, 1.6], sy = [1, 1];
   function smac(tak, h) { // SMAÇ: topu tutan oyuncu potaya doğru sıçrar, elini çembere ulaştırırsa topu içeri bastırır
     var hv = tak.filter(function (q) { return q.hold; })[0]; if (!hv) return;
     hv.dunk = 1; hv.chg = 0; hv.auto = false; hv.dok = Math.random() < .5; // smaç %50 olasılıkla tutar
@@ -169,12 +169,11 @@
       // TEK TUŞ: basınca zıpla (top elde yerdeyken), bırakınca şut. Havada/basılıyken gelen top şutlanmaz.
       var zp = function () { jm[hi] = 1; ch[hi] = 0; bk[hi] = 0; tak.forEach(function (q) { q.jh = q.yer && q.hold; var dr = yon(q); zipla(q, dr * 1.2, .8); q.auto = false; }); };
       if (basil) zp();
-      // Otomatik sallanma: top elde yerdeyken adam kendiliğinden sağa-sola sallanır
-      if (!dn && tak.some(function (q) { return q.hold && q.yer; })) {
-        bk[hi]++;
-        if (bk[hi] > 40) { bk[hi] = 0; sy[hi] = -sy[hi]; }
-        tak.forEach(function (q) { if (q.hold && q.yer) q.vx = sy[hi] * 1.1; }); // sürekli sağa-sola yürüyerek sallanır
-      } else if (!dn) bk[hi] = 20;
+      // Otomatik sallanma: takımın İKİ adamı da yerdeyken yavaşça sağa-sola sallanır (gövde yatar, hafif kayar)
+      bk[hi] += .035;
+      tak.forEach(function (q, qi) {
+        if (q.yer && !dn) { q.vx = Math.cos(bk[hi] + qi * 1.2) * .55; q.swy = Math.sin(bk[hi] + qi * 1.2); } else q.swy = 0;
+      });
       if (dn && jm[hi]) ch[hi] = Math.min(ch[hi] + 1, CH);
       if (birak) {
         if (jm[hi]) { var pw1 = Math.max(.3, ch[hi] / CH); tak.forEach(function (q) { if (q.jh && q.hold && !q.yer) { q.pw = pw1; atGuc(q); } q.jh = false; }); }
@@ -196,15 +195,15 @@
     else p.yer = false;
     p.x = Px.sinir(p.x, 8, W - 8);
     // sallanma: karakter AYAKTAN yaylanır (tamamen döner). Koşarken hafif öne yatar, sert inişte biraz savrulur.
-    p.landed = 0; p.av = 0; var hedefA = Px.sinir(p.vx * .35, -.4, .4); // yerde yaylanma yok: yumuşakça hedef eğime gelir
+    p.landed = 0; p.av = 0; var hedefA = p.swy && p.yer ? Px.sinir(p.swy * .5, -.5, .5) : Px.sinir(p.vx * .35, -.4, .4); // yerde yaylanma yok: yumuşakça hedef eğime gelir
     p.ang = Px.sinir((p.ang || 0) + (hedefA - (p.ang || 0)) * .25, -1.1, 1.1);
     if (!p.yer) { p.av = 0; p.ang += ((p.ja || 0) - p.ang) * .18; } // zıplarken basılan yöne yatık kalır, havada değişmez // havada sallanma yok: gittiği yöne doğru yatar
     if (p.hold && !p.dunk && (!p.yer || p.chg > 0)) p.ang += (-p.face * (p.yer ? .3 : .5) - p.ang) * .2; // topla şut hazırlığında / havada geriye eğilir
     if (p.ov > 0) { p.ov--; if (!p.yer) p.ang += ((p.vx < -.1 ? -1 : 1) * p.face * 1.5 - p.ang) * .3; } // başkasının üstünden atlarken yan yatar
-    p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer ? Math.sin(p.f * 1.4) * 26 : 0) ;
+    p.sw = p.ang * -25 + (Math.abs(p.vx) > .3 && p.yer && !p.swy ? Math.sin(p.f * 1.4) * 26 : 0) ;
     if (p.stl > 0) p.stl--; if (p.swp > 0) { p.sw += Math.sin(p.swp / 8 * Math.PI) * 90; p.swp--; }
     p.ph += .04; var hedef = p.yer ? (p.hold ? 135 : 100) : 150; if (p.chg > 0) hedef = -25; p.th += (hedef - p.th) * (p.chg > 0 ? .18 : .3);
-    if (Math.abs(p.vx) > .3 && p.yer) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
+    if (Math.abs(p.vx) > .3 && p.yer && !p.swy) { p.f += .25; if (V.kar && Math.random() < .35) parc.push({ x: p.x, y: ZEMIN, vx: Px.rastgele(-.4, .4), vy: Px.rastgele(-.8, 0), o: 14, c: "#fff" }); }
     if (p.cd) p.cd--;
   }
   var ovr = {};
@@ -485,7 +484,7 @@
     mod = m; zor = z;
     var ek = " Her sayıdan sonra komik bir değişiklik gelir (2x puan, kar, ağır top...)! İlk 5 sayıyı yapan kazanır (süre yok)." + (m === 2 ? " (Sıralamaya yazılmaz)" : "");
     document.getElementById("ipucu").textContent = (tek
-      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır. Top elindeyken tuşa KISA bas = sağa-sola SALLAN (yerinde finta), basılı tut = zıpla."
+      ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır. Adamlar kendiliğinden yavaşça sağa-sola sallanır (finta); tuşa basınca zıplarlar."
         : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): top elindeyken adam kendiliğinden sallanır; bas = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
       : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). İki adam birlikte hareket eder."
         : "Kırmızı: A D yürü, W zıpla (havada tekrar W veya F = ŞUT) · Mavi: ← → yürü, ↑ zıpla (havada tekrar ↑ veya Enter = ŞUT). Basılı tutup bırakmak = daha güçlü zıplama.")) + " SMAÇ: Q (mavi: P) = topla pota sıçra, çembere ulaşırsan basarsın · TOP ÇAL: E (mavi: I) = rakibin topunu kap." + ek;
