@@ -44,15 +44,19 @@
       o = document.createElement("canvas"); o.style.cssText = "position:absolute;pointer-events:none;z-index:2;background:transparent;border:0;outline:0;max-width:none;image-rendering:auto";
       cv.parentNode.insertBefore(o, cv.nextSibling); cv._ov = o; katmanlar.push([cv, o]);
     }
+    if (o._kare === kareNo && o._ok) { o._kul = true; return o; } // aynı karede yeniden ölçme (düzen hesabı yavaş)
     var dpr = Math.min(2, g.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
     if (!w) return null;
     var pw = Math.round(w * dpr), ph = Math.round(h * dpr);
     if (o.width !== pw || o.height !== ph) { o.width = pw; o.height = ph; }
     o.style.left = (cv.offsetLeft + cv.clientLeft) + "px"; o.style.top = (cv.offsetTop + cv.clientTop) + "px"; o.style.width = w + "px"; o.style.height = h + "px";
+    o._kare = kareNo; o._ok = true; o._kul = true;
     return o;
   }
+  var kareNo = 0; g.addEventListener("resize", function () { kareNo++; });
   Px.temizle = function () {
-    katmanlar.forEach(function (k) { var o = k[1]; o.getContext("2d").clearRect(0, 0, o.width, o.height); });
+    kareNo++;
+    katmanlar.forEach(function (k) { var o = k[1]; if (o._kul) { o.getContext("2d").clearRect(0, 0, o.width, o.height); o._kul = false; } });
   };
   Px.yazi = function (x, t, a, b, boy, renk, hiza) {
     var cv = x.canvas, o = katman(cv); boy = boy || 12;
