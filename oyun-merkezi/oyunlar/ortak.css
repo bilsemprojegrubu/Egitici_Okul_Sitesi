@@ -94,4 +94,5 @@ body.tam .sahne{overflow-x:clip}
   .sahne.yan .pad:not(.dpad){flex-direction:column;flex-wrap:nowrap}
   .sahne.yan .k-sol,.sahne.yan .k-sag{display:flex;flex-direction:column;gap:10px;align-items:center}
   .sahne.yan .k-sol.dpad,.sahne.yan .k-sag.dpad{display:grid}
+  .sahne.yan .pad.yatay{flex-direction:row;flex-wrap:nowrap}
 }
