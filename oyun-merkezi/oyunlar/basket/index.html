@@ -131,7 +131,7 @@
   var pS = [0, 0], pC = [0, 0];
   function smac(tak, h) { // SMAÇ: topu tutan oyuncu potaya doğru sıçrar, elini çembere ulaştırırsa topu içeri bastırır
     var hv = tak.filter(function (q) { return q.hold; })[0]; if (!hv) return;
-    hv.dunk = 1; hv.chg = 0; hv.auto = false;
+    hv.dunk = 1; hv.chg = 0; hv.auto = false; hv.dok = Math.random() < .5; // smaç %50 olasılıkla tutar
     if (hv.yer) zipla(hv, (h.sol ? -1 : 1) * 1.1, 1);
   }
   function calAl(tak) { // TOP ÇALMA: kolu savurur; rakipte top ve elimiz yeterince yakınsa top bize geçer
@@ -144,8 +144,9 @@
     if (!p.dunk) return;
     if (!p.hold || (p.yer && p.vy >= 0)) { p.dunk = 0; return; }
     var h = hoop(p.t), cx = (h.ix + h.tipx) / 2, e = el(p);
-    p.vx = Px.sinir(p.vx + (cx > p.x ? .12 : -.12), -1.2, 1.2);
-    if (Math.abs(e.x - cx) < 14 && e.y < h.y + 6) {
+    p.vx = Px.sinir(p.vx + (cx > p.x ? .12 : -.12) * (p.dok ? 2 : 1), -1.2, 1.2);
+    if (!p.dok && Math.abs(e.x - cx) < 20 && e.y < h.y + 10) { p.dunk = 0; p.hold = false; p.cd = 24; top.h = null; top.x = e.x; top.y = e.y; top.vx = (h.sol ? 1 : -1) * 1.6; top.vy = -2.2; top.cd = 20; Px.ses("tik"); return; } // %50: smaç kaçar, top çemberden seker
+    if (Math.abs(e.x - cx) < (p.dok ? 22 : 14) && e.y < h.y + (p.dok ? 14 : 6)) {
       p.hold = false; p.dunk = 0; p.cd = 24; top.h = null; top.x = cx; top.y = h.y - 5; top.vx = 0; top.vy = 2.6; top.cd = 20;
       var a = ag[p.t]; a.sv += 6; a.rv += 5; Px.ses("sut");
     } else if (!p.yer && p.vy > -.8) { p.dunk = 0; p.pw = Math.max(p.pw || 0, .7); atGuc(p); }
