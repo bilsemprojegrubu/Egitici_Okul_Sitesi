@@ -44,15 +44,19 @@
       o = document.createElement("canvas"); o.style.cssText = "position:absolute;pointer-events:none;z-index:2;background:transparent;border:0;outline:0;max-width:none;image-rendering:auto";
       cv.parentNode.insertBefore(o, cv.nextSibling); cv._ov = o; katmanlar.push([cv, o]);
     }
+    if (o._kare === kareNo && o._ok) { o._kul = true; return o; } // aynı karede yeniden ölçme (düzen hesabı yavaş)
     var dpr = Math.min(2, g.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
     if (!w) return null;
     var pw = Math.round(w * dpr), ph = Math.round(h * dpr);
     if (o.width !== pw || o.height !== ph) { o.width = pw; o.height = ph; }
     o.style.left = (cv.offsetLeft + cv.clientLeft) + "px"; o.style.top = (cv.offsetTop + cv.clientTop) + "px"; o.style.width = w + "px"; o.style.height = h + "px";
+    o._kare = kareNo; o._ok = true; o._kul = true;
     return o;
   }
+  var kareNo = 0; g.addEventListener("resize", function () { kareNo++; });
   Px.temizle = function () {
-    katmanlar.forEach(function (k) { var o = k[1]; o.getContext("2d").clearRect(0, 0, o.width, o.height); });
+    kareNo++;
+    katmanlar.forEach(function (k) { var o = k[1]; if (o._kul) { o.getContext("2d").clearRect(0, 0, o.width, o.height); o._kul = false; } });
   };
   Px.yazi = function (x, t, a, b, boy, renk, hiza) {
     var cv = x.canvas, o = katman(cv); boy = boy || 12;
@@ -247,10 +251,15 @@
     var ek = tam ? 2 : 0;
     if (cv.length === 1) {
       var c = cv[0], cw = c.width, chh = c.height, dogal = c.getBoundingClientRect().width;
+      // yan yerleşim: yan kontroller tuvalin satırını yüksek yapmasın (geçici gizle), genişlikleri ayrılsın
+      var yanlar = sahne.classList.contains("yan") ? [].slice.call(sahne.querySelectorAll(".k-sol,.k-sag")) : [], yanEn = 0, yd = [];
+      yanlar.forEach(function (el) { var r = el.getBoundingClientRect(); if (r.width) yanEn += r.width + 14; });
+      yanlar.forEach(function (el) { yd.push(el.style.display); el.style.display = "none"; });
       c.style.width = "1px";
       var diger = sahne.getBoundingClientRect().bottom + ye - c.getBoundingClientRect().height;
       var w = (ih - diger - ek - 8) * cw / chh + 8; // kenarlık 2x4px
-      var en = iw - (tam ? 8 : 24);
+      yanlar.forEach(function (el, i2) { el.style.display = yd[i2]; });
+      var en = iw - (tam ? 8 : 24) - yanEn;
       w = Math.min(w, en); if (!tam) w = Math.min(w, dogal);
       c.style.width = Math.floor(Math.max(90, w)) + "px";
     } else {

@@ -8,6 +8,7 @@
 <style>
 .fut-ak .btn{min-width:clamp(50px,8vmin,84px);min-height:clamp(38px,6vmin,64px);font-size:clamp(.7rem,1.6vmin,1.1rem);padding:4px 6px}
 .fut-ak{gap:5px}
+@media (min-width:640px){.sahne.yan .k-sol,.sahne.yan .k-sag{align-self:end}.sahne.yan .f2{margin-top:50px;flex-direction:column-reverse!important;justify-content:flex-end!important;align-self:end;gap:14px}.sahne.yan .fut-ak{display:grid!important;grid-template-columns:repeat(2,auto);flex-direction:unset}}
 .kbar{display:none;align-items:center;gap:8px;font-size:.8rem;color:#ffcd75}
 .kbar input{width:120px;accent-color:#ffcd75}
 #kalbar{display:flex;justify-content:space-between;gap:12px;width:min(100%,760px);min-height:0}
@@ -498,7 +499,7 @@
     var py = document.getElementById("padyer"); py.innerHTML = "";
     function ekle(t) {
       var d = document.createElement("div"); var K = KEY[t];
-      if (mod === 1) { d.style.display = "contents"; } else { d.className = t === 0 ? "k-sol" : "k-sag"; } py.appendChild(d);
+      if (mod === 1) { d.style.display = "contents"; } else { d.className = (t === 0 ? "k-sol" : "k-sag") + " f2"; } py.appendChild(d);
       var sut = K.sut[0], pas_ = K.pas[0], u = K.u[0], dd = K.d[0], l = K.l[0], r = K.r[0];
       if (t === 0 && mod === 1) { /* tek kişilikte aynı tuş kodları (WASD) kullanılır */ }
       if (mod !== 1) d.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;flex:1 1 300px;min-width:0";

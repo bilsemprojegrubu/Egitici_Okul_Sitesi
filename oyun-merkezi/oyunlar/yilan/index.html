@@ -48,8 +48,9 @@
   }
   function git(dx, dy) {
     if (!hayatta) return;
-    var son = bek.length ? bek[bek.length - 1] : yon; // sıradaki son yöne göre
-    if (son && son.x === -dx && son.y === -dy) return;
+    // sıradaki son yöne göre; sıra boşsa gerçek baş→boyun yönüne göre (başlangıçta da geri dönüp ölmesin)
+    var son = bek.length ? bek[bek.length - 1] : { x: yil[0].x - yil[1].x, y: yil[0].y - yil[1].y };
+    if (son.x === -dx && son.y === -dy) return;
     if (!yon) yon = { x: dx, y: dy }; else if (son.x !== dx || son.y !== dy) { if (bek.length < 3) bek.push({ x: dx, y: dy }); }
   }
   function parcacik(px, py, renk, n) {
