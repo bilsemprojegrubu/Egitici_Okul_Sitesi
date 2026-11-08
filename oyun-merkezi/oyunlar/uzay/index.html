@@ -12,6 +12,7 @@
 <main class="sahne yan">
   <canvas id="c" class="cv" width="200" height="260" style="--mw:400px;touch-action:none"></canvas>
   <div class="pad-ikili pad-yan"><div class="pad yatay k-sol" id="yonpad"><button class="btn l" id="solb" type="button" aria-label="Sol">◀ SOL</button><button class="btn r" id="sagb" type="button" aria-label="Sağ">SAĞ ▶</button></div><div class="pad k-sag"><button class="btn u" id="yukari" type="button" aria-label="İleri">▲ İLERİ</button><button class="btn d" id="asagi" type="button" aria-label="Geri">▼ GERİ</button></div></div>
+  <div class="k-sag" id="joyk" hidden></div><button class="btn ikinci" id="kontrolb" type="button" style="align-self:center;justify-self:center;margin-top:8px">🕹 JOYSTICK</button>
   <p class="ipucu">Gemi otomatik ateş eder. Sağa-sola kaydır (veya ◀ ▶ / A D), ileri-geri git (▲ ▼ / W S ya da butonlar) ve uzaylıları vur! Üstteki büyük patron dalgası zorludur. Çarpışırsan can gider.</p>
   <div id="bitti" class="kaplama" hidden>
     <h2>Oyun bitti</h2><p id="sonuc"></p>
@@ -138,6 +139,19 @@
   });
   [["solb", "ArrowLeft"], ["sagb", "ArrowRight"]].forEach(function (p) { var el = document.getElementById(p[0]); el.addEventListener("pointerdown", function (e) { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) { } Px.k[p[1]] = true; hedef = null; }); ["pointerup", "pointercancel"].forEach(function (n) { el.addEventListener(n, function () { Px.k[p[1]] = false; }); }); });
   window.addEventListener("blur", function () { tus.u = tus.d = 0; });
+  // Kontrol seçeneği: BUTONLAR / JOYSTICK (seçim hatırlanır)
+  (function () {
+    var yp = document.getElementById("yonpad"), sag = yp.nextElementSibling, jk = document.getElementById("joyk"), kb = document.getElementById("kontrolb"), joy = null;
+    function uygula(j) {
+      if (j && !joy) joy = Px.joystick(jk, { l: "ArrowLeft", r: "ArrowRight", u: "ArrowUp", d: "ArrowDown" });
+      yp.style.display = sag.style.display = j ? "none" : ""; jk.hidden = !j; if (jk.style) jk.style.display = j ? "flex" : "none";
+      kb.textContent = j ? "🔘 BUTONLAR" : "🕹 JOYSTICK";
+      if (!j) { ["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].forEach(function (c) { Px.k[c] = false; }); }
+    }
+    kb.addEventListener("click", function () { var j = jk.hidden; Px.yaz("kontrol_uzay", j ? "joy" : "btn"); uygula(j); });
+    uygula(Px.oku("kontrol_uzay", "btn") === "joy");
+  })();
+
   document.getElementById("tekrar").addEventListener("click", yeni);
   yeni(); Px.dongu(guncelle, ciz);
 })();
