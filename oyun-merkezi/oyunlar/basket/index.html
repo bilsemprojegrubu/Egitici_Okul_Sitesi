@@ -168,9 +168,12 @@
     if (tek) {
       // TEK TUŞ: basınca zıpla (top elde yerdeyken), bırakınca şut. Havada/basılıyken gelen top şutlanmaz.
       var zp = function () { jm[hi] = 1; ch[hi] = 0; bk[hi] = 0; tak.forEach(function (q) { q.jh = q.yer && q.hold; var dr = yon(q); zipla(q, dr * 1.2, .8); q.auto = false; }); };
-      if (basil) { if (tak.some(function (q) { return q.hold && q.yer; })) bk[hi] = 1; else zp(); } // topla yerdeyken: kısa bas = sallan, uzun bas = zıpla
-      if (bk[hi] && dn) { bk[hi]++; if (bk[hi] > 9) zp(); }
-      if (bk[hi] && birak) { bk[hi] = 0; sy[hi] = -sy[hi]; tak.forEach(function (q) { if (q.hold && q.yer) { q.vx = Px.sinir(sy[hi] * 1.6, -1.6, 1.6); q.sw0 = 1; } }); Px.ses("tik"); }
+      if (basil) zp();
+      // Otomatik sallanma: top elde yerdeyken adam kendiliğinden sağa-sola sallanır
+      if (!dn && tak.some(function (q) { return q.hold && q.yer; })) {
+        bk[hi]++;
+        if (bk[hi] > 38) { bk[hi] = 0; sy[hi] = -sy[hi]; tak.forEach(function (q) { if (q.hold && q.yer) { q.vx = Px.sinir(sy[hi] * 1.6, -1.6, 1.6); q.sw0 = 1; } }); }
+      } else if (!dn) bk[hi] = 30;
       if (dn && jm[hi]) ch[hi] = Math.min(ch[hi] + 1, CH);
       if (birak) {
         if (jm[hi]) { var pw1 = Math.max(.3, ch[hi] / CH); tak.forEach(function (q) { if (q.jh && q.hold && !q.yer) { q.pw = pw1; atGuc(q); } q.jh = false; }); }
@@ -471,7 +474,7 @@
       d.className = (h === 0 && !(tek && mod === 1)) ? "k-sol" : "k-sag";
       if (!tek && mod === 1) { var dm = document.createElement("div"); dm.className = "k-sol"; py.insertBefore(dm, d); Px.pad(dm, [{ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] }], "yatay"); d.className = "k-sag"; }
       else if (!tek) Px.pad(d, [{ t: "◀", k: K.l[0] }, { t: "▶", k: K.r[0] }], "yatay");
-      dz.push({ t: tek ? "SALLAN/ZIPLA" : "ZIPLA", k: K.z[0], a: "Zıpla" });
+      dz.push({ t: tek ? "ZIPLA" : "ZIPLA", k: K.z[0], a: "Zıpla" });
       if (!tek) dz.push({ t: "ŞUT", k: K.a[0] });
       dz.push({ t: "SMAÇ", k: K.s[0] }, { t: "ÇAL", k: K.c[0] });
       Px.pad(d, dz);
@@ -482,7 +485,7 @@
     var ek = " Her sayıdan sonra komik bir değişiklik gelir (2x puan, kar, ağır top...)! İlk 5 sayıyı yapan kazanır (süre yok)." + (m === 2 ? " (Sıralamaya yazılmaz)" : "");
     document.getElementById("ipucu").textContent = (tek
       ? (m === 1 ? "TEK TUŞ: BOŞLUK (veya ekrana dokun) basınca iki adam birden zıplar. Top elindeyken yere basıp zıpla, havadayken BIRAK = ŞUT (ne kadar uzun basılı tutarsan o kadar güçlü). Havada ya da tuş basılıyken gelen top şutlanmaz. Top eline değince otomatik alınır. Top elindeyken tuşa KISA bas = sağa-sola SALLAN (yerinde finta), basılı tut = zıpla."
-        : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): topla kısa bas = sallan, basılı tut = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
+        : "TEK TUŞ — Kırmızı: W (veya F) · Mavi: ↑ (veya Enter): top elindeyken adam kendiliğinden sallanır; bas = zıpla, havada bırak = şut (ne kadar uzun basılı tutarsan o kadar güçlü).")
       : (m === 1 ? "◀ ▶ (veya A D) = yürü · BOŞLUK = zıpla (basılı tutup bırak: ne kadar uzun, o kadar yüksek) · havadayken tekrar BOŞLUK (veya F) = ŞUT (zıplama gücün kadar güçlü). İki adam birlikte hareket eder."
         : "Kırmızı: A D yürü, W zıpla (havada tekrar W veya F = ŞUT) · Mavi: ← → yürü, ↑ zıpla (havada tekrar ↑ veya Enter = ŞUT). Basılı tutup bırakmak = daha güçlü zıplama.")) + " SMAÇ: Q (mavi: P) = topla pota sıçra, çembere ulaşırsan basarsın · TOP ÇAL: E (mavi: I) = rakibin topunu kap." + ek;
     kurPad(); yeni();
