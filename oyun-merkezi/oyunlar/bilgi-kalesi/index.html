@@ -1122,10 +1122,11 @@
   function kaydet() {
     var z = S[1], tw = [];
     z.tw.forEach(function (w) { if (w) tw.push([w.t, w.lv, w.i]); });
-    Px.yaz("kale_kayit", JSON.stringify({ w: wv, g: Math.floor(z.g), lv: z.lv, mines: z.mines, ml: z.ml, hp: Math.round(z.hp), kills: kills, u: [z.ud, z.uh, z.us, z.uk, z.ub, z.uc], cp: [z.uy, z.uq], tw: tw }));
+    Px.yaz("kale_kayit", JSON.stringify({ w: wv, g: Math.floor(z.g), lv: z.lv, mines: z.mines, ml: z.ml, hp: Math.round(z.hp), kills: kills, u: [z.ud, z.uh, z.us, z.uk, z.ub, z.uc], cp: [z.uy, z.uq], tw: tw,
+      snap: 1, U: U.filter(function (e) { return !e.dead; }), wq: wq, wi: wi, wsp: wsp, wf: wf, wt: wt, wv: wv, cam: Math.round(cam) }));
   }
   function kayitOku() {
-    try { var k = JSON.parse(Px.oku("kale_kayit") || "null"); return k && k.w > 1 ? k : null; } catch (e) { return null; }
+    try { var k = JSON.parse(Px.oku("kale_kayit") || "null"); return k && (k.w > 1 || k.snap) ? k : null; } catch (e) { return null; }
   }
   var devamBtn = null;
   function devamGuncelle() {
@@ -1139,8 +1140,18 @@
     z.ud = uu[0] | 0; z.uh = uu[1] | 0; z.us = uu[2] | 0; z.uk = uu[3] | 0; z.ub = uu[4] | 0; z.uc = uu[5] | 0;
     var cp = k.cp || [0, 0]; z.uy = Math.min(9, cp[0] | 0); z.uq = Math.min(12, cp[1] | 0);
     (k.tw || []).forEach(function (e) { if (e[2] < twSlots(1)) z.tw[e[2]] = mkTw(e[0], e[1], e[2]); });
+    if (k.snap && k.U) { // kaldığı yerden: düşmanlar, askerler, dalga sırası aynen geri gelir
+      wv = k.wv; U = k.U; U.forEach(function (e) { if (e.id > idc) idc = e.id; });
+      wq = k.wq || []; wi = k.wi; wsp = k.wsp; wf = k.wf; wt = k.wt; cam = Px.sinir(k.cam || 0, 0, WW - VW);
+      mesaj = "KALDIĞIN YERDEN DEVAM"; msayac = 90; yaz(); paneliGuncelle(); return;
+    }
     mesaj = "DALGA " + k.w + " BAŞLIYOR"; msayac = 90; yaz(); paneliGuncelle();
   }
+  // oyun sürerken sık sık ve sayfadan çıkarken kaydet (çıkıp girince tam kaldığın yerden devam)
+  function otoKaydet() { try { if (mod === 1 && calis && !over && wv >= 1) kaydet(); } catch (e) { console.error("kaydet:", e); } }
+  setInterval(otoKaydet, 3000);
+  document.addEventListener("visibilitychange", function () { if (document.hidden) otoKaydet(); });
+  window.addEventListener("pagehide", otoKaydet);
   var menu = Px.menu({ baslik: "KALE SAVAŞI", not: "Kaleni savun, madenlerle büyü, askerlerle saldır", secenekler: [
     { ad: "1 Oyuncu", alt: "Sonsuz dalgalar · bosslar · sıralamaya yazılır", fn: function () { basla(1); } },
     { ad: "2 Oyuncu", alt: "İki kale karşı karşıya · sıralamasız", fn: function () { basla(2); } }
