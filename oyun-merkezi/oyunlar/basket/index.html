@@ -172,8 +172,9 @@
       // Otomatik sallanma: top elde yerdeyken adam kendiliğinden sağa-sola sallanır
       if (!dn && tak.some(function (q) { return q.hold && q.yer; })) {
         bk[hi]++;
-        if (bk[hi] > 38) { bk[hi] = 0; sy[hi] = -sy[hi]; tak.forEach(function (q) { if (q.hold && q.yer) { q.vx = Px.sinir(sy[hi] * 1.6, -1.6, 1.6); q.sw0 = 1; } }); }
-      } else if (!dn) bk[hi] = 30;
+        if (bk[hi] > 40) { bk[hi] = 0; sy[hi] = -sy[hi]; }
+        tak.forEach(function (q) { if (q.hold && q.yer) q.vx = sy[hi] * 1.1; }); // sürekli sağa-sola yürüyerek sallanır
+      } else if (!dn) bk[hi] = 20;
       if (dn && jm[hi]) ch[hi] = Math.min(ch[hi] + 1, CH);
       if (birak) {
         if (jm[hi]) { var pw1 = Math.max(.3, ch[hi] / CH); tak.forEach(function (q) { if (q.jh && q.hold && !q.yer) { q.pw = pw1; atGuc(q); } q.jh = false; }); }
