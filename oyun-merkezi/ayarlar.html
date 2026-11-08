@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ayarlar — Oyun Merkezi</title>
+<link rel="stylesheet" href="oyunlar/ortak.css">
+<link rel="stylesheet" href="merkez.css">
+<style>
+.ayar{max-width:760px;margin:0 auto;padding:8px 14px 30px}
+.ayar h2{color:var(--vurgu);margin:18px 0 8px;text-shadow:2px 2px 0 var(--koyu)}
+.sat{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--kart);border:3px solid var(--koyu);outline:2px solid var(--cizgi);padding:10px 12px;margin:8px 0}
+.sat label{flex:1 1 180px;font-weight:900}
+.sat small{display:block;color:#94b0c2;font-weight:400}
+.sat input[type=range]{flex:1 1 160px;min-width:120px}
+.sat select,.sat input[type=text]{font:inherit;padding:6px;background:var(--koyu);color:var(--yazi);border:2px solid var(--cizgi)}
+.sat output{min-width:48px;text-align:right;font-weight:900;color:var(--yesil)}
+.oyun{border:3px solid var(--koyu);outline:2px solid var(--cizgi);background:var(--kart);margin:8px 0}
+.oyun summary{cursor:pointer;padding:10px 12px;font-weight:900;color:var(--vurgu)}
+.oyun .sat{outline:0;border-width:0;border-top:2px solid var(--koyu);margin:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>AYARLAR</h1>
+  <nav class="menu"><a href="index.html">&lt; Oyun Merkezi</a></nav>
+</header>
+<main class="ayar" id="ayar"></main>
+<script src="config.js"></script>
+<script src="skor.js"></script>
+<script>
+(function () {
+  "use strict";
+  function oku(k, v) { try { var a = localStorage.getItem(k); return a === null ? v : a; } catch (e) { return v; } }
+  function yaz(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) { } }
+  var kok = document.getElementById("ayar");
+  function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; }
+  function satir(ad, ipucu) { var s = el("div", "sat"), l = el("label", "", ad + (ipucu ? "<small>" + ipucu + "</small>" : "")); s.appendChild(l); return s; }
+  function aralik(ad, ipucu, anahtar, min, max, adim, varsayilan, bicim) {
+    var s = satir(ad, ipucu), r = el("input"), o = el("output");
+    r.type = "range"; r.min = min; r.max = max; r.step = adim; r.value = oku(anahtar, varsayilan);
+    function g() { o.textContent = bicim(r.value); }
+    r.addEventListener("input", function () { yaz(anahtar, r.value); g(); });
+    var b = el("button", "btn kucuk ikinci", "Sıfırla"); b.type = "button";
+    b.addEventListener("click", function () { r.value = varsayilan; yaz(anahtar, varsayilan); g(); });
+    g(); s.appendChild(r); s.appendChild(o); s.appendChild(b); return s;
+  }
+  function secim(ad, ipucu, anahtar, secenekler, varsayilan) {
+    var s = satir(ad, ipucu), x = el("select");
+    secenekler.forEach(function (o) { var op = el("option", "", o[1]); op.value = o[0]; x.appendChild(op); });
+    x.value = oku(anahtar, varsayilan);
+    x.addEventListener("change", function () { yaz(anahtar, x.value); });
+    s.appendChild(x); return s;
+  }
+  var yuz = function (v) { return "%" + v; }, say = function (v) { return v; };
+
+  kok.appendChild(el("h2", "", "Genel"));
+  kok.appendChild(secim("Ses", "Tüm oyunlarda efekt ve müzik", "px_ses", [["1", "Açık"], ["0", "Kapalı"]], "1"));
+  kok.appendChild(secim("Oyun hızı", "Hız düğmesinin başlangıç değeri", "px_hiz", [["1", "1x"], ["2", "2x"], ["4", "4x"]], "1"));
+  kok.appendChild(aralik("Arayüz boyutu", "Düğme ve yazı büyüklüğü", "px_ui", 50, 150, 5, 100, yuz));
+  if (window.Skor && Skor.acik && Skor.acik()) {
+    var ad = satir("Takma ad", "Sıralamada görünür, gerçek adını yazma"), ai = el("input"), ab = el("button", "btn kucuk", "Kaydet"), am = el("small", "", "");
+    ai.type = "text"; ai.maxLength = 12; ai.value = Skor.takmaAd() || ""; ab.type = "button";
+    ab.addEventListener("click", function () { var r = Skor.adKaydet(ai.value); am.textContent = r.ok ? "Kaydedildi ✔" : r.hata; });
+    ad.appendChild(ai); ad.appendChild(ab); ad.appendChild(am); kok.appendChild(ad);
+  }
+
+  kok.appendChild(el("h2", "", "Oyunlara özel"));
+  var adlar = (window.Skor && Skor.OYUN_ADLARI) || {};
+  var kontrol = { araba: 1, uzay: 1, balik: 1 }, can = { uzay: 1, balik: 1 };
+  Object.keys(adlar).forEach(function (id) {
+    var d = el("details", "oyun"); d.appendChild(el("summary", "", adlar[id]));
+    d.appendChild(aralik("Oyun hızı", "Bu oyunun hız çarpanı (%100 normal)", "ayar_" + id + "_hiz", 50, 200, 10, 100, yuz));
+    if (kontrol[id]) d.appendChild(secim("Kontrol", "Başlangıçta kullanılacak kontrol", "kontrol_" + id, [["btn", "Butonlar"], ["joy", "Joystick"]], "btn"));
+    if (can[id]) d.appendChild(aralik("Başlangıç canı", "Oyuna kaç canla başlanır", "ayar_" + id + "_can", 1, 9, 1, 3, say));
+    kok.appendChild(d);
+  });
+
+  kok.appendChild(el("h2", "", "Sıfırla"));
+  var sf = satir("Tüm ayarları varsayılana döndür", "Rekorlar ve takma ad silinmez"), sb = el("button", "btn kirmizi", "Ayarları sıfırla"); sb.type = "button";
+  sb.addEventListener("click", function () {
+    if (!confirm("Tüm ayarlar varsayılana dönsün mü?")) return;
+    try { Object.keys(localStorage).filter(function (k) { return /^(ayar_|kontrol_|px_ses$|px_hiz$|px_ui$)/.test(k); }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { }
+    location.reload();
+  });
+  sf.appendChild(sb); kok.appendChild(sf);
+})();
+</script>
+</body>
+</html>

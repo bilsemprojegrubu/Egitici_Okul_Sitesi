@@ -416,6 +416,8 @@
     try { b.focus({ preventScroll: true }); } catch (e) { }
   };
   // Sabit adımlı oyun döngüsü (60 fps mantık, ekran hızından bağımsız)
+  // Ayarlar sayfasından oyun başına hız çarpanı (ayar_<oyun>_hiz, 50-200 %)
+  var oyunHiz = (function () { var m = /oyunlar\/([^\/]+)\//.exec(location.pathname), v = m ? parseInt(oku("ayar_" + m[1] + "_hiz"), 10) : 0; return v >= 50 && v <= 200 ? v / 100 : 1; })();
   Px.dongu = function (guncelle, ciz) {
     var onceki = 0, birik = 0, calisiyor = true, bekle = false;
     Px.hizGerek = true; Px.donguVar = true; hizEkle();
@@ -425,9 +427,9 @@
       if (!onceki) onceki = t;
       Px.joy();
       if (bekle || Px.mBekle) { onceki = t; Px.temizle(); ciz(); Px.son(); requestAnimationFrame(kare); return; }
-      birik += Math.min(100, t - onceki) * Px.hiz; onceki = t;
+      birik += Math.min(100, t - onceki) * Px.hiz * oyunHiz; onceki = t;
       var n = 0;
-      while (birik >= 16.667 && n < 5 * Px.hiz) { guncelle(); birik -= 16.667; n++; }
+      while (birik >= 16.667 && n < 5 * Px.hiz * Math.max(1, oyunHiz)) { guncelle(); birik -= 16.667; n++; }
       Px.temizle(); ciz(); Px.son();
       requestAnimationFrame(kare);
     }

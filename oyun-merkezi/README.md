@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 1.9.98** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 1.9.99** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -180,6 +180,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.95 | Araba Kaçış ve Uzay Savaşı: BUTONLAR / JOYSTICK kontrol seçeneği (seçim hatırlanır) |
 | 1.9.96 | Araba joystick: basılı tutunca sürekli sağa/sola şerit değiştirir |
 | 1.9.97 | Yeni oyun: Piksel Balık (küçükleri ye, büyü; ekranı kaplayınca kamera uzaklaşır; Supabase için supabase/balik-ekle.sql) |
+| 1.9.99 | Yeni **Ayarlar** sayfası (ana menü): ses, hız, arayüz boyutu, takma ad, oyun başına hız/kontrol/can; Piksel Balık oklar tek artı (D-pad) |
 | 1.9.98 | Piksel Balık: kademeli zoom (ekranı çok kaplayınca bir kez uzaklaşır) + detaylı deniz (resif, yosun, mercan, denizanası, uzak balık sürüleri, derinlik) + desenli/yüzgeçli balıklar |
 | 1.9.2 | Menülü gerçek zamanlı oyunlarda (Araba, Basket, Futbol, Pong, Voleybol, Kale Savaşı) mod seçilince de BAŞLA kapısı (herhangi bir tuş ya da dokunma) |
 | 1.9.1 | Uygulama güncellemesi düzeltildi: yeni sürüm hemen iner ve sayfa kendiliğinden yenilenir |

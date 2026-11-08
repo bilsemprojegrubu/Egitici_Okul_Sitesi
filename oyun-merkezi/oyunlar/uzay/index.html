@@ -43,7 +43,7 @@
   for (var i = 0; i < 40; i++) yil.push({ x: Px.rastgele(0, W), y: Px.rastgele(0, H), v: Px.rastgele(.2, 1.2) });
   function ya() { document.getElementById("puan").textContent = puan; document.getElementById("can").textContent = can; }
   function yeni() {
-    gm = { x: W / 2, y: H - 26 }; tus.u = tus.d = 0; ok = []; du = []; par = []; yazi = []; puan = 0; can = 3; dalga = 0; calis = true; hedef = null; ates = 0; yan = 0; sars = 0; bekle = 40;
+    gm = { x: W / 2, y: H - 26 }; tus.u = tus.d = 0; ok = []; du = []; par = []; yazi = []; puan = 0; can = Math.max(1, Math.min(9, parseInt(Px.oku("ayar_uzay_can"), 10) || 3)); dalga = 0; calis = true; hedef = null; ates = 0; yan = 0; sars = 0; bekle = 40;
     document.getElementById("bitti").hidden = true; ya(); dalgaYap();
   }
   function dalgaYap() {
