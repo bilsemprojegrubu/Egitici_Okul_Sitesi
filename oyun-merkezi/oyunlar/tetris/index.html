@@ -115,10 +115,10 @@
     // dokunmatik düğmeler (Px.p) — klavye basışları zaten anında işlendi (yedi)
     TUSLAR.forEach(function (c) { if (Px.p[c] && !yedi[c]) { eylem(c); tut[c] = 0; } });
     yedi = {};
-    // basılı tutunca tekrar (yan hareket / aşağı): 9 kare gecikme, sonra her 3 karede
+    // basılı tutunca tekrar (yan hareket / aşağı): 5 kare gecikme, sonra her 2 karede
     ["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowDown", "KeyS"].forEach(function (c) {
       if (!calis) return;
-      if (Px.k[c]) { tut[c] = (tut[c] || 0) + 1; if (tut[c] > 9 && (tut[c] - 9) % 3 === 0) eylem(c); } else tut[c] = 0;
+      if (Px.k[c]) { tut[c] = (tut[c] || 0) + 1; if (tut[c] > 5 && (tut[c] - 5) % 2 === 0) eylem(c); } else tut[c] = 0;
     });
     if (!calis) return;
     var bekle = Math.max(6, 42 - Math.floor(satir / 10) * 4);

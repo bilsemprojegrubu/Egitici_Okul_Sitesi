@@ -89,8 +89,8 @@ body.tam .sahne{overflow-x:clip}
   .sahne.yan>*{grid-column:1/-1}
   .sahne.yan>canvas:not(.cv){grid-column:auto;grid-row:auto}
   .sahne.yan>canvas.cv{grid-column:2;grid-row:1;width:min(var(--mw,720px),calc(100vw - 460px));max-width:none}
-  .sahne.yan .k-sol{grid-column:1;grid-row:1;justify-self:end}
-  .sahne.yan .k-sag{grid-column:3;grid-row:1;justify-self:start}
+  .sahne.yan .k-sol{grid-column:1;grid-row:1;justify-self:end;align-self:end}
+  .sahne.yan .k-sag{grid-column:3;grid-row:1;justify-self:start;align-self:end}
   .sahne.yan>.pad-yan{display:contents!important}
   .sahne.yan .pad:not(.dpad){flex-direction:column;flex-wrap:nowrap}
   .sahne.yan .k-sol,.sahne.yan .k-sag{display:flex;flex-direction:column;gap:10px;align-items:center}

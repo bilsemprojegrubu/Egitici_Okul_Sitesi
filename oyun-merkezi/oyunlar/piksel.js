@@ -124,7 +124,7 @@
   // ---- Ses ----
   var ac = null, sessiz = oku("px_ses") === "0";
   function baglam() {
-    if (!ac) { try { ac = new (g.AudioContext || g.webkitAudioContext)(); } catch (e) { ac = null; } }
+    if (!ac) { try { var AC = g.AudioContext || g.webkitAudioContext; try { ac = new AC({ latencyHint: "interactive" }); } catch (e2) { ac = new AC(); } } catch (e) { ac = null; } }
     if (ac && ac.state === "suspended") { try { ac.resume(); } catch (e) { } }
     return ac;
   }
