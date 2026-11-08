@@ -246,7 +246,7 @@
   function rekor(oyun) { return parseInt(depoOku("oyunMerkezi_" + oyun), 10) || 0; }
 
   // Oyun bitince çağrılır: yerel rekoru günceller, #bitti ekranını açar, sıralamayı çizer.
-  // Sadece yerel rekoru geçen puan Supabase'e gönderilir (spam azalsın).
+  // Her bitişte puan Supabase'e gönderilir (ad yoksa otomatik verilir).
   function oyunBitti(oyun, puan) {
     var sonuc = { yeni: false, rekor: 0 };
     try {
@@ -261,11 +261,10 @@
       if (r) r.textContent = String(sonuc.rekor);
       if (bitti) bitti.hidden = false;
       if (p) paneliCiz(p, oyun);
-      if (sonuc.yeni && puan > 0 && acik()) {
-        var yolla = function () {
-          gonder(oyun, puan).then(function (ok) { if (ok && p) paneliCiz(p, oyun); });
-        };
-        if (takmaAd()) yolla(); else adSor(yolla);
+      if (puan > 0 && acik()) {
+        // Her maç sonunda puan direkt gönderilir; ad yoksa otomatik ad verilir
+        if (!takmaAd()) otoAd();
+        gonder(oyun, puan).then(function (ok) { if (ok && p) paneliCiz(p, oyun); });
       }
     } catch (e) { }
     return sonuc;
@@ -289,6 +288,14 @@
       ".skor-ad-dugmeler button:active{transform:translateY(3px);box-shadow:0 1px 0 #0d0e1a}" +
       ".skor-ad-dugmeler button.ana{background:#ffcd75;color:#0d0e1a}";
     document.head.appendChild(st);
+  }
+  // Ad yoksa otomatik "Oyuncu1234" verir (ad penceresi açılmaz)
+  function otoAd() {
+    for (var i = 0; i < 20; i++) {
+      var r = adKaydet("Oyuncu" + (1000 + Math.floor(Math.random() * 9000)));
+      if (r.ok) return r.ad;
+    }
+    return "";
   }
   // Takma ad penceresini açar. Kaydedilirse devam() çağrılır.
   function adSor(devam) {
