@@ -169,6 +169,12 @@
       // TEK TUŞ: basınca zıpla (top elde yerdeyken), bırakınca şut. Havada/basılıyken gelen top şutlanmaz.
       var zp = function () { jm[hi] = 1; ch[hi] = 0; bk[hi] = 0; tak.forEach(function (q) { q.jh = q.yer && q.hold; var dr = q.swy ? Math.sign(q.swy) : yon(q); zipla(q, dr * 1.2, .8); q.auto = false; }); };
       if (basil) zp();
+      // Elde top yoksa ve topa yakınsak top bize doğru gelir (çekim)
+      if (!top.h && !(top.cd > 0) && !tak.some(function (q) { return q.hold; })) {
+        var yk = tak.slice().sort(function (a, b) { return Math.hypot(top.x - el(a).x, top.y - el(a).y) - Math.hypot(top.x - el(b).x, top.y - el(b).y); })[0], e0 = el(yk);
+        var dd = Math.hypot(e0.x - top.x, e0.y - top.y);
+        if (dd < 90 && dd > 1) { top.vx += (e0.x - top.x) / dd * .35; top.vy += (e0.y - top.y) / dd * .25; top.vx *= .96; top.vy *= .96; }
+      }
       // Otomatik sallanma: takımın İKİ adamı da yerdeyken yavaşça sağa-sola sallanır (gövde yatar, hafif kayar)
       bk[hi] += .035;
       tak.forEach(function (q, qi) {
