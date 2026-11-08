@@ -3,93 +3,122 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ayarlar — Oyun Merkezi</title>
+<title>Kontrol Ayarları — Oyun Merkezi</title>
 <link rel="stylesheet" href="oyunlar/ortak.css">
 <link rel="stylesheet" href="merkez.css">
 <style>
 .ayar{max-width:760px;margin:0 auto;padding:8px 14px 30px}
 .ayar h2{color:var(--vurgu);margin:18px 0 8px;text-shadow:2px 2px 0 var(--koyu)}
-.sat{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--kart);border:3px solid var(--koyu);outline:2px solid var(--cizgi);padding:10px 12px;margin:8px 0}
-.sat label{flex:1 1 180px;font-weight:900}
-.sat small{display:block;color:#94b0c2;font-weight:400}
+.kart{background:var(--kart);border:3px solid var(--koyu);outline:2px solid var(--cizgi);padding:10px 12px;margin:8px 0}
+.sec{display:flex;flex-wrap:wrap;gap:8px}
+.sec button.act{outline:3px solid var(--vurgu)}
+.sat{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0}
 .sat input[type=range]{flex:1 1 160px;min-width:120px}
-.sat select,.sat input[type=text]{font:inherit;padding:6px;background:var(--koyu);color:var(--yazi);border:2px solid var(--cizgi)}
-.sat output{min-width:48px;text-align:right;font-weight:900;color:var(--yesil)}
-.oyun{border:3px solid var(--koyu);outline:2px solid var(--cizgi);background:var(--kart);margin:8px 0}
-.oyun summary{cursor:pointer;padding:10px 12px;font-weight:900;color:var(--vurgu)}
-.oyun .sat{outline:0;border-width:0;border-top:2px solid var(--koyu);margin:0}
+.sat output{min-width:52px;text-align:right;font-weight:900;color:var(--yesil)}
+#alan{position:relative;width:100%;max-width:720px;height:210px;margin:10px auto;background:rgba(255,255,255,.05);border:3px dashed var(--cizgi);touch-action:none;overflow:hidden}
+#alan .oge{position:absolute;transform:translate(-50%,-50%);cursor:grab;touch-action:none;user-select:none}
+#alan .oge.sec1{outline:3px solid var(--vurgu)}
+#alan .joyM{border-radius:50%;background:rgba(255,255,255,.12);border:4px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+#alan .pad{display:flex;gap:8px;flex-wrap:nowrap;pointer-events:none}
+#alan .pad.dikey{flex-direction:column}
+.ipucu{color:#94b0c2;font-size:.9rem}
 </style>
 </head>
 <body>
 <header>
-  <h1>AYARLAR</h1>
+  <h1>KONTROL AYARLARI</h1>
   <nav class="menu"><a href="index.html">&lt; Oyun Merkezi</a></nav>
 </header>
-<main class="ayar" id="ayar"></main>
-<script src="config.js"></script>
-<script src="skor.js"></script>
+<main class="ayar">
+  <h2>1) Oyun seç</h2>
+  <div class="kart sec" id="oyunlar"></div>
+  <div id="detay" hidden>
+    <h2>2) Kontrol türü</h2>
+    <div class="kart">
+      <div class="sec" id="tur"></div>
+      <p class="ipucu" id="turNot"></p>
+    </div>
+    <h2>3) Özelleştir</h2>
+    <div class="kart">
+      <p class="ipucu">Alandaki öğeyi sürükleyerek istediğin noktaya koy (alan sınırları içinde). Öğeye dokun, sonra boyutunu ayarla.</p>
+      <div id="alan"></div>
+      <div class="sat"><label for="boy">Boyut: <b id="secAd">-</b></label><input type="range" id="boy" min="40" max="250" step="5" value="100"><output id="boyO">100%</output></div>
+      <div class="sec"><button class="btn ikinci" id="sifirla" type="button">Varsayılana dön</button></div>
+      <p class="ipucu">Değişiklikler otomatik kaydedilir. Oyunu açınca uygulanır.</p>
+    </div>
+  </div>
+</main>
 <script>
 (function () {
   "use strict";
   function oku(k, v) { try { var a = localStorage.getItem(k); return a === null ? v : a; } catch (e) { return v; } }
   function yaz(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) { } }
-  var kok = document.getElementById("ayar");
-  function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; }
-  function satir(ad, ipucu) { var s = el("div", "sat"), l = el("label", "", ad + (ipucu ? "<small>" + ipucu + "</small>" : "")); s.appendChild(l); return s; }
-  function aralik(ad, ipucu, anahtar, min, max, adim, varsayilan, bicim) {
-    var s = satir(ad, ipucu), r = el("input"), o = el("output");
-    r.type = "range"; r.min = min; r.max = max; r.step = adim; r.value = oku(anahtar, varsayilan);
-    function g() { o.textContent = bicim(r.value); }
-    r.addEventListener("input", function () { yaz(anahtar, r.value); g(); });
-    var b = el("button", "btn kucuk ikinci", "Sıfırla"); b.type = "button";
-    b.addEventListener("click", function () { r.value = varsayilan; yaz(anahtar, varsayilan); g(); });
-    g(); s.appendChild(r); s.appendChild(o); s.appendChild(b); return s;
+  var OYUNLAR = [
+    { id: "balik", ad: "Piksel Balık", cift: true },
+    { id: "uzay", ad: "Uzay Savaşı", cift: true },
+    { id: "araba", ad: "Araba Yarışı", cift: true }
+  ];
+  var VAR = { yatay: { x: .22, y: .5, s: 1 }, dikey: { x: .78, y: .5, s: 1 }, joy: { x: .78, y: .5, s: 1 } };
+  var AD = { yatay: "◀ ▶ butonları", dikey: "▲ ▼ butonları", joy: "Joystick" };
+  var oyun = null, L = null, secili = "joy";
+  var $ = function (i) { return document.getElementById(i); };
+  function yukle() {
+    var h = null; try { h = JSON.parse(oku("ctl_" + oyun.id, "")); } catch (e) { }
+    L = {}; Object.keys(VAR).forEach(function (k) { var v = (h && h[k]) || {}; L[k] = { x: typeof v.x === "number" ? v.x : VAR[k].x, y: typeof v.y === "number" ? v.y : VAR[k].y, s: typeof v.s === "number" ? v.s : VAR[k].s }; });
   }
-  function secim(ad, ipucu, anahtar, secenekler, varsayilan) {
-    var s = satir(ad, ipucu), x = el("select");
-    secenekler.forEach(function (o) { var op = el("option", "", o[1]); op.value = o[0]; x.appendChild(op); });
-    x.value = oku(anahtar, varsayilan);
-    x.addEventListener("change", function () { yaz(anahtar, x.value); });
-    s.appendChild(x); return s;
+  function kaydet() { yaz("ctl_" + oyun.id, JSON.stringify(L)); }
+  function R() { return Math.max(44, Math.min(84, Math.min(innerWidth, innerHeight) * .14)); }
+  function mod() { return oku("kontrol_" + oyun.id, "btn") === "joy" ? "joy" : "btn"; }
+  function oyunListe() {
+    var k = $("oyunlar"); k.innerHTML = "";
+    OYUNLAR.forEach(function (o) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "btn" + (oyun && oyun.id === o.id ? " act" : ""); b.textContent = o.ad;
+      b.onclick = function () { oyun = o; yukle(); secili = mod() === "joy" ? "joy" : "yatay"; oyunListe(); goster(); };
+      k.appendChild(b);
+    });
   }
-  var yuz = function (v) { return "%" + v; }, say = function (v) { return v; };
-
-  kok.appendChild(el("h2", "", "Genel"));
-  kok.appendChild(secim("Ses", "Tüm oyunlarda efekt ve müzik", "px_ses", [["1", "Açık"], ["0", "Kapalı"]], "1"));
-  kok.appendChild(secim("Oyun hızı", "Hız düğmesinin başlangıç değeri", "px_hiz", [["1", "1x"], ["2", "2x"], ["4", "4x"]], "1"));
-  kok.appendChild(aralik("Arayüz boyutu", "Düğme ve yazı büyüklüğü", "px_ui", 50, 150, 5, 100, yuz));
-  if (window.Skor && Skor.acik && Skor.acik()) {
-    var ad = satir("Takma ad", "Sıralamada görünür, gerçek adını yazma"), ai = el("input"), ab = el("button", "btn kucuk", "Kaydet"), am = el("small", "", "");
-    ai.type = "text"; ai.maxLength = 12; ai.value = Skor.takmaAd() || ""; ab.type = "button";
-    ab.addEventListener("click", function () { var r = Skor.adKaydet(ai.value); am.textContent = r.ok ? "Kaydedildi ✔" : r.hata; });
-    ad.appendChild(ai); ad.appendChild(ab); ad.appendChild(am); kok.appendChild(ad);
+  function goster() {
+    $("detay").hidden = false;
+    var t = $("tur"); t.innerHTML = "";
+    if (oyun.cift) {
+      [["btn", "🔘 Butonlar"], ["joy", "🕹 Joystick"]].forEach(function (a) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "btn" + (mod() === a[0] ? " act" : ""); b.textContent = a[1];
+        b.onclick = function () { yaz("kontrol_" + oyun.id, a[0]); secili = a[0] === "joy" ? "joy" : "yatay"; goster(); };
+        t.appendChild(b);
+      });
+      $("turNot").textContent = "Bu oyunda ikisi de var, istediğini seç.";
+    } else $("turNot").textContent = "Bu oyunda tek kontrol türü var, seçim yok.";
+    alanCiz();
   }
-
-  kok.appendChild(el("h2", "", "Kontrol yerleşimi"));
-  kok.appendChild(secim("Joystick yeri", "Joystick ekranın neresinde dursun", "ayar_joy_taraf", [["sol", "Sol"], ["orta", "Orta"], ["sag", "Sağ"]], "sag"));
-  kok.appendChild(aralik("Joystick boyutu", "Büyük/küçük joystick", "ayar_joy_boyut", 50, 170, 10, 100, yuz));
-  kok.appendChild(secim("Düğme yeri", "◀ ▶ düğmeleri solda, ▲ ▼ sağda (normal) ya da tersi", "ayar_btn_yer", [["normal", "Normal (◀ ▶ solda)"], ["ters", "Ters (◀ ▶ sağda)"]], "normal"));
-  kok.appendChild(aralik("Düğme boyutu", "Yön düğmelerinin büyüklüğü", "ayar_btn_boyut", 60, 160, 10, 100, yuz));
-  var dene = satir("Dene", "Değişiklikleri Piksel Balık'ta hemen gör"), da = el("a", "btn kucuk yesil", "Piksel Balık'ı aç"); da.href = "oyunlar/balik/index.html"; dene.appendChild(da); kok.appendChild(dene);
-
-  kok.appendChild(el("h2", "", "Oyunlara özel"));
-  var adlar = (window.Skor && Skor.OYUN_ADLARI) || {};
-  var kontrol = { araba: 1, uzay: 1, balik: 1 };
-  Object.keys(adlar).forEach(function (id) {
-    var d = el("details", "oyun"); d.appendChild(el("summary", "", adlar[id]));
-    d.appendChild(aralik("Oyun hızı", "Bu oyunun hız çarpanı (%100 normal)", "ayar_" + id + "_hiz", 50, 200, 10, 100, yuz));
-    if (kontrol[id]) d.appendChild(secim("Kontrol", "Başlangıçta kullanılacak kontrol", "kontrol_" + id, [["btn", "Butonlar"], ["joy", "Joystick"]], "btn"));
-    kok.appendChild(d);
-  });
-
-  kok.appendChild(el("h2", "", "Sıfırla"));
-  var sf = satir("Tüm ayarları varsayılana döndür", "Rekorlar ve takma ad silinmez"), sb = el("button", "btn kirmizi", "Ayarları sıfırla"); sb.type = "button";
-  sb.addEventListener("click", function () {
-    if (!confirm("Tüm ayarlar varsayılana dönsün mü?")) return;
-    try { Object.keys(localStorage).filter(function (k) { return /^(ayar_|kontrol_|px_ses$|px_hiz$|px_ui$)/.test(k); }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { }
-    location.reload();
-  });
-  sf.appendChild(sb); kok.appendChild(sf);
+  function alanCiz() {
+    var a = $("alan"); a.innerHTML = "";
+    var j = mod() === "joy", liste = j ? ["joy"] : ["yatay", "dikey"];
+    if (liste.indexOf(secili) < 0) secili = liste[0];
+    liste.forEach(function (k) {
+      var e = document.createElement("div"); e.className = "oge" + (k === secili ? " sec1" : ""); e.dataset.k = k;
+      if (k === "joy") { var d = Math.round(R() * 2 * L.joy.s); e.className += " joyM"; e.style.width = e.style.height = d + "px"; e.textContent = "🕹"; }
+      else { e.innerHTML = '<div class="pad ' + k + '"><span class="btn">' + (k === "yatay" ? "◀" : "▲") + '</span><span class="btn">' + (k === "yatay" ? "▶" : "▼") + '</span></div>'; e.style.transformOrigin = "center"; e.style.transform = "translate(-50%,-50%) scale(" + L[k].s + ")"; }
+      e.style.left = L[k].x * 100 + "%"; e.style.top = L[k].y * 100 + "%";
+      e.addEventListener("pointerdown", function (ev) {
+        ev.preventDefault(); secili = k; guncelleBoy();
+        [].forEach.call(a.children, function (c) { c.classList.toggle("sec1", c === e); });
+        e.setPointerCapture(ev.pointerId);
+        function tasi(m) {
+          var r = a.getBoundingClientRect();
+          L[k].x = Math.max(0, Math.min(1, (m.clientX - r.left) / r.width)); L[k].y = Math.max(0, Math.min(1, (m.clientY - r.top) / r.height));
+          e.style.left = L[k].x * 100 + "%"; e.style.top = L[k].y * 100 + "%";
+        }
+        function bit() { e.removeEventListener("pointermove", tasi); e.removeEventListener("pointerup", bit); e.removeEventListener("pointercancel", bit); kaydet(); }
+        e.addEventListener("pointermove", tasi); e.addEventListener("pointerup", bit); e.addEventListener("pointercancel", bit);
+      });
+      a.appendChild(e);
+    });
+    guncelleBoy();
+  }
+  function guncelleBoy() { $("secAd").textContent = AD[secili]; var p = Math.round(L[secili].s * 100); $("boy").value = p; $("boyO").textContent = p + "%"; }
+  $("boy").addEventListener("input", function () { L[secili].s = this.value / 100; $("boyO").textContent = this.value + "%"; alanCiz(); kaydet(); });
+  $("sifirla").onclick = function () { try { localStorage.removeItem("ctl_" + oyun.id); } catch (e) { } yukle(); alanCiz(); };
+  oyunListe();
 })();
 </script>
 </body>

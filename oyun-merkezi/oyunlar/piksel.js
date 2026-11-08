@@ -107,15 +107,32 @@
   };
 
   // ---- Ekranda dokunmatik joystick: sürükleyince yön tuşları basılı sayılır ----
-  // Kontrol yerleşimi (Ayarlar sayfasından): joystick tarafı/boyutu, düğme tarafı/boyutu
-  var jBoy = Math.max(50, Math.min(170, parseInt(oku("ayar_joy_boyut"), 10) || 100)) / 100;
-  (function () {
-    var de = document.documentElement, jt = oku("ayar_joy_taraf"), bt = oku("ayar_btn_yer"), bb = Math.max(60, Math.min(160, parseInt(oku("ayar_btn_boyut"), 10) || 100)) / 100;
-    de.setAttribute("data-joy", jt === "sol" || jt === "orta" ? jt : "sag"); de.setAttribute("data-btn", bt === "ters" ? "ters" : "normal");
-    if (bb !== 1) { de.style.setProperty("--bo", String(bb)); de.setAttribute("data-bo", "1"); }
-  })();
+  // Özel kontrol yerleşimi (Ayarlar > Özelleştir): düğmeler/joystick belirli bir alanda istenen yere konur
+  // ctl_<oyun> = {joy:{x,y,s}, yatay:{..}, dikey:{..}}  (x,y: alanın 0-1 oranı, merkez noktası; s: büyüklük çarpanı)
+  Px.kyJoy = 1;
+  Px.KY_VARSAYILAN = { yatay: { x: .22, y: .5, s: 1 }, dikey: { x: .78, y: .5, s: 1 }, joy: { x: .78, y: .5, s: 1 } };
+  Px.kontrolYerles = function (oyun) {
+    var ham = oku("ctl_" + oyun), L = null;
+    if (!ham) return;
+    try { L = JSON.parse(ham); } catch (e) { return; }
+    if (!L || typeof L !== "object") return;
+    var yp = document.getElementById("yonpad"), yk = document.getElementById("ypad"), jk = document.getElementById("joyk"), pi = yp && yp.parentNode;
+    if (!yp || !yk || !jk || !pi) return;
+    var ka = document.createElement("div"); ka.className = "ka";
+    pi.parentNode.insertBefore(ka, pi);
+    [["yatay", yp], ["dikey", yk], ["joy", jk]].forEach(function (c) {
+      var v = L[c[0]] || {}, d = Px.KY_VARSAYILAN[c[0]], el = c[1];
+      var X = typeof v.x === "number" ? v.x : d.x, Y = typeof v.y === "number" ? v.y : d.y, S = typeof v.s === "number" ? v.s : d.s;
+      X = Math.max(0, Math.min(1, X)); Y = Math.max(0, Math.min(1, Y)); S = Math.max(.4, Math.min(2.5, S));
+      el.classList.remove("k-sol", "k-sag"); el.classList.add("ka-oge", c[0]);
+      el.style.left = X * 100 + "%"; el.style.top = Y * 100 + "%";
+      if (c[0] === "joy") Px.kyJoy = S; else el.style.setProperty("--ks", String(S));
+      ka.appendChild(el);
+    });
+    if (pi.parentNode) pi.parentNode.removeChild(pi);
+  };
   Px.joystick = function (kap, m) {
-    var d = document.createElement("div"), top = document.createElement("div"), R = Math.round(Math.max(44, Math.min(84, Math.min(window.innerWidth, window.innerHeight) * .14)) * jBoy), bas_ = {};
+    var d = document.createElement("div"), top = document.createElement("div"), R = Math.round(Math.max(44, Math.min(84, Math.min(window.innerWidth, window.innerHeight) * .14)) * (Px.kyJoy || 1)), bas_ = {};
     d.className = "joy"; d.style.cssText = "position:relative;width:" + R * 2 + "px;height:" + R * 2 + "px;border-radius:50%;background:rgba(255,255,255,.12);border:4px solid #0d0e1a;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25);touch-action:none;user-select:none;-webkit-user-select:none;flex:none";
     top.style.cssText = "position:absolute;left:" + (R - Math.round(R * .65 / 2) - 4) + "px;top:" + (R - Math.round(R * .65 / 2) - 4) + "px;width:" + Math.round(R * .65) + "px;height:" + Math.round(R * .65) + "px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
     d.appendChild(top); d.setAttribute("aria-label", "Joystick");
@@ -423,8 +440,6 @@
     try { b.focus({ preventScroll: true }); } catch (e) { }
   };
   // Sabit adımlı oyun döngüsü (60 fps mantık, ekran hızından bağımsız)
-  // Ayarlar sayfasından oyun başına hız çarpanı (ayar_<oyun>_hiz, 50-200 %)
-  var oyunHiz = (function () { var m = /oyunlar\/([^\/]+)\//.exec(location.pathname), v = m ? parseInt(oku("ayar_" + m[1] + "_hiz"), 10) : 0; return v >= 50 && v <= 200 ? v / 100 : 1; })();
   Px.dongu = function (guncelle, ciz) {
     var onceki = 0, birik = 0, calisiyor = true, bekle = false;
     Px.hizGerek = true; Px.donguVar = true; hizEkle();
@@ -434,9 +449,9 @@
       if (!onceki) onceki = t;
       Px.joy();
       if (bekle || Px.mBekle) { onceki = t; Px.temizle(); ciz(); Px.son(); requestAnimationFrame(kare); return; }
-      birik += Math.min(100, t - onceki) * Px.hiz * oyunHiz; onceki = t;
+      birik += Math.min(100, t - onceki) * Px.hiz; onceki = t;
       var n = 0;
-      while (birik >= 16.667 && n < 5 * Px.hiz * Math.max(1, oyunHiz)) { guncelle(); birik -= 16.667; n++; }
+      while (birik >= 16.667 && n < 5 * Px.hiz) { guncelle(); birik -= 16.667; n++; }
       Px.temizle(); ciz(); Px.son();
       requestAnimationFrame(kare);
     }
