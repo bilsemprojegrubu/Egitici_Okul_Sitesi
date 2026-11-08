@@ -8,6 +8,13 @@
   function oku(a) { try { return g.localStorage.getItem(a); } catch (e) { return null; } }
   function yaz(a, d) { try { g.localStorage.setItem(a, d); } catch (e) { } }
   Px.oku = oku; Px.yaz = yaz;
+  // Uzun basınca çıkan "kopyala / seç / paylaş" menüsünü engelle (yazı kutuları hariç)
+  try {
+    g.addEventListener("contextmenu", function (e) { var t = e.target; if (!t || !/^(INPUT|TEXTAREA)$/.test(t.tagName)) e.preventDefault(); });
+    g.addEventListener("selectstart", function (e) { var t = e.target && (e.target.nodeType === 1 ? e.target : e.target.parentNode); if (!t || !/^(INPUT|TEXTAREA)$/.test(t.tagName)) e.preventDefault(); });
+    g.addEventListener("dragstart", function (e) { e.preventDefault(); });
+  } catch (e) { }
+
 
   // ---- Sprite: satır dizisi + palet -> canvas ----
   Px.sprite = function (satirlar, pal, s) {
