@@ -89,6 +89,10 @@ body.tam .sahne{overflow-x:clip}
 /* Telefon: ◀ SOL / SAĞ ▶ solda yan yana, ▲ ▼ sağda alt alta */
 .sahne.yan .pad-yan .pad.yatay{flex-wrap:nowrap;flex-direction:row}
 .sahne.yan .pad-yan .pad.k-sag:not(.dpad){flex-wrap:nowrap;flex-direction:column}
+@media (max-width:639px){
+  .sahne.yan .pad-yan{align-items:flex-start}
+  .sahne.yan .pad-yan .btn{white-space:nowrap;min-width:0;padding:8px 10px;font-size:.95rem}
+}
 /* Geniş ekran: kontroller oyunun iki yanında (solda hareket, sağda eylem) */
 @media (min-width:640px){
   .sahne.yan{display:grid;grid-template-columns:1fr auto 1fr;column-gap:14px;justify-content:center;align-items:center}
