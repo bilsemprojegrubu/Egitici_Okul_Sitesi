@@ -18,6 +18,8 @@
   var OYUNLAR = Object.keys(OYUN_ADLARI);
 
   var ANAHTAR_AD = "oyunMerkezi_ad";
+  var ANAHTAR_ALINDI = "oyunMerkezi_adAlindi";
+  var ANAHTAR_CIHAZ = "oyunMerkezi_cihaz";
   var ANAHTAR_KUYRUK = "oyunMerkezi_kuyruk";
   var MAKS_KUYRUK = 20;      // kuyrukta en fazla bu kadar kayıt tutulur
   var ZAMAN_ASIMI = 5000;    // ms
@@ -70,20 +72,86 @@
     return YT.indexOf(bitisik) >= 0;
   }
 
-  // Adı temizler, doğrular ve kaydeder. Dönen: {ok:true, ad} ya da {ok:false, hata}
+  // Adı temizler ve doğrular (kaydetmez). Dönen: {ok:true, ad} ya da {ok:false, hata}
+  function adDogrula(ad) {
+    var t = String(ad == null ? "" : ad).replace(/\s+/g, " ").trim();
+    if (t.length < 2) return { ok: false, hata: "Takma ad en az 2 karakter olmalı." };
+    if (t.length > 12) return { ok: false, hata: "Takma ad en fazla 12 karakter olabilir." };
+    if (!/^[0-9A-Za-z_ çğıöşüÇĞİÖŞÜâîûÂÎÛ]+$/.test(t)) {
+      return { ok: false, hata: "Sadece harf, rakam, boşluk ve alt çizgi kullanabilirsin." };
+    }
+    if (uygunsuzMu(t)) return { ok: false, hata: "Bu takma ad uygun değil, başka bir ad seç." };
+    return { ok: true, ad: t };
+  }
+
+  // Bu cihaza özel rastgele kimlik (adı sahiplenmek için; başkası okuyamaz)
+  function cihazKimligi() {
+    var k = depoOku(ANAHTAR_CIHAZ);
+    if (k && k.length >= 8) return k;
+    var a = "";
+    try {
+      var b = new Uint8Array(16); global.crypto.getRandomValues(b);
+      for (var i = 0; i < b.length; i++) a += ("0" + b[i].toString(16)).slice(-2);
+    } catch (e) {
+      for (var j = 0; j < 32; j++) a += Math.floor(Math.random() * 16).toString(16);
+    }
+    depoYaz(ANAHTAR_CIHAZ, a);
+    return a;
+  }
+
+  // Adı sunucuda sahiplenir. Söz döner: "tamam" | "alinmis" | "belirsiz" (internet/kurulum yok)
+  function adAl(t) {
+    try {
+      return istek("/rest/v1/oyuncular", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ takma_ad: t, cihaz: cihazKimligi() })
+      }).then(function (r) {
+        if (r.ok) return "tamam";
+        if (r.status === 409) return "alinmis";
+        return "belirsiz";
+      }, function () { return "belirsiz"; });
+    } catch (e) { return Promise.resolve("belirsiz"); }
+  }
+
+  function adYerel(t, alindi) {
+    depoYaz(ANAHTAR_AD, t);
+    if (alindi) depoYaz(ANAHTAR_ALINDI, t); else { try { global.localStorage.removeItem(ANAHTAR_ALINDI); } catch (e) { } }
+    try { global.dispatchEvent(new CustomEvent("skor-ad", { detail: t })); } catch (e) { }
+  }
+
+  // Adı doğrular, benzersizliğini sunucuda dener, bu cihaza kalıcı kaydeder.
+  // Söz döner: {ok:true, ad} ya da {ok:false, hata}
   function adKaydet(ad) {
     try {
-      var t = String(ad == null ? "" : ad).replace(/\s+/g, " ").trim();
-      if (t.length < 2) return { ok: false, hata: "Takma ad en az 2 karakter olmalı." };
-      if (t.length > 12) return { ok: false, hata: "Takma ad en fazla 12 karakter olabilir." };
-      if (!/^[0-9A-Za-z_ çğıöşüÇĞİÖŞÜâîûÂÎÛ]+$/.test(t)) {
-        return { ok: false, hata: "Sadece harf, rakam, boşluk ve alt çizgi kullanabilirsin." };
-      }
-      if (uygunsuzMu(t)) return { ok: false, hata: "Bu takma ad uygun değil, başka bir ad seç." };
-      depoYaz(ANAHTAR_AD, t);
-      try { global.dispatchEvent(new CustomEvent("skor-ad", { detail: t })); } catch (e) { /* eski tarayıcı */ }
-      return { ok: true, ad: t };
-    } catch (e) { return { ok: false, hata: "Takma ad kaydedilemedi." }; }
+      var d = adDogrula(ad);
+      if (!d.ok) return Promise.resolve(d);
+      var t = d.ad;
+      var mevcut = takmaAd();
+      if (mevcut && mevcut === t) return Promise.resolve({ ok: true, ad: t });
+      if (!acik()) { adYerel(t, false); return Promise.resolve({ ok: true, ad: t }); }
+      return adAl(t).then(function (s) {
+        if (s === "alinmis") return { ok: false, hata: "Bu takma ad başkası tarafından alınmış, başka bir ad seç." };
+        // "belirsiz": internet yok ya da kurulum yapılmamış; ad yerelde tutulur, sonra yeniden denenir
+        adYerel(t, s === "tamam");
+        return { ok: true, ad: t };
+      });
+    } catch (e) { return Promise.resolve({ ok: false, hata: "Takma ad kaydedilemedi." }); }
+  }
+
+  // Kayıtlı ad henüz sunucuda sahiplenilmediyse dener; başkası almışsa adı siler ve yenisini ister.
+  function adDogrulaSunucu() {
+    try {
+      var t = takmaAd();
+      if (!t || !acik() || depoOku(ANAHTAR_ALINDI) === t) return;
+      adAl(t).then(function (s) {
+        if (s === "tamam") { depoYaz(ANAHTAR_ALINDI, t); }
+        else if (s === "alinmis") {
+          try { global.localStorage.removeItem(ANAHTAR_AD); } catch (e) { }
+          adSor(null, "Eski adın (" + t + ") başkası tarafından alınmış. Yeni bir ad seç.");
+        }
+      });
+    } catch (e) { }
   }
 
   // ---- Ağ ----
@@ -262,8 +330,8 @@
       if (bitti) bitti.hidden = false;
       if (p) paneliCiz(p, oyun);
       if (puan > 0 && acik()) {
-        // Her maç sonunda puan direkt gönderilir; ad yoksa otomatik ad verilir
-        if (!takmaAd()) otoAd();
+        // Ad zorunlu: yoksa önce sorulur, kaydedilince puan gönderilir
+        if (!takmaAd()) { adSor(function () { gonder(oyun, puan).then(function (ok) { if (ok && p) paneliCiz(p, oyun); }); }); return sonuc; }
         gonder(oyun, puan).then(function (ok) { if (ok && p) paneliCiz(p, oyun); });
       }
     } catch (e) { }
@@ -289,45 +357,36 @@
       ".skor-ad-dugmeler button.ana{background:#ffcd75;color:#0d0e1a}";
     document.head.appendChild(st);
   }
-  // Ad yoksa otomatik "Oyuncu1234" verir (ad penceresi açılmaz)
-  function otoAd() {
-    for (var i = 0; i < 20; i++) {
-      var r = adKaydet("Oyuncu" + (1000 + Math.floor(Math.random() * 9000)));
-      if (r.ok) return r.ad;
-    }
-    return "";
-  }
   // Takma ad penceresini açar. Kaydedilirse devam() çağrılır.
-  function adSor(devam) {
+  function adSor(devam, mesaj) {
     try {
       if (document.getElementById("skorAdPenceresi")) return;
+      if (!document.body) { document.addEventListener("DOMContentLoaded", function () { adSor(devam, mesaj); }); return; }
       stilEkle();
       var ort = eleman("div", null, "skor-ad-ort"); ort.id = "skorAdPenceresi";
       var kutu = eleman("div", null, "skor-ad-kutu");
       kutu.appendChild(eleman("h2", "Takma adını yaz"));
-      kutu.appendChild(eleman("p", "Gerçek adını yazma, takma ad kullan (2-12 karakter).", "skor-ad-uyari"));
+      kutu.appendChild(eleman("p", mesaj || "Oynamak için takma ad gerekli. Gerçek adını yazma (2-12 karakter). Her ad tek kişiye aittir ve bu cihazda hep kalır.", "skor-ad-uyari"));
       var inp = eleman("input"); inp.type = "text"; inp.maxLength = 12; inp.placeholder = "Örn: SuperKedi";
       inp.setAttribute("autocomplete", "off"); inp.setAttribute("aria-label", "Takma ad");
-      inp.value = takmaAd();
+      inp.value = "";
       var hata = eleman("div", "", "skor-ad-hata");
       var dug = eleman("div", null, "skor-ad-dugmeler");
       var tamam = eleman("button", "Kaydet", "ana");
-      var atla = eleman("button", "Şimdi değil");
-      dug.appendChild(atla); dug.appendChild(tamam);
+      dug.appendChild(tamam);
       [inp, hata, dug].forEach(function (x) { kutu.appendChild(x); });
       ort.appendChild(kutu); document.body.appendChild(ort);
       function kapat() { if (ort.parentNode) ort.parentNode.removeChild(ort); }
       function kaydet() {
-        var s = adKaydet(inp.value);
-        if (!s.ok) { hata.textContent = s.hata; return; }
-        kapat();
-        if (typeof devam === "function") { try { devam(s.ad); } catch (e) { } }
+        tamam.disabled = true; hata.textContent = "Kontrol ediliyor...";
+        adKaydet(inp.value).then(function (s) {
+          tamam.disabled = false;
+          if (!s.ok) { hata.textContent = s.hata; return; }
+          kapat();
+          if (typeof devam === "function") { try { devam(s.ad); } catch (e) { } }
+        });
       }
       tamam.addEventListener("click", kaydet);
-      atla.addEventListener("click", function () {
-        try { global.sessionStorage.setItem("oyunMerkezi_adAtla", "1"); } catch (e) { }
-        kapat();
-      });
       inp.addEventListener("keydown", function (e) { e.stopPropagation(); if (e.key === "Enter") kaydet(); });
       setTimeout(function () { try { inp.focus(); } catch (e) { } }, 50);
     } catch (e) { }
@@ -341,9 +400,8 @@
       var oyun = gov && gov.getAttribute("data-oyun");
       var r = document.getElementById("rekor");
       if (oyun && r) r.textContent = String(rekor(oyun));
-      var atlandi = false;
-      try { atlandi = global.sessionStorage.getItem("oyunMerkezi_adAtla") === "1"; } catch (e) { }
-      // Takma ad yalnızca ilk skor gönderilirken sorulur (menü ve 2 kişilik maçlar kesilmesin)
+      // Takma ad zorunlu: yoksa sayfa açılır açılmaz sorulur
+      if (!takmaAd()) adSor(function () { kuyrukBosalt(); }); else adDogrulaSunucu();
       kuyrukBosalt();
     } catch (e) { }
   }

@@ -108,16 +108,11 @@ body.tam .sahne{overflow-x:clip}
   .sahne.yan .pad.yatay{flex-direction:row;flex-wrap:nowrap}
 }
 
-/* Kullanıcı kontrol ayarları (ayarlar.html): düğme boyutu, düğme tarafı, joystick tarafı */
-html[data-bo] .sahne .pad-yan .btn{min-width:calc(58px*var(--bo,1));min-height:calc(50px*var(--bo,1));font-size:calc(1.2rem*var(--bo,1))}
-html[data-btn=ters] .sahne.yan .pad-yan{flex-direction:row-reverse}
-html[data-joy=sol] .sahne.yan #joyk{align-self:flex-start;justify-self:start}
-html[data-joy=orta] .sahne.yan #joyk{align-self:center;justify-self:center}
-html[data-joy=sag] .sahne.yan #joyk{align-self:flex-end;justify-self:end}
-@media (min-width:640px){
-  html[data-btn=ters] .sahne.yan .k-sol{grid-column:3;justify-self:start}
-  html[data-btn=ters] .sahne.yan .k-sag{grid-column:1;justify-self:end}
-  html[data-joy=sol] .sahne.yan #joyk{grid-column:1;justify-self:end;align-self:end}
-  html[data-joy=sag] .sahne.yan #joyk{grid-column:3;justify-self:start;align-self:end}
-  html[data-joy=orta] .sahne.yan #joyk{grid-column:1/-1;grid-row:2;justify-self:center;margin-bottom:0}
-}
+/* Özel kontrol alanı (ayarlar.html > Özelleştir): düğme ve joystick alan içinde istenen yerde */
+.ka{position:relative;width:100%;max-width:var(--mw,720px);height:230px;flex:none}
+html,body{touch-action:manipulation;overscroll-behavior:none}
+@media (pointer:coarse){.pad .btn,.kontrol .btn{min-width:64px;min-height:58px}}
+.ka-oge{position:absolute;margin:0!important;transform:translate(-50%,-50%) scale(var(--ks,1))}
+.ka .pad.dikey{flex-direction:column;flex-wrap:nowrap}
+.ka .pad.yatay{flex-direction:row;flex-wrap:nowrap}
+.sahne.yan>.ka{grid-column:1/-1}

@@ -53,12 +53,22 @@
     else if (l === 2) hedef = { a1: -2.8, a2: 2.8, bob: -4, lean: 0 };
     else hedef = { a1: -.6, a2: .6, bob: 9, lean: 0 };
   }
-  function bas_(l) {
+  var sonBas = [0, 0, 0, 0];
+  // t = tuşa gerçekten basılma anı (ms). Çerçeve gecikmesi kadar geri alınır, böylece gecikme oyuncunun aleyhine olmaz.
+  function bas_(l, t) {
     if (!bas) { bas = true; return; }
+    var simdi = performance.now(); if (simdi - sonBas[l] < 110) return; sonBas[l] = simdi; // aynı şeritte seri basma (spam) sayılmaz
     flas[l] = 8; poza(l); bas0 = kare;
-    var en = null; notlar.forEach(function (n) { if (n.l === l && !n.ok && Math.abs(n.y - RY) <= 40 && (!en || Math.abs(n.y - RY) < Math.abs(en.y - RY))) en = n; });
-    if (!en) return;
-    var d = Math.abs(en.y - RY); en.ok = true; en.f = 12; hitSay++;
+    var dt = Math.max(0, simdi - (t || simdi)) / 16.667 * Px.hiz * hiz();
+    var en = null; notlar.forEach(function (n) { if (n.l === l && !n.ok && Math.abs(n.y - dt - RY) <= 40 && (!en || Math.abs(n.y - RY) < Math.abs(en.y - RY))) en = n; });
+    if (!en) { kombo = 0; can -= 3; judge("BOŞ!", "#ef4d5e"); Px.ses("hata"); return; } // notasız tuş cezalı: spam yok
+    en.y -= dt; // basış anındaki konum
+    var d = Math.abs(en.y - RY); en.y += dt; en.ok = true; en.f = 12;
+    if (d > 28) { // çok erken / çok geç: puan çok düşük, kombo kırılır, can azalır
+      en.miss = true; kombo = 0; can -= 4; sk += 10; judge(en.y - dt < RY ? "ÇOK ERKEN!" : "ÇOK GEÇ!", "#ef7d57"); Px.ses("hata");
+      document.getElementById("puan").textContent = sk; return;
+    }
+    hitSay++;
     var mk = d <= 15; kombo++; enKombo = Math.max(enKombo, kombo);
     sk += (mk ? 100 : 50) * Math.min(4, 1 + Math.floor(kombo / 10)); can = Math.min(100, can + (mk ? 2 : 1));
     judge(mk ? "MÜKEMMEL!" : "İYİ", mk ? "#ffcd75" : "#a7f070"); Px.ses(mk ? "puan" : "tik");
@@ -72,7 +82,7 @@
   function guncelle() {
     var i, l;
     var simdi = performance.now(), q = kuyruk; kuyruk = [];
-    q.forEach(function (e) { if (simdi - e.t < 200 && !bitti) bas_(e.l); });
+    q.forEach(function (e) { if (simdi - e.t < 200 && !bitti) bas_(e.l, e.t); });
     if (!bas || bitti) { yaz0(); return; }
     kare++; bf++;
     if (bf >= 3600 / bpm()) { bf = 0; beat++; vurus(); }
@@ -186,7 +196,7 @@
   });
   C.addEventListener("pointerdown", function (e) { var r = C.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W, l = Math.floor((px - LX) / LW); if (!bas) tusla(0); else if (l >= 0 && l < 4) tusla(l); });
   document.getElementById("tekrar").addEventListener("click", function () { clearTimeout(bitisT); yeni(); });
-  yeni(); Px.dongu(guncelle, ciz);
+  Px.kontrolYerles("dans"); yeni(); Px.dongu(guncelle, ciz);
 })();
 </script>
 </body>
