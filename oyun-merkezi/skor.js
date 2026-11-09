@@ -72,12 +72,8 @@
     return YT.indexOf(bitisik) >= 0;
   }
 
-  // "İmparator" unvanı: bu ada aynı anda yalnızca bir kişi sahip olabilir (ad benzersiz).
-  // Sıralamada ve ana sayfada "👑 İmparator (Emin Ahmet)" diye görünür.
-  function gorunenAd(ad) {
-    var k = String(ad == null ? "" : ad).toLocaleLowerCase("tr").replace(/ /g, "").replace(/ı/g, "i");
-    return k === "imparator" ? "\uD83D\uDC51 İmparator (Emin Ahmet)" : String(ad == null ? "" : ad);
-  }
+  // Görünen ad (şimdilik olduğu gibi gösterilir)
+  function gorunenAd(ad) { return String(ad == null ? "" : ad); }
 
   // Adı temizler ve doğrular (kaydetmez). Dönen: {ok:true, ad} ya da {ok:false, hata}
   function adDogrula(ad) {
