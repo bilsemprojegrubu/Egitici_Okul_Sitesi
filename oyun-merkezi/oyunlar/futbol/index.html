@@ -510,6 +510,7 @@
       Px.pad(ak, [{ t: "ŞUT", k: sut, a: "Şut" }, { t: "PAS", k: pas_, a: "Pas" }, { t: "HAVA", k: K.sh[0], a: "Havadan pas" }, { t: "KAFA", k: K.sb[0], a: "Kafa vuruşu" }, { t: "RÖVEŞATA", k: K.sr[0], a: "Röveşata" }, { t: "TAÇ", k: K.st[0], a: "Taç at" }], "fut-ak");
     }
     ekle(0); if (mod === 2) ekle(1);
+    Px.kontrolYerles("futbol");
     document.getElementById("kb1").style.display = elle ? "flex" : "none"; document.getElementById("kb2").style.display = elle && mod === 2 ? "flex" : "none";
   }
   function basla(m, z) {

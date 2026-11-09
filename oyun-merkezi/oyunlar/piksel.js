@@ -97,7 +97,7 @@
       var b = document.createElement("button"); b.type = "button"; b.className = "btn pad-d" + (o.c ? " " + o.c : "");
       b.textContent = o.t; b.setAttribute("aria-label", o.a || o.t);
       var kodlar = [].concat(o.k);
-      function ac(e) { e.preventDefault(); kodlar.forEach(bas); b.classList.add("bas"); try { b.setPointerCapture(e.pointerId); } catch (x) { } }
+      function ac(e) { e.preventDefault(); kodlar.forEach(bas); try { if (navigator.vibrate && !sessiz) navigator.vibrate(8); } catch (x) { }  b.classList.add("bas"); try { b.setPointerCapture(e.pointerId); } catch (x) { } }
       function kapa(e) { e.preventDefault(); kodlar.forEach(birak); b.classList.remove("bas"); }
       b.addEventListener("pointerdown", ac); b.addEventListener("pointerup", kapa);
       b.addEventListener("pointercancel", kapa); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -107,32 +107,55 @@
   };
 
   // ---- Ekranda dokunmatik joystick: sürükleyince yön tuşları basılı sayılır ----
-  // Özel kontrol yerleşimi (Ayarlar > Özelleştir): düğmeler/joystick belirli bir alanda istenen yere konur
-  // ctl_<oyun> = {joy:{x,y,s}, yatay:{..}, dikey:{..}}  (x,y: alanın 0-1 oranı, merkez noktası; s: büyüklük çarpanı)
-  Px.kyJoy = 1;
-  Px.KY_VARSAYILAN = { yatay: { x: .22, y: .5, s: 1 }, dikey: { x: .78, y: .5, s: 1 }, joy: { x: .78, y: .5, s: 1 } };
+  // Özel kontrol yerleşimi (Ayarlar > Özelleştir): sol grup / sağ grup / joystick, bir alan içinde istenen koordinata konur.
+  // ctl_<oyun> = {sol:{x,y,s}, sag:{..}, joy:{..}}  (x,y: alanın 0-1 oranı, öğenin MERKEZİ; s: büyüklük çarpanı)
+  // Oyun kendi düğmelerini kurduktan SONRA çağrılır (yeniden kurulumda tekrar çağrılabilir).
+  Px.KY_YUKSEK = 230;
+  Px.kyVarsayilan = function (rol, say) { return { x: say === 1 ? .5 : rol === "sol" ? .15 : .85, y: .55, s: 1 }; };
+  // Öğeleri alana sığdırır (boyut + merkez sınırı); görünür hale gelen öğeler için tekrar çağrılır
+  Px.kyUygula = function () {
+    var ka = document.querySelector(".ka"); if (!ka) return;
+    [].forEach.call(ka.children, function (e) {
+      var X = +e.dataset.x, Y = +e.dataset.y, S = +e.dataset.s, h = e.offsetHeight, w = e.offsetWidth, W = ka.clientWidth;
+      if (h && w && W) {
+        S = Math.max(.4, Math.min(2.5, S, (Px.KY_YUKSEK - 8) / h, (W - 4) / w));
+        X = Math.max(w * S / 2 / W, Math.min(1 - w * S / 2 / W, X)); Y = Math.max(h * S / 2 / Px.KY_YUKSEK, Math.min(1 - h * S / 2 / Px.KY_YUKSEK, Y));
+      } else S = Math.max(.4, Math.min(2.5, S));
+      e.style.left = Math.max(0, Math.min(1, X)) * 100 + "%"; e.style.top = Math.max(0, Math.min(1, Y)) * 100 + "%";
+      e.style.setProperty("--ks", String(S));
+    });
+  };
+  g.addEventListener("resize", function () { Px.kyUygula(); });
   Px.kontrolYerles = function (oyun) {
-    var ham = oku("ctl_" + oyun), L = null;
-    if (!ham) return;
+    var ham = oku("ctl_" + oyun), L = null, sahne = document.querySelector(".sahne");
+    if (!ham || !sahne) return;
     try { L = JSON.parse(ham); } catch (e) { return; }
     if (!L || typeof L !== "object") return;
-    var yp = document.getElementById("yonpad"), yk = document.getElementById("ypad"), jk = document.getElementById("joyk"), pi = yp && yp.parentNode;
-    if (!yp || !yk || !jk || !pi) return;
-    var ka = document.createElement("div"); ka.className = "ka";
-    pi.parentNode.insertBefore(ka, pi);
-    [["yatay", yp], ["dikey", yk], ["joy", jk]].forEach(function (c) {
-      var v = L[c[0]] || {}, d = Px.KY_VARSAYILAN[c[0]], el = c[1];
+    var tum = [].slice.call(sahne.querySelectorAll(".k-sol,.k-sag,.ka-oge,#joyk"));
+    tum = tum.filter(function (e, i) { return tum.indexOf(e) === i && !tum.some(function (o) { return o !== e && o.contains(e); }); });
+    if (!tum.length) return;
+    var ka = sahne.querySelector(".ka");
+    if (!ka) {
+      ka = document.createElement("div"); ka.className = "ka"; ka.style.height = Px.KY_YUKSEK + "px";
+      var anc = tum[0]; while (anc.parentNode && anc.parentNode !== sahne) anc = anc.parentNode;
+      sahne.insertBefore(ka, anc);
+    }
+    var eskiAta = []; tum.forEach(function (e) { if (e.parentNode && e.parentNode !== ka) eskiAta.push(e.parentNode); });
+    var say = tum.filter(function (e) { return e.id !== "joyk"; }).length;
+    tum.forEach(function (e) {
+      var rol = e.id === "joyk" ? "joy" : e.getAttribute("data-rol") || (e.classList.contains("k-sag") ? "sag" : "sol");
+      e.setAttribute("data-rol", rol);
+      var v = L[rol] || {}, d = Px.kyVarsayilan(rol, say);
       var X = typeof v.x === "number" ? v.x : d.x, Y = typeof v.y === "number" ? v.y : d.y, S = typeof v.s === "number" ? v.s : d.s;
-      X = Math.max(0, Math.min(1, X)); Y = Math.max(0, Math.min(1, Y)); S = Math.max(.4, Math.min(2.5, S));
-      el.classList.remove("k-sol", "k-sag"); el.classList.add("ka-oge", c[0]);
-      el.style.left = X * 100 + "%"; el.style.top = Y * 100 + "%";
-      if (c[0] === "joy") Px.kyJoy = S; else el.style.setProperty("--ks", String(S));
-      ka.appendChild(el);
+      e.classList.remove("k-sol", "k-sag"); e.classList.add("ka-oge");
+      ka.appendChild(e); e.dataset.x = X; e.dataset.y = Y; e.dataset.s = S;
     });
-    if (pi.parentNode) pi.parentNode.removeChild(pi);
+    Px.kyUygula();
+    [].slice.call(ka.children).forEach(function (c) { if (tum.indexOf(c) < 0) ka.removeChild(c); });
+    eskiAta.forEach(function (w) { if (w !== sahne && w !== ka && !w.querySelector(".k-sol,.k-sag,.ka-oge,.pad,.joy,button,canvas")) w.style.display = "none"; });
   };
   Px.joystick = function (kap, m) {
-    var d = document.createElement("div"), top = document.createElement("div"), R = Math.round(Math.max(44, Math.min(84, Math.min(window.innerWidth, window.innerHeight) * .14)) * (Px.kyJoy || 1)), bas_ = {};
+    var d = document.createElement("div"), top = document.createElement("div"), R = Math.round(Math.max(52, Math.min(84, Math.min(window.innerWidth, window.innerHeight) * .17))), bas_ = {};
     d.className = "joy"; d.style.cssText = "position:relative;width:" + R * 2 + "px;height:" + R * 2 + "px;border-radius:50%;background:rgba(255,255,255,.12);border:4px solid #0d0e1a;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25);touch-action:none;user-select:none;-webkit-user-select:none;flex:none";
     top.style.cssText = "position:absolute;left:" + (R - Math.round(R * .65 / 2) - 4) + "px;top:" + (R - Math.round(R * .65 / 2) - 4) + "px;width:" + Math.round(R * .65) + "px;height:" + Math.round(R * .65) + "px;border-radius:50%;background:#41a6f6;border:4px solid #0d0e1a;box-shadow:inset -3px -3px 0 rgba(0,0,0,.3),inset 3px 3px 0 rgba(255,255,255,.4);pointer-events:none";
     d.appendChild(top); d.setAttribute("aria-label", "Joystick");
@@ -140,7 +163,7 @@
       ["u", "d", "l", "r"].forEach(function (y) { if (!m[y]) return; if (t[y] && !bas_[y]) bas(m[y]); if (!t[y] && bas_[y]) birak(m[y]); bas_[y] = !!t[y]; });
     }
     function tasi(e) {
-      var r = d.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), n = Math.sqrt(dx * dx + dy * dy) || 1, k = Math.min(1, n / R);
+      var r = d.getBoundingClientRect(), f = (r.width / (2 * R)) || 1, dx = (e.clientX - (r.left + r.width / 2)) / f, dy = (e.clientY - (r.top + r.height / 2)) / f, n = Math.sqrt(dx * dx + dy * dy) || 1, k = Math.min(1, n / R);
       var ox = dx / n * Math.min(n, R - 8), oy = dy / n * Math.min(n, R - 8);
       top.style.transform = "translate(" + ox + "px," + oy + "px)";
       ayarla({ l: dx < -R * .3, r: dx > R * .3, u: dy < -R * .3, d: dy > R * .3 });

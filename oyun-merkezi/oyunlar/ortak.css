@@ -109,7 +109,9 @@ body.tam .sahne{overflow-x:clip}
 }
 
 /* Özel kontrol alanı (ayarlar.html > Özelleştir): düğme ve joystick alan içinde istenen yerde */
-.ka{position:relative;width:100%;max-width:var(--mw,720px);height:210px;flex:none}
+.ka{position:relative;width:100%;max-width:var(--mw,720px);height:230px;flex:none}
+html,body{touch-action:manipulation;overscroll-behavior:none}
+@media (pointer:coarse){.pad .btn,.kontrol .btn{min-width:64px;min-height:58px}}
 .ka-oge{position:absolute;margin:0!important;transform:translate(-50%,-50%) scale(var(--ks,1))}
 .ka .pad.dikey{flex-direction:column;flex-wrap:nowrap}
 .ka .pad.yatay{flex-direction:row;flex-wrap:nowrap}

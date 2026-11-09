@@ -258,11 +258,12 @@
 
   // Kontrol seçeneği: BUTONLAR / JOYSTICK (seçim hatırlanır)
   (function () {
-    Px.kontrolYerles("araba"); var yp = document.getElementById("yonpad"), sag = document.getElementById("ypad"), jk = document.getElementById("joyk"), kb = document.getElementById("kontrolb"), joy = null;
+    Px.kontrolYerles("araba");
+    var yp = document.getElementById("yonpad"), sag = document.getElementById("ypad"), jk = document.getElementById("joyk"), kb = document.getElementById("kontrolb"), joy = null;
     function uygula(j) {
       if (j && !joy) joy = Px.joystick(jk, { l: "JoyL", r: "JoyR", u: "JoyU", d: "JoyD" });
       yp.style.display = sag.style.display = j ? "none" : ""; jk.hidden = !j; if (jk.style) jk.style.display = j ? "flex" : "none";
-      kb.textContent = j ? "🔘 BUTONLAR" : "🕹 JOYSTICK";
+      kb.textContent = j ? "🔘 BUTONLAR" : "🕹 JOYSTICK"; Px.kyUygula();
       if (!j) { ["JoyL","JoyR","JoyU","JoyD"].forEach(function (c) { Px.k[c] = false; }); }
     }
     kb.addEventListener("click", function () { var j = jk.hidden; Px.yaz("kontrol_araba", j ? "joy" : "btn"); uygula(j); });

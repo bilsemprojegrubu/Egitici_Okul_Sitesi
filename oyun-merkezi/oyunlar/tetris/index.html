@@ -159,6 +159,7 @@
     { t: "◀", k: "ArrowLeft", c: "l" }, { t: "⟳", k: "ArrowUp", c: "u" }, { t: "▼", k: "ArrowDown", c: "d" }, { t: "▶", k: "ArrowRight", c: "r" }
   ], "dpad k-sol");
   Px.pad(document.getElementById("padyer"), [{ t: "⤓", k: "Space" }], "k-sag");
+  Px.kontrolYerles("tetris");
   document.getElementById("tekrar").addEventListener("click", yeni);
   yeni(); Px.dongu(adim, ciz);
 })();

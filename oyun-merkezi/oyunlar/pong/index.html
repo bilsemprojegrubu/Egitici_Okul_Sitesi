@@ -206,7 +206,7 @@
   var yer = document.getElementById("padyer");
   padSol = Px.pad(yer, [{ t: "▲", k: "KeyW", a: "Sol yukarı" }, { t: "▼", k: "KeyS", a: "Sol aşağı" }]);
   padSag = Px.pad(yer, [{ t: "▲", k: "ArrowUp", a: "Sağ yukarı" }, { t: "▼", k: "ArrowDown", a: "Sağ aşağı" }]);
-  padSol.classList.add("k-sol"); padSag.classList.add("k-sag"); padSag.style.display = "none";
+  padSol.classList.add("k-sol"); padSag.classList.add("k-sag"); padSag.style.display = "none"; Px.kontrolYerles("pong");
   document.getElementById("menuBtn").addEventListener("click", function () { calis = false; durum = "menu"; menu.ac(); });
   document.getElementById("tekrar").addEventListener("click", function () { document.getElementById("bitti").hidden = true; menu.ac(); durum = "menu"; });
   topKoy(1); r = [H / 2, H / 2];

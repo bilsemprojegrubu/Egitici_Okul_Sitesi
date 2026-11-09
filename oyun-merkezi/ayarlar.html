@@ -15,11 +15,12 @@
 .sat{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0}
 .sat input[type=range]{flex:1 1 160px;min-width:120px}
 .sat output{min-width:52px;text-align:right;font-weight:900;color:var(--yesil)}
-#alan{position:relative;width:100%;max-width:720px;height:210px;margin:10px auto;background:rgba(255,255,255,.05);border:3px dashed var(--cizgi);touch-action:none;overflow:hidden}
+#alan{position:relative;width:100%;max-width:720px;height:230px;margin:10px auto;background:rgba(255,255,255,.05);border:3px dashed var(--cizgi);touch-action:none;overflow:hidden}
 #alan .oge{position:absolute;transform:translate(-50%,-50%);cursor:grab;touch-action:none;user-select:none}
 #alan .oge.sec1{outline:3px solid var(--vurgu)}
 #alan .joyM{border-radius:50%;background:rgba(255,255,255,.12);border:4px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:1.4rem}
-#alan .pad{display:flex;gap:8px;flex-wrap:nowrap;pointer-events:none}
+#alan .pad{display:flex;gap:8px;flex-wrap:nowrap;pointer-events:none;justify-content:center}
+#alan .pad .btn{min-width:58px;min-height:50px;display:flex;align-items:center;justify-content:center}
 #alan .pad.dikey{flex-direction:column}
 .ipucu{color:#94b0c2;font-size:.9rem}
 </style>
@@ -54,26 +55,38 @@
   function oku(k, v) { try { var a = localStorage.getItem(k); return a === null ? v : a; } catch (e) { return v; } }
   function yaz(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) { } }
   var OYUNLAR = [
-    { id: "balik", ad: "Piksel Balık", cift: true },
-    { id: "uzay", ad: "Uzay Savaşı", cift: true },
-    { id: "araba", ad: "Araba Yarışı", cift: true }
+    { id: "balik", ad: "Piksel Balık", cift: true, btn: { sol: ["◀ ▶ butonları", "yatay"], sag: ["▲ ▼ butonları", "dikey"] } },
+    { id: "uzay", ad: "Uzay Savaşı", cift: true, btn: { sol: ["◀ ▶ butonları", "yatay"], sag: ["▲ ▼ butonları", "dikey"] } },
+    { id: "araba", ad: "Araba Yarışı", cift: true, btn: { sol: ["◀ ▶ butonları", "yatay"], sag: ["▲ ▼ butonları", "dikey"] } },
+    { id: "futbol", ad: "Futbol", btn: { sol: ["Joystick (hareket)", "joy"], sag: ["Aksiyon düğmeleri", "aksiyon"] } },
+    { id: "basket", ad: "Basket", btn: { sol: ["◀ ▶ butonları", "yatay"], sag: ["Zıpla / Şut düğmeleri", "aksiyon"] } },
+    { id: "voleybol", ad: "Voleybol", btn: { sol: ["Sol grup (1. oyuncu)", "dpad"], sag: ["Sağ grup (2. oyuncu)", "dpad"] } },
+    { id: "pong", ad: "Pong", btn: { sol: ["Sol oyuncu ▲ ▼", "dikey"], sag: ["Sağ oyuncu ▲ ▼", "dikey"] } },
+    { id: "tetris", ad: "Tetris", btn: { sol: ["Yön düğmeleri", "dpad"], sag: ["Hızlı düşür ⤓", "tek"] } },
+    { id: "dans", ad: "Kaktüs Dansı", btn: { sol: ["Ok düğmeleri", "dpad"] } },
+    { id: "yilan", ad: "Yılan", btn: { sol: ["Ok düğmeleri", "dpad"] } }
   ];
-  var VAR = { yatay: { x: .22, y: .5, s: 1 }, dikey: { x: .78, y: .5, s: 1 }, joy: { x: .78, y: .5, s: 1 } };
-  var AD = { yatay: "◀ ▶ butonları", dikey: "▲ ▼ butonları", joy: "Joystick" };
-  var oyun = null, L = null, secili = "joy";
+  var YUK = 230, AD = {};
+  var oyun = null, L = null, secili = "sol", roller = [];
+  function vars(rol, say) { return { x: say === 1 ? .5 : rol === "sol" ? .15 : .85, y: .55, s: 1 }; }
   var $ = function (i) { return document.getElementById(i); };
+  function mod() { return oyun.cift && oku("kontrol_" + oyun.id, "btn") === "joy" ? "joy" : "btn"; }
+  function rolListe() {
+    if (oyun.cift && mod() === "joy") return [["joy", "Joystick", "joy"]];
+    return Object.keys(oyun.btn).map(function (k) { return [k, oyun.btn[k][0], oyun.btn[k][1]]; });
+  }
   function yukle() {
     var h = null; try { h = JSON.parse(oku("ctl_" + oyun.id, "")); } catch (e) { }
-    L = {}; Object.keys(VAR).forEach(function (k) { var v = (h && h[k]) || {}; L[k] = { x: typeof v.x === "number" ? v.x : VAR[k].x, y: typeof v.y === "number" ? v.y : VAR[k].y, s: typeof v.s === "number" ? v.s : VAR[k].s }; });
+    var say = Object.keys(oyun.btn).length; L = {};
+    ["sol", "sag", "joy"].forEach(function (k) { var v = (h && h[k]) || {}, d = vars(k, say); L[k] = { x: typeof v.x === "number" ? v.x : d.x, y: typeof v.y === "number" ? v.y : d.y, s: typeof v.s === "number" ? v.s : d.s }; });
   }
   function kaydet() { yaz("ctl_" + oyun.id, JSON.stringify(L)); }
-  function R() { return Math.max(44, Math.min(84, Math.min(innerWidth, innerHeight) * .14)); }
-  function mod() { return oku("kontrol_" + oyun.id, "btn") === "joy" ? "joy" : "btn"; }
+  function R() { return Math.max(52, Math.min(84, Math.min(innerWidth, innerHeight) * .17)); }
   function oyunListe() {
     var k = $("oyunlar"); k.innerHTML = "";
     OYUNLAR.forEach(function (o) {
       var b = document.createElement("button"); b.type = "button"; b.className = "btn" + (oyun && oyun.id === o.id ? " act" : ""); b.textContent = o.ad;
-      b.onclick = function () { oyun = o; yukle(); secili = mod() === "joy" ? "joy" : "yatay"; oyunListe(); goster(); };
+      b.onclick = function () { oyun = o; yukle(); secili = rolListe()[0][0]; oyunListe(); goster(); };
       k.appendChild(b);
     });
   }
@@ -83,40 +96,57 @@
     if (oyun.cift) {
       [["btn", "🔘 Butonlar"], ["joy", "🕹 Joystick"]].forEach(function (a) {
         var b = document.createElement("button"); b.type = "button"; b.className = "btn" + (mod() === a[0] ? " act" : ""); b.textContent = a[1];
-        b.onclick = function () { yaz("kontrol_" + oyun.id, a[0]); secili = a[0] === "joy" ? "joy" : "yatay"; goster(); };
+        b.onclick = function () { yaz("kontrol_" + oyun.id, a[0]); secili = rolListe()[0][0]; goster(); };
         t.appendChild(b);
       });
       $("turNot").textContent = "Bu oyunda ikisi de var, istediğini seç.";
     } else $("turNot").textContent = "Bu oyunda tek kontrol türü var, seçim yok.";
     alanCiz();
   }
+  function mock(tip) {
+    var e = document.createElement("div");
+    if (tip === "joy") { var d = Math.round(R() * 2); e.className = "joyM"; e.style.width = e.style.height = d + "px"; e.textContent = "🕹"; return e; }
+    var m = { yatay: ["◀", "▶"], dikey: ["▲", "▼"], dpad: ["▲", "◀", "▼", "▶"], aksiyon: ["ŞUT", "PAS", "HAVA", "KAFA"], tek: ["⤓"] }[tip];
+    e.className = "pad " + (tip === "dpad" ? "dpad" : tip === "yatay" ? "yatay" : tip === "dikey" || tip === "aksiyon" ? "dikey" : "");
+    if (tip === "dpad") e.innerHTML = '<span class="btn u">▲</span><span class="btn l">◀</span><span class="btn d">▼</span><span class="btn r">▶</span>';
+    else e.innerHTML = m.map(function (x) { return '<span class="btn">' + x + '</span>'; }).join("");
+    return e;
+  }
   function alanCiz() {
-    var a = $("alan"); a.innerHTML = "";
-    var j = mod() === "joy", liste = j ? ["joy"] : ["yatay", "dikey"];
-    if (liste.indexOf(secili) < 0) secili = liste[0];
-    liste.forEach(function (k) {
-      var e = document.createElement("div"); e.className = "oge" + (k === secili ? " sec1" : ""); e.dataset.k = k;
-      if (k === "joy") { var d = Math.round(R() * 2 * L.joy.s); e.className += " joyM"; e.style.width = e.style.height = d + "px"; e.textContent = "🕹"; }
-      else { e.innerHTML = '<div class="pad ' + k + '"><span class="btn">' + (k === "yatay" ? "◀" : "▲") + '</span><span class="btn">' + (k === "yatay" ? "▶" : "▼") + '</span></div>'; e.style.transformOrigin = "center"; e.style.transform = "translate(-50%,-50%) scale(" + L[k].s + ")"; }
+    var a = $("alan"); a.innerHTML = ""; a.style.height = YUK + "px";
+    roller = rolListe();
+    if (!roller.some(function (r) { return r[0] === secili; })) secili = roller[0][0];
+    roller.forEach(function (r) {
+      var k = r[0], e = document.createElement("div"); e.className = "oge" + (k === secili ? " sec1" : ""); e.dataset.k = k;
+      e.appendChild(mock(r[2]));
       e.style.left = L[k].x * 100 + "%"; e.style.top = L[k].y * 100 + "%";
+      a.appendChild(e);
+      var smax = Math.max(.4, Math.min(2.5, (YUK - 8) / (e.offsetHeight || 1), (a.clientWidth - 4) / (e.offsetWidth || 1))); e.dataset.smax = smax;
+      L[k].s = Math.min(L[k].s, smax);
+      e.style.transform = "translate(-50%,-50%) scale(" + L[k].s + ")";
       e.addEventListener("pointerdown", function (ev) {
         ev.preventDefault(); secili = k; guncelleBoy();
         [].forEach.call(a.children, function (c) { c.classList.toggle("sec1", c === e); });
         e.setPointerCapture(ev.pointerId);
         function tasi(m) {
-          var r = a.getBoundingClientRect();
-          L[k].x = Math.max(0, Math.min(1, (m.clientX - r.left) / r.width)); L[k].y = Math.max(0, Math.min(1, (m.clientY - r.top) / r.height));
+          var rc = a.getBoundingClientRect();
+          var hw = e.offsetWidth * L[k].s / 2 / rc.width, hh = e.offsetHeight * L[k].s / 2 / rc.height;
+          L[k].x = Math.max(hw, Math.min(1 - hw, (m.clientX - rc.left) / rc.width)); L[k].y = Math.max(hh, Math.min(1 - hh, (m.clientY - rc.top) / rc.height));
           e.style.left = L[k].x * 100 + "%"; e.style.top = L[k].y * 100 + "%";
         }
         function bit() { e.removeEventListener("pointermove", tasi); e.removeEventListener("pointerup", bit); e.removeEventListener("pointercancel", bit); kaydet(); }
         e.addEventListener("pointermove", tasi); e.addEventListener("pointerup", bit); e.addEventListener("pointercancel", bit);
       });
-      a.appendChild(e);
     });
     guncelleBoy();
   }
-  function guncelleBoy() { $("secAd").textContent = AD[secili]; var p = Math.round(L[secili].s * 100); $("boy").value = p; $("boyO").textContent = p + "%"; }
-  $("boy").addEventListener("input", function () { L[secili].s = this.value / 100; $("boyO").textContent = this.value + "%"; alanCiz(); kaydet(); });
+  function guncelleBoy() {
+    var r = roller.filter(function (x) { return x[0] === secili; })[0], e = $("alan").querySelector('[data-k="' + secili + '"]');
+    $("secAd").textContent = r ? r[1] : "-";
+    var smax = e ? +e.dataset.smax : 2.5; $("boy").max = Math.round(smax * 100); $("boy").min = 40;
+    var p = Math.round(L[secili].s * 100); $("boy").value = p; $("boyO").textContent = p + "%";
+  }
+  $("boy").addEventListener("input", function () { L[secili].s = this.value / 100; $("boyO").textContent = this.value + "%"; var e = $("alan").querySelector('[data-k="' + secili + '"]'); if (e) e.style.transform = "translate(-50%,-50%) scale(" + L[secili].s + ")"; kaydet(); });
   $("sifirla").onclick = function () { try { localStorage.removeItem("ctl_" + oyun.id); } catch (e) { } yukle(); alanCiz(); };
   oyunListe();
 })();
