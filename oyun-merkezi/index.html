@@ -167,7 +167,8 @@ var OYUNLAR = [
     b.hidden = false;
     var guncelle = function () { y.textContent = Skor.takmaAd() || "yok"; };
     guncelle();
-    b.addEventListener("click", function () { Skor.adSor(guncelle); });
+    window.addEventListener("skor-ad", guncelle);
+    b.disabled = true; // ad kalıcıdır, değiştirilemez
   } catch (e) { /* sessizce geç */ }
 })();
 </script>
