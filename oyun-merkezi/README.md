@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 2.0.12** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 2.0.13** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -180,7 +180,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.95 | Araba Kaçış ve Uzay Savaşı: BUTONLAR / JOYSTICK kontrol seçeneği (seçim hatırlanır) |
 | 1.9.96 | Araba joystick: basılı tutunca sürekli sağa/sola şerit değiştirir |
 | 1.9.97 | Yeni oyun: Piksel Balık (küçükleri ye, büyü; ekranı kaplayınca kamera uzaklaşır; Supabase için supabase/balik-ekle.sql) |
-| 2.0.12 | Takma ad "İmparator" yanındaki "(Emin Ahmet)" yazısı kaldırıldı. |
+| 2.0.13 | Sıralama/takma ad tarafındaki "İmparator" özel gösterimi tamamen kaldırıldı; İmparator yalnızca Kale Savaşı birimidir. |
 | 2.0.11 | Kale Savaşı: İMPARATOR birimi (100000 altın, sahada tek, her şeye tek vurur, ileri atılır, arkaya döner). Hücumda arkada kalan düşmana herkes döner. Harita sonu mağara, askerler mağarada yığılmaz. |
 | 2.0.10 | "İmparator" unvanı: bu adı aynı anda tek kişi alabilir, sıralamada "👑 İmparator (Emin Ahmet)" görünür. |
 | 2.0.9 | Takma ad zorunlu ve benzersiz: oyuna/ana sayfaya girince hemen sorulur, atlanamaz, bir ad tek kişiye aittir, cihazda kalıcıdır. Supabase'te `supabase/takma-ad-benzersiz.sql` bir kez çalıştırılmalı. |

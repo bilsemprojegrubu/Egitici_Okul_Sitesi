@@ -72,9 +72,6 @@
     return YT.indexOf(bitisik) >= 0;
   }
 
-  // Görünen ad (şimdilik olduğu gibi gösterilir)
-  function gorunenAd(ad) { return String(ad == null ? "" : ad); }
-
   // Adı temizler ve doğrular (kaydetmez). Dönen: {ok:true, ad} ya da {ok:false, hata}
   function adDogrula(ad) {
     var t = String(ad == null ? "" : ad).replace(/\s+/g, " ").trim();
@@ -304,7 +301,7 @@
         var ben = takmaAd().toLowerCase();
         d.forEach(function (k) {
           var li = eleman("li", null, k.takma_ad.toLowerCase() === ben ? "ben" : "");
-          li.appendChild(eleman("span", gorunenAd(k.takma_ad), "sira-ad"));
+          li.appendChild(eleman("span", k.takma_ad, "sira-ad"));
           li.appendChild(eleman("b", String(k.puan)));
           ol.appendChild(li);
         });
@@ -415,7 +412,7 @@
 
   global.Skor = {
     OYUNLAR: OYUNLAR, OYUN_ADLARI: OYUN_ADLARI,
-    acik: acik, takmaAd: takmaAd, gorunenAd: gorunenAd, adKaydet: adKaydet, adSor: adSor,
+    acik: acik, takmaAd: takmaAd, adKaydet: adKaydet, adSor: adSor,
     gonder: gonder, liste: liste, paneliCiz: paneliCiz,
     oyunBitti: oyunBitti, rekor: rekor, kuyrukBosalt: kuyrukBosalt, kuyrukOku: kuyrukOku
   };
