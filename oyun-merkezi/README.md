@@ -1,6 +1,6 @@
 # Oyun Merkezi
 
-**Sürüm: 2.0.9** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
+**Sürüm: 2.0.10** (ana ekranın sağ alt köşesinde de küçük olarak görünür; numara `surum.js` dosyasındadır)
 
 İnternet olmadan da çalışan, statik bir oyun sitesi. İstenirse **Supabase** ile ortak sıralama tablosu, **GitHub Pages** ile yayın eklenir. Kütüphane ya da CDN yoktur; Supabase'e düz `fetch` ile bağlanılır.
 
@@ -180,6 +180,7 @@ Yeni bir değişiklik yayınlarken `surum.js` içindeki numarayı artır ve bura
 | 1.9.95 | Araba Kaçış ve Uzay Savaşı: BUTONLAR / JOYSTICK kontrol seçeneği (seçim hatırlanır) |
 | 1.9.96 | Araba joystick: basılı tutunca sürekli sağa/sola şerit değiştirir |
 | 1.9.97 | Yeni oyun: Piksel Balık (küçükleri ye, büyü; ekranı kaplayınca kamera uzaklaşır; Supabase için supabase/balik-ekle.sql) |
+| 2.0.10 | "İmparator" unvanı: bu adı aynı anda tek kişi alabilir, sıralamada "👑 İmparator (Emin Ahmet)" görünür. |
 | 2.0.9 | Takma ad zorunlu ve benzersiz: oyuna/ana sayfaya girince hemen sorulur, atlanamaz, bir ad tek kişiye aittir, cihazda kalıcıdır. Supabase'te `supabase/takma-ad-benzersiz.sql` bir kez çalıştırılmalı. |
 | 2.0.8 | Kontrol ayarları tüm ekran kontrollü oyunlara (Futbol, Basket, Voleybol, Pong, Tetris, Dans, Yılan dahil); öğeler alan dışına taşmaz (masaüstü joystick düzeltildi); joystick/düğmeler başparmağa göre büyütüldü; Kaktüs Dansı: spam/çok erken basış cezalı, tuş gecikmesi telafi edilir |
 | 2.0.7 | Ayarlar baştan: oyun seç → Joystick/Buton (sadece ikisi de olan oyunlarda) → Özelleştir ile kontrolleri koordinatla sürükle, boyutlandır |

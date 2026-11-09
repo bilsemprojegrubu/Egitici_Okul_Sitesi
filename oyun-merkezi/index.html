@@ -165,7 +165,7 @@ var OYUNLAR = [
     document.getElementById("siralamaLink").hidden = false;
     var b = document.getElementById("adBtn"), y = document.getElementById("adYazi");
     b.hidden = false;
-    var guncelle = function () { y.textContent = Skor.takmaAd() || "yok"; };
+    var guncelle = function () { y.textContent = Skor.gorunenAd(Skor.takmaAd()) || "yok"; };
     guncelle();
     window.addEventListener("skor-ad", guncelle);
     b.disabled = true; // ad kalıcıdır, değiştirilemez
