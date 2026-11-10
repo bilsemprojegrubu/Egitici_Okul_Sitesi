@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bilsemprojegrubu.github.io/Egitici_Okul_Sitesi/sitemap.xml
